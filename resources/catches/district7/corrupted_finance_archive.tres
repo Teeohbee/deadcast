@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CatchData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://resources/catch_data.gd" id="1_data"]
+[ext_resource type="Resource" path="res://resources/catches/district7/opt_reel_in.tres" id="2_reel"]
+[ext_resource type="Resource" path="res://resources/catches/district7/opt_skim_release.tres" id="3_skim"]
+[ext_resource type="Resource" path="res://resources/catches/district7/opt_cut_line.tres" id="4_cut"]
+
+[resource]
+script = ExtResource("1_data")
+catch_name = "Corrupted Finance Archive"
+catch_type = 0
+behavior = 0
+corruption_gain = 0
+options = [ExtResource("2_reel"), ExtResource("3_skim"), ExtResource("4_cut")]
+zone_weights = {"district7": 3, "exchange": 1, "axiom": 1}
+flavor_text = "Something heavy. Old. Dense with encrypted files."
+layer = 0
