@@ -2,8 +2,10 @@
 extends Node
 
 var _loaded_catches: Array[CatchData] = []
+var _current_zone: String = ""
 
 func load_catches_for_zone(zone: String) -> void:
+    _current_zone = zone
     _loaded_catches = []
     var path = "res://resources/catches/%s/" % zone
     var dir = DirAccess.open(path)
@@ -47,6 +49,8 @@ func _calculate_weight(catch: CatchData, corruption: float, seen_types: Array) -
         weight += corruption * 0.02
     if catch.catch_type in seen_types:
         weight *= 0.5
+    if _current_zone != "" and catch.zone_weights.has(_current_zone):
+        weight *= float(catch.zone_weights[_current_zone])
     return weight
 
 func _weighted_random(items: Array, weights: Array) -> Variant:
