@@ -18,6 +18,7 @@ renderer/rendering_method.mobile="gl_compatibility"
 
 EventBus="*res://autoload/EventBus.gd"
 GameState="*res://autoload/GameState.gd"
+CatchPool="*res://autoload/CatchPool.gd"
 
 [editor_plugins]
 
