@@ -1,0 +1,28 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/barge_hub/BargeHub.gd" id="1_BargeHub"]
+
+[node name="BargeHub" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_BargeHub")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+text = "THE MERIDIAN"
+
+[node name="DebtLabel" type="Label" parent="VBoxContainer"]
+text = "DEBT: 80000 CR"
+
+[node name="CreditsLabel" type="Label" parent="VBoxContainer"]
+text = "CREDITS: 0 CR"
+
+[node name="DiveButton" type="Button" parent="VBoxContainer"]
+text = "DIVE"
