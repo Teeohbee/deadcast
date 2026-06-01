@@ -15,6 +15,8 @@ var _snapped: bool = false
 var _current_event: CatchEvent = null
 
 func _ready() -> void:
+	catch_container.size = get_viewport_rect().size
+	catch_container.position = Vector2.ZERO
 	line_system.snapped.connect(_on_line_snapped)
 	line_system.tension_updated.connect(func(v: float) -> void: EventBus.tension_changed.emit(v))
 	hud.set_max_tension(line_system.max_tension)
