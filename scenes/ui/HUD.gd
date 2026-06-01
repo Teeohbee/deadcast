@@ -15,3 +15,6 @@ func _on_credits_changed(value: int) -> void:
 
 func _on_tension_changed(value: float) -> void:
 	tension_bar.value = value
+
+func set_max_tension(max_val: int) -> void:
+	tension_bar.max_value = float(max_val)
