@@ -1,19 +1,22 @@
 ; Engine configuration file.
 ; It's best edited using the editor UI and not directly,
-; but the file format allows direct editing.
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
+
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
 config/name="deadcast"
-config/features=PackedStringArray("4.3", "GL Compatibility")
 run/main_scene="res://scenes/barge_hub/BargeHub.tscn"
-
-[rendering]
-
-renderer/rendering_method="gl_compatibility"
-renderer/rendering_method.mobile="gl_compatibility"
+config/features=PackedStringArray("4.6", "GL Compatibility")
 
 [autoload]
 
@@ -21,6 +24,15 @@ EventBus="*res://autoload/EventBus.gd"
 GameState="*res://autoload/GameState.gd"
 CatchPool="*res://autoload/CatchPool.gd"
 
+[display]
+
+window/stretch/mode="viewport"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/gut/plugin.cfg")
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
