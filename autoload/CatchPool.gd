@@ -13,8 +13,11 @@ func load_catches_for_zone(zone: String) -> void:
     dir.list_dir_begin()
     var file_name = dir.get_next()
     while file_name != "":
+        if file_name.begins_with("."):
+            file_name = dir.get_next()
+            continue
         if file_name.ends_with(".tres"):
-            var resource = load(path + file_name)
+            var resource = load(path.path_join(file_name))
             if resource is CatchData:
                 _loaded_catches.append(resource)
         file_name = dir.get_next()
