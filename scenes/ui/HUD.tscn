@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/HUD.gd" id="1_HUD"]
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1_HUD")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+offset_right = 200.0
+offset_bottom = 60.0
+
+[node name="CreditsLabel" type="Label" parent="VBoxContainer"]
+text = "CR: 0"
+
+[node name="TensionBar" type="ProgressBar" parent="VBoxContainer"]
+min_value = 0.0
+max_value = 100.0
+value = 0.0
+custom_minimum_size = Vector2(200, 20)
