@@ -26,8 +26,9 @@ func _show_next_catch() -> void:
 		_end_run(false)
 		return
 	var event_ui: CatchEvent = catch_event_scene.instantiate()
-	_current_event = event_ui
 	catch_container.add_child(event_ui)
+	event_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_current_event = event_ui
 	event_ui.populate(_column[_current_slot])
 	event_ui.option_selected.connect(_on_option_selected)
 
