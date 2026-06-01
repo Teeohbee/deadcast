@@ -1,4 +1,5 @@
 # scenes/ui/HUD.gd
+class_name HUD
 extends CanvasLayer
 
 @onready var credits_label: Label = $VBoxContainer/CreditsLabel
