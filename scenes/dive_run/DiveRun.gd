@@ -96,7 +96,7 @@ func _show_fishing_mini(catch_data: CatchData) -> void:
 	mini.catch_stamina = catch_data.stamina
 	catch_container.add_child(mini)
 	mini.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	mini.size = catch_container.size
+	mini.size = get_viewport().get_visible_rect().size
 	mini.start(catch_data.catch_name)
 	mini.caught.connect(func(_t: int) -> void: _on_minigame_caught(catch_data))
 	mini.snapped.connect(_on_line_snapped)
