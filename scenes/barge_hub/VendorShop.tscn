@@ -1,0 +1,30 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/barge_hub/VendorShop.gd" id="1_vs"]
+
+[node name="VendorShop" type="Control"]
+script = ExtResource("1_vs")
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+text = "THE VENDOR"
+
+[node name="QuoteLabel" type="Label" parent="VBoxContainer"]
+text = "\"I don't ask where it came from. You shouldn't ask either.\""
+
+[node name="StockContainer" type="VBoxContainer" parent="VBoxContainer"]
+
+[node name="MessageLabel" type="Label" parent="VBoxContainer"]
+text = ""
+
+[node name="BackButton" type="Button" parent="VBoxContainer"]
+text = "Return to Deck"
