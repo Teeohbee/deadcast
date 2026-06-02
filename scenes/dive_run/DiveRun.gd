@@ -95,7 +95,7 @@ func _show_fishing_mini(catch_data: CatchData) -> void:
 	mini.max_tension = line_system.max_tension
 	mini.catch_stamina = catch_data.stamina
 	catch_container.add_child(mini)
-	mini.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	mini.position = Vector2.ZERO
 	mini.size = get_viewport().get_visible_rect().size
 	mini.start(catch_data.catch_name)
 	mini.caught.connect(func(_t: int) -> void: _on_minigame_caught(catch_data))
