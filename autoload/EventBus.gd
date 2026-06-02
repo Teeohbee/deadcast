@@ -1,6 +1,7 @@
 # autoload/EventBus.gd
 extends Node
 
-signal run_ended(result: Dictionary)  # consumed by analytics/achievement layers in future phases
+signal run_ended(result: Dictionary)
 signal tension_changed(value: float)
 signal credits_changed(value: int)
+signal zone_changed(zone_id: String)
