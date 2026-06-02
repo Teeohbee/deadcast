@@ -200,6 +200,7 @@ func _on_line_snapped() -> void:
 		return
 	_snapped = true
 	_run_credits = 0
+	_bio_credits = 0
 	for child in catch_container.get_children():
 		child.queue_free()
 	var snap_label = Label.new()
