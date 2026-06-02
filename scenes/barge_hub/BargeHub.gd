@@ -23,9 +23,8 @@ const SCENES = {
 }
 
 func _ready() -> void:
-	# P5 game over — redirect before showing hub
 	if GameState.pressure_level >= 5:
-		_show_game_over()
+		get_tree().change_scene_to_file("res://scenes/barge_hub/GameOver.tscn")
 		return
 
 	# P4 debt collector one-time event
@@ -68,19 +67,3 @@ func _on_dive_pressed() -> void:
 func _go_to(location: String) -> void:
 	get_tree().change_scene_to_file(SCENES[location])
 
-func _show_game_over() -> void:
-	# Clear existing children and show game over
-	for child in get_children():
-		child.queue_free()
-	var vbox = VBoxContainer.new()
-	vbox.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	add_child(vbox)
-	var label = Label.new()
-	label.text = "FORCED SURRENDER\n\nMarta's people came for the Meridian.\nYou made it %d runs." % GameState.run_count
-	vbox.add_child(label)
-	var btn = Button.new()
-	btn.text = "New Game"
-	btn.focus_mode = Control.FOCUS_ALL
-	btn.pressed.connect(func(): GameState.new_game(); get_tree().reload_current_scene())
-	vbox.add_child(btn)
-	btn.grab_focus()
