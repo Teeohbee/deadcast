@@ -30,5 +30,28 @@ text = "CREDITS: 0 CR"
 
 [node name="LureEquip" parent="VBoxContainer" instance=ExtResource("3_leq")]
 
+[node name="LocationButtons" type="HBoxContainer" parent="VBoxContainer"]
+
+[node name="WorkshopBtn" type="Button" parent="VBoxContainer/LocationButtons"]
+text = "Workshop"
+
+[node name="DecryptBtn" type="Button" parent="VBoxContainer/LocationButtons"]
+text = "Decrypt Box"
+
+[node name="FreezerBtn" type="Button" parent="VBoxContainer/LocationButtons"]
+text = "Freezer"
+
+[node name="BunkBtn" type="Button" parent="VBoxContainer/LocationButtons"]
+text = "Bunk"
+
+[node name="MartaBtn" type="Button" parent="VBoxContainer/LocationButtons"]
+text = "Marta"
+
+[node name="OkekeBtn" type="Button" parent="VBoxContainer/LocationButtons"]
+text = "Okeke"
+
+[node name="VendorBtn" type="Button" parent="VBoxContainer/LocationButtons"]
+text = "Vendor"
+
 [node name="DiveButton" type="Button" parent="VBoxContainer"]
 text = "DIVE"
