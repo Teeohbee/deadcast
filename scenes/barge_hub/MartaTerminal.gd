@@ -4,11 +4,19 @@ extends Control
 @onready var debt_status_label: Label = $VBoxContainer/DebtStatusLabel
 @onready var dialogue_label: Label = $VBoxContainer/DialogueLabel
 @onready var payment_label: Label = $VBoxContainer/PaymentLabel
+@onready var story_beat_label: Label = $VBoxContainer/StoryBeatLabel
 @onready var back_button: Button = $VBoxContainer/BackButton
 
 func _ready() -> void:
 	back_button.focus_mode = Control.FOCUS_ALL
 	back_button.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/barge_hub/BargeHub.tscn"))
+
+	GameState.marta_last_seen_run = GameState.run_count
+	GameState.save()
+
+	var beat = _marta_story_beat(GameState.run_count)
+	story_beat_label.text = beat
+	story_beat_label.visible = beat != ""
 
 	if GameState.victory:
 		debt_status_label.text = "DEBT: CLEARED"
@@ -23,6 +31,23 @@ func _ready() -> void:
 			runs_to_payment, "s" if runs_to_payment != 1 else ""]
 
 	back_button.grab_focus()
+
+func _marta_story_beat(run: int) -> String:
+	if run >= 12:
+		return "\"Keep working. I can make the debt go away faster.\"\n\"The price is reasonable. We'll discuss it.\"\n— Marta"
+	if run >= 10:
+		return "\"Okeke's been quiet. Probably just busy.\"\n\"Focus on your runs.\"\n— Marta"
+	if run >= 8:
+		return "\"The Meridian has a transponder. It was installed before I gave you the rig.\"\n\"Axiom has been paying me for your dive coordinates since run one.\"\n\"This changes nothing between us. The debt is still real.\"\n— Marta"
+	if run >= 6:
+		return "\"That archive you pulled from the Axiom sub-basement — the one with the bioweapon specs.\"\n\"Good work. I've already moved it.\"\n— Marta"
+	if run >= 5:
+		return "\"Eight runs without a snap. Consistent.\"\n\"Most people I stake don't make it this far.\"\n— Marta"
+	if run >= 3:
+		return "\"The shard from the Exchange sub-level — I've seen that serial number before.\"\n\"Don't worry about how.\"\n— Marta"
+	if run >= 1:
+		return "\"80,000 credits. The rig, the mooring fee, and the Meridian's registration.\"\n\"10,000 every five runs. Miss a payment and the terms change.\"\n\"Questions?\"\n— Marta"
+	return ""
 
 func _marta_dialogue(pressure: int) -> String:
 	match pressure:

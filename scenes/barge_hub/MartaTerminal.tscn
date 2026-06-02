@@ -18,6 +18,10 @@ anchor_bottom = 1.0
 [node name="TitleLabel" type="Label" parent="VBoxContainer"]
 text = "MARTA VOSS // ENCRYPTED TERMINAL"
 
+[node name="StoryBeatLabel" type="Label" parent="VBoxContainer"]
+text = ""
+autowrap_mode = 3
+
 [node name="DebtStatusLabel" type="Label" parent="VBoxContainer"]
 text = ""
 
