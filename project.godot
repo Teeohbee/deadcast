@@ -23,6 +23,7 @@ config/features=PackedStringArray("4.6", "GL Compatibility")
 EventBus="*res://autoload/EventBus.gd"
 GameState="*res://autoload/GameState.gd"
 CatchPool="*res://autoload/CatchPool.gd"
+UIStyle="*res://autoload/UIStyle.gd"
 
 [display]
 
