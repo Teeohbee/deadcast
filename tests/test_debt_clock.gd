@@ -49,7 +49,6 @@ func test_debt_reaches_zero_marks_victory() -> void:
 
 func test_decrypt_box_multiplies_after_3_runs() -> void:
 	GameState.decrypt_box_queue = 1000
-	GameState.decrypt_box_runs = 3
 	for i in 3:
 		GameState.on_run_complete(false, 0)
 	assert_eq(GameState.decrypt_box_queue, 0, "Queue should be cleared")

@@ -1,6 +1,18 @@
 # tests/test_gamestate_save.gd
 extends GutTest
 
+func before_each() -> void:
+	GameState.credits = 0
+	GameState.pressure_level = 0
+	GameState.rod_damaged = false
+	GameState.lure_inventory = {
+		"basic_hook": 99,
+		"shock_lure": 3,
+		"decoy_swarm": 2,
+		"deep_pulse": 2,
+		"ghost_bait": 2,
+	}
+
 func after_each() -> void:
 	# Clean up any save file created during tests
 	DirAccess.remove_absolute("user://save_test.cfg")

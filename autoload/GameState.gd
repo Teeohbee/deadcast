@@ -72,7 +72,7 @@ func on_run_complete(snapped: bool, bio_credits: int) -> void:
 	# Freezer spoil check
 	if freezer_value > 0 and not snapped:
 		freezer_runs += 1
-		if freezer_runs >= FREEZER_SPOIL_RUNS:
+		if freezer_runs == FREEZER_SPOIL_RUNS:
 			freezer_value = freezer_value / 2
 			freezer_runs = FREEZER_SPOIL_RUNS  # cap so it keeps showing as spoiled
 
@@ -179,6 +179,7 @@ func _load_from(path: String) -> void:
 	if lure_path != "":
 		current_lure = load(lure_path)
 	var saved_inventory = cfg.get_value("gear", "lure_inventory", {})
+	# Merge rather than replace: preserves defaults for lures added after an old save was written.
 	for key in saved_inventory:
 		lure_inventory[key] = saved_inventory[key]
 	decrypt_box_queue = cfg.get_value("decrypt", "box_queue", 0)
