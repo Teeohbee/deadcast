@@ -20,6 +20,5 @@ func populate(catch_data: CatchData) -> void:
 		var idx = i
 		btn.pressed.connect(func() -> void: option_selected.emit(idx))
 		options_container.add_child(btn)
-	await get_tree().process_frame
 	if options_container.get_child_count() > 0:
 		options_container.get_child(0).grab_focus()
