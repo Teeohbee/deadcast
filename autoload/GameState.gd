@@ -41,6 +41,10 @@ var freezer_value: int = 0
 var freezer_runs: int = 0
 const FREEZER_SPOIL_RUNS: int = 3
 
+# Narrative
+var marta_last_seen_run: int = -1
+var journal_entries: Array[String] = []
+
 func _ready() -> void:
 	call_deferred("_load_defaults")
 
@@ -89,7 +93,19 @@ func on_run_complete(snapped: bool, bio_credits: int) -> void:
 		else:
 			pressure_level = min(5, pressure_level + 1)
 
+	_maybe_append_journal_entry()
 	save()
+
+func _maybe_append_journal_entry() -> void:
+	match run_count:
+		1:
+			journal_entries.append("Run 1.\n\nQuieter than I expected. The Sump doesn't echo the way open water does. Sound just — stops.\n\nPulled an archive from the District 7 shallows. Old finance data. Someone's mortgage payments, still encrypted after forty years. Nobody left to foreclose on.\n\nThis is the job.")
+		5:
+			journal_entries.append("Run 5.\n\nMarta knew about the Axiom shard before I mentioned it. I didn't mention it.\n\nI told myself she has sources. Buyers who talk. That's how fixers work.\n\nI'm telling myself that.")
+		8:
+			journal_entries.append("Run 8.\n\nThe transponder. She told me to my face.\n\nEvery dive. Every coordinate. Axiom Corp has a map of everywhere the Meridian has anchored since day one. They know what I've been pulling up.\n\nShe said it changes nothing. She's right. The debt is still real. The rig still works.\n\nI keep thinking about what's in the Deep Archive that Axiom wants so badly they'd pay for this.")
+		12:
+			journal_entries.append("Run 12.\n\nOkeke left a lure on my line. Basic hook, nothing special. No note.\n\nHe hasn't spoken to me in three runs. Either Marta got to him or he figured something out on his own.\n\nShe's offering to accelerate the debt. Won't say what for.\n\nI haven't said yes.")
 
 # --- Credits ---
 
@@ -165,6 +181,8 @@ func _save_to(path: String) -> void:
 	cfg.set_value("decrypt", "box_runs", decrypt_box_runs)
 	cfg.set_value("freezer", "value", freezer_value)
 	cfg.set_value("freezer", "runs", freezer_runs)
+	cfg.set_value("narrative", "marta_last_seen_run", marta_last_seen_run)
+	cfg.set_value("narrative", "journal_entries", journal_entries)
 	cfg.save(path)
 
 func _load_from(path: String) -> void:
@@ -200,6 +218,8 @@ func _load_from(path: String) -> void:
 	decrypt_box_runs = cfg.get_value("decrypt", "box_runs", 0)
 	freezer_value = cfg.get_value("freezer", "value", 0)
 	freezer_runs = cfg.get_value("freezer", "runs", 0)
+	marta_last_seen_run = cfg.get_value("narrative", "marta_last_seen_run", -1)
+	journal_entries = cfg.get_value("narrative", "journal_entries", [])
 	EventBus.credits_changed.emit(credits)
 
 func new_game() -> void:
@@ -217,6 +237,8 @@ func new_game() -> void:
 	decrypt_box_runs = 0
 	freezer_value = 0
 	freezer_runs = 0
+	marta_last_seen_run = -1
+	journal_entries = []
 	current_rod = load("res://resources/rods/scrap_rod.tres")
 	current_lure = load("res://resources/lures/basic_hook.tres")
 	save()
