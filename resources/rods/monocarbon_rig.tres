@@ -1,0 +1,12 @@
+[gd_resource type="RodData" script_class="RodData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/rod_data.gd" id="1_rod"]
+
+[resource]
+script = ExtResource("1_rod")
+rod_name = "Monocarbon Rig"
+tension_cap = 100
+max_depth = 180
+repair_cost = 800
+purchase_cost = 3000
+description = "Standard. Repairable."

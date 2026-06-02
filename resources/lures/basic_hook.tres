@@ -1,0 +1,11 @@
+[gd_resource type="LureData" script_class="LureData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/lure_data.gd" id="1_lure"]
+
+[resource]
+script = ExtResource("1_lure")
+lure_name = "Basic Hook"
+effect = 0
+uses_per_run = 3
+purchase_cost = 0
+description = "No special effect."

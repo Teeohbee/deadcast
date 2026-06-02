@@ -1,0 +1,11 @@
+[gd_resource type="LureData" script_class="LureData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/lure_data.gd" id="1_lure"]
+
+[resource]
+script = ExtResource("1_lure")
+lure_name = "Decoy Swarm"
+effect = 2
+uses_per_run = 1
+purchase_cost = 600
+description = "Attracts lower-Corruption catch pool for 3 events."
