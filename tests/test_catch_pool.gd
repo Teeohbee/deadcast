@@ -26,13 +26,28 @@ func test_weighted_random_with_dominant_weight_prefers_that_item() -> void:
 func test_calculate_weight_boosts_entity_with_high_corruption() -> void:
     var catch = CatchData.new()
     catch.catch_type = CatchData.CatchType.ENTITY
-    var weight_low = CatchPool._calculate_weight(catch, 0.0, [])
-    var weight_high = CatchPool._calculate_weight(catch, 100.0, [])
+    var weight_low = CatchPool._calculate_weight(catch, 0.0, [], LureData.LureEffect.NONE)
+    var weight_high = CatchPool._calculate_weight(catch, 100.0, [], LureData.LureEffect.NONE)
     assert_gt(weight_high, weight_low)
 
 func test_calculate_weight_halves_for_duplicate_type() -> void:
     var catch = CatchData.new()
     catch.catch_type = CatchData.CatchType.DATA
-    var weight_fresh = CatchPool._calculate_weight(catch, 0.0, [])
-    var weight_seen = CatchPool._calculate_weight(catch, 0.0, [CatchData.CatchType.DATA])
+    var weight_fresh = CatchPool._calculate_weight(catch, 0.0, [], LureData.LureEffect.NONE)
+    var weight_seen = CatchPool._calculate_weight(catch, 0.0, [CatchData.CatchType.DATA], LureData.LureEffect.NONE)
     assert_eq(weight_seen, weight_fresh * 0.5)
+
+func test_scrap_rod_column_has_shallows_and_mid_only() -> void:
+    pending("Needs Task 13 content")
+
+func test_monocarbon_rod_column_has_all_layers() -> void:
+    pending("Needs Task 13 content")
+
+func test_column_has_correct_slot_counts_for_full_depth() -> void:
+    pending("Needs Task 13 content")
+
+func test_column_has_correct_slot_counts_for_mid_depth() -> void:
+    pending("Needs Task 13 content")
+
+func test_column_has_shallows_only_for_shallow_rod() -> void:
+    pending("Needs Task 13 content")

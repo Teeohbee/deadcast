@@ -2,10 +2,8 @@
 extends Node
 
 var _loaded_catches: Array[CatchData] = []
-var _current_zone: String = ""
 
 func load_catches_for_zone(zone: String) -> void:
-    _current_zone = zone
     _loaded_catches = []
     var path = "res://resources/catches/%s/" % zone
     var dir = DirAccess.open(path)
@@ -15,43 +13,69 @@ func load_catches_for_zone(zone: String) -> void:
     dir.list_dir_begin()
     var file_name = dir.get_next()
     while file_name != "":
-        if file_name.begins_with("."):
-            file_name = dir.get_next()
-            continue
-        if file_name.ends_with(".tres"):
+        if not dir.current_is_dir() and file_name.ends_with(".tres"):
             var resource = load(path.path_join(file_name))
             if resource is CatchData:
                 _loaded_catches.append(resource)
         file_name = dir.get_next()
     dir.list_dir_end()
 
-func generate_column(zone: String, corruption: float = 0.0) -> Array[CatchData]:
+func generate_column(zone: String, corruption: float = 0.0, max_depth: int = 100, lure_effect: LureData.LureEffect = LureData.LureEffect.NONE) -> Array[CatchData]:
     load_catches_for_zone(zone)
     var column: Array[CatchData] = []
     var seen_types: Array = []
-    # Phase 1: one shallows slot only. Phase 2 expands to full column.
-    var catch = _draw_catch(CatchData.Layer.SHALLOWS, corruption, seen_types)
-    if catch:
-        column.append(catch)
-        seen_types.append(catch.catch_type)
+
+    # Shallows: always 3 slots
+    for i in 3:
+        var catch = _draw_catch(CatchData.Layer.SHALLOWS, corruption, seen_types, lure_effect)
+        if catch:
+            column.append(catch)
+            seen_types.append(catch.catch_type)
+
+    # Mid: 3 slots if max_depth >= 60
+    if max_depth >= 60:
+        for i in 3:
+            var catch = _draw_catch(CatchData.Layer.MID, corruption, seen_types, lure_effect)
+            if catch:
+                column.append(catch)
+                seen_types.append(catch.catch_type)
+
+    # Deep: 2 slots if max_depth >= 150
+    if max_depth >= 150:
+        for i in 2:
+            var catch = _draw_catch(CatchData.Layer.DEEP, corruption, seen_types, lure_effect)
+            if catch:
+                column.append(catch)
+                seen_types.append(catch.catch_type)
+
     return column
 
-func _draw_catch(layer: CatchData.Layer, corruption: float, seen_types: Array) -> CatchData:
+func _draw_catch(layer: CatchData.Layer, corruption: float, seen_types: Array, lure_effect: LureData.LureEffect) -> CatchData:
     var pool = _loaded_catches.filter(func(c: CatchData) -> bool: return c.layer == layer)
     if pool.is_empty():
         return null
-    var weights = pool.map(func(c: CatchData) -> float: return _calculate_weight(c, corruption, seen_types))
+    var weights = pool.map(func(c: CatchData) -> float: return _calculate_weight(c, corruption, seen_types, lure_effect))
     return _weighted_random(pool, weights)
 
-func _calculate_weight(catch: CatchData, corruption: float, seen_types: Array) -> float:
+func _calculate_weight(catch: CatchData, corruption: float, seen_types: Array, lure_effect: LureData.LureEffect) -> float:
     var weight: float = 1.0
+
     if catch.catch_type == CatchData.CatchType.ENTITY:
         weight += corruption * 0.02
+
     if catch.catch_type in seen_types:
         weight *= 0.5
-    if _current_zone != "" and catch.zone_weights.has(_current_zone):
-        weight *= float(catch.zone_weights[_current_zone])
-    return weight
+
+    # Lure effects
+    match lure_effect:
+        LureData.LureEffect.DECOY:
+            if catch.catch_type == CatchData.CatchType.ENTITY:
+                weight *= 0.2
+        LureData.LureEffect.GHOST_BAIT:
+            if catch.catch_type == CatchData.CatchType.ENTITY:
+                weight *= 1.5
+
+    return max(weight, 0.0)
 
 func _weighted_random(items: Array, weights: Array) -> Variant:
     var total: float = 0.0
