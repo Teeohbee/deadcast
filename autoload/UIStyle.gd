@@ -79,3 +79,11 @@ func apply_panel(panel: PanelContainer) -> void:
 
 func apply_label(label: Label, color: Color) -> void:
 	label.add_theme_color_override("font_color", color)
+
+func apply_background(node: Control) -> void:
+	var bg := ColorRect.new()
+	bg.color = COL_BG
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	node.add_child(bg)
+	node.move_child(bg, 0)

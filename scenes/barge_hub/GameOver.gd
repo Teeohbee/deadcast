@@ -6,6 +6,7 @@ extends Control
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
+	UIStyle.apply_background(self)
 	UIStyle.apply_label(message_label, UIStyle.COL_DEBT)
 	return_button.focus_mode = Control.FOCUS_ALL
 	UIStyle.apply_button(return_button)

@@ -28,6 +28,7 @@ const SCENES = {
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
+	UIStyle.apply_background(self)
 
 	if GameState.pressure_level >= 5:
 		get_tree().change_scene_to_file("res://scenes/barge_hub/GameOver.tscn")

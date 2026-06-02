@@ -12,6 +12,7 @@ const DEPTH_UPGRADE_AMOUNT: int = 50
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
+	UIStyle.apply_background(self)
 	for btn in [repair_button, depth_upgrade_button, back_button]:
 		btn.focus_mode = Control.FOCUS_ALL
 		UIStyle.apply_button(btn)

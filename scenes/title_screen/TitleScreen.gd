@@ -9,6 +9,7 @@ extends Control
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
+	UIStyle.apply_background(self)
 
 	var save_exists := FileAccess.file_exists(GameState.SAVE_PATH)
 	continue_button.visible = save_exists

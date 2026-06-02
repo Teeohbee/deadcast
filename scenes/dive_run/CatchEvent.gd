@@ -17,6 +17,7 @@ var _pending_narrative_index: int = -1
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
+	UIStyle.apply_background(self)
 	continue_button.focus_mode = Control.FOCUS_ALL
 	UIStyle.apply_button(continue_button)
 	continue_button.pressed.connect(_on_continue_pressed)

@@ -6,6 +6,7 @@ extends Control
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
+	UIStyle.apply_background(self)
 	back_button.focus_mode = Control.FOCUS_ALL
 	UIStyle.apply_button(back_button)
 	back_button.text = "return to deck"

@@ -10,6 +10,7 @@ const LOAD_AMOUNT: int = 1000
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
+	UIStyle.apply_background(self)
 	for btn in [load_button, back_button]:
 		btn.focus_mode = Control.FOCUS_ALL
 		UIStyle.apply_button(btn)
