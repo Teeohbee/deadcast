@@ -1,4 +1,4 @@
-[gd_resource type="RodData" script_class="RodData" load_steps=2 format=3]
+[gd_resource type="Resource" format=3]
 
 [ext_resource type="Script" path="res://resources/rod_data.gd" id="1_rod"]
 
