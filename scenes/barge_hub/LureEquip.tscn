@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/barge_hub/LureEquip.gd" id="1_leq"]
+
+[node name="LureEquip" type="VBoxContainer"]
+script = ExtResource("1_leq")
+
+[node name="LureLabel" type="Label" parent="."]
+text = "EQUIPPED LURE:"
