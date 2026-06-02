@@ -45,6 +45,7 @@ func _show_next_catch() -> void:
 		_end_run(false)
 		return
 	var catch_data = _column[_current_slot]
+	EventBus.slot_changed.emit(_current_slot + 1, _column.size())
 
 	if catch_data.behavior == CatchData.BehaviorType.AGGRESSIVE:
 		_show_fishing_mini(catch_data)
@@ -190,8 +191,18 @@ func _advance_slot() -> void:
 	_show_next_catch()
 
 func _on_line_snapped() -> void:
+	if _snapped:
+		return
 	_snapped = true
 	_run_credits = 0
+	for child in catch_container.get_children():
+		child.queue_free()
+	var snap_label = Label.new()
+	snap_label.text = "LINE SNAPPED"
+	snap_label.add_theme_font_size_override("font_size", 48)
+	snap_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	catch_container.add_child(snap_label)
+	await get_tree().create_timer(1.5).timeout
 	_end_run(true)
 
 func _end_run(snapped: bool) -> void:
