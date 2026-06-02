@@ -10,6 +10,9 @@ func _ready() -> void:
     EventBus.credits_changed.connect(_refresh_labels)
     _refresh_labels(GameState.credits)
     debt_label.text = "DEBT: %d CR" % GameState.debt
+    dive_button.focus_mode = Control.FOCUS_ALL
+    await get_tree().process_frame
+    dive_button.grab_focus()
 
 func _refresh_labels(_ignored: int = 0) -> void:
     credits_label.text = "CREDITS: %d CR" % GameState.credits

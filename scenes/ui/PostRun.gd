@@ -8,6 +8,8 @@ extends Control
 
 func _ready() -> void:
 	return_button.pressed.connect(_on_return_pressed)
+	return_button.focus_mode = Control.FOCUS_ALL
+	return_button.grab_focus()
 	var result = GameState.last_run_result
 	var snapped = result.get("snapped", false)
 	var earned = result.get("credits", 0)
