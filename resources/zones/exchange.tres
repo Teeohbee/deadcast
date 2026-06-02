@@ -1,0 +1,10 @@
+[gd_resource type="ZoneData" script_class="ZoneData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/zone_data.gd" id="1_zone"]
+
+[resource]
+script = ExtResource("1_zone")
+zone_id = "exchange"
+display_name = "The Voss Exchange"
+passive_tension_drain = 0
+description = "Sunken black market. Rival fishers active."

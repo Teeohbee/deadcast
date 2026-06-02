@@ -1,0 +1,10 @@
+[gd_resource type="ZoneData" script_class="ZoneData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/zone_data.gd" id="1_zone"]
+
+[resource]
+script = ExtResource("1_zone")
+zone_id = "axiom"
+display_name = "Axiom Tower Sub-Basement"
+passive_tension_drain = 5
+description = "Corporate server farm. Security countermeasures active."

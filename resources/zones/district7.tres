@@ -1,0 +1,10 @@
+[gd_resource type="ZoneData" script_class="ZoneData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/zone_data.gd" id="1_zone"]
+
+[resource]
+script = ExtResource("1_zone")
+zone_id = "district7"
+display_name = "District 7 Ruins"
+passive_tension_drain = 0
+description = "Residential slums. Civilian ghost encounters, personal data."
