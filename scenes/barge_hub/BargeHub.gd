@@ -12,7 +12,7 @@ func _ready() -> void:
     debt_label.text = "DEBT: %d CR" % GameState.debt
     dive_button.focus_mode = Control.FOCUS_ALL
     await get_tree().process_frame
-    dive_button.grab_focus()
+    $VBoxContainer/ZoneSelector/District7Button.grab_focus()
 
 func _refresh_labels(_ignored: int = 0) -> void:
     credits_label.text = "CREDITS: %d CR" % GameState.credits
