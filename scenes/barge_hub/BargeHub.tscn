@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scenes/barge_hub/BargeHub.gd" id="1_BargeHub"]
+[ext_resource type="PackedScene" path="res://scenes/barge_hub/ZoneSelector.tscn" id="2_zsel"]
 
 [node name="BargeHub" type="Control"]
 layout_mode = 3
@@ -23,6 +24,8 @@ text = "DEBT: 80000 CR"
 
 [node name="CreditsLabel" type="Label" parent="VBoxContainer"]
 text = "CREDITS: 0 CR"
+
+[node name="ZoneSelector" parent="VBoxContainer" instance=ExtResource("2_zsel")]
 
 [node name="DiveButton" type="Button" parent="VBoxContainer"]
 text = "DIVE"

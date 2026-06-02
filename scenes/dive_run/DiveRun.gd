@@ -3,14 +3,13 @@ extends Node2D
 
 @export var catch_event_scene: PackedScene = preload("res://scenes/dive_run/CatchEvent.tscn")
 @export var fishing_mini_scene: PackedScene = preload("res://scenes/dive_run/FishingMini.tscn")
-@export var zone: String = "district7"
-
 @onready var line_system: LineSystem = $LineSystem
 @onready var catch_container: Control = $CatchContainer
 @onready var hud: HUD = $HUD
 
 var _column: Array[CatchData] = []
 var _current_slot: int = 0
+var _zone_data: ZoneData = null
 var _run_credits: int = 0
 var _snapped: bool = false
 var _current_event: CatchEvent = null
@@ -18,9 +17,18 @@ var _current_event: CatchEvent = null
 func _ready() -> void:
 	line_system.snapped.connect(_on_line_snapped)
 	line_system.tension_updated.connect(func(v: float) -> void: EventBus.tension_changed.emit(v))
-	hud.set_max_tension(line_system.max_tension)
-	_column = CatchPool.generate_column(zone, line_system.corruption)
-	call_deferred("_show_next_catch")
+
+	if GameState.current_rod:
+		line_system.max_tension = GameState.current_rod.tension_cap
+
+	var zone_id = GameState.selected_zone
+	_zone_data = load("res://resources/zones/%s.tres" % zone_id)
+
+	var max_depth = GameState.current_rod.max_depth if GameState.current_rod else 100
+	var lure_effect = GameState.current_lure.effect if GameState.current_lure else LureData.LureEffect.NONE
+	_column = CatchPool.generate_column(zone_id, line_system.corruption, max_depth, lure_effect)
+	await get_tree().process_frame
+	_show_next_catch()
 
 func _show_next_catch() -> void:
 	if _current_slot >= _column.size():
@@ -108,6 +116,8 @@ func _apply_option(option: CatchOption, catch_data: CatchData) -> void:
 func _advance_slot() -> void:
 	for child in catch_container.get_children():
 		child.queue_free()
+	if _zone_data and _zone_data.passive_tension_drain > 0:
+		line_system.apply_tension(_zone_data.passive_tension_drain)
 	_current_slot += 1
 	_show_next_catch()
 
