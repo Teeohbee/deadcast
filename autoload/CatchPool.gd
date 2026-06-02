@@ -66,7 +66,12 @@ func _calculate_weight(catch: CatchData, corruption: float, seen_types: Array, l
     if catch.catch_type in seen_types:
         weight *= 0.5
 
-    # Lure effects
+    # CatchData.zone_weights is intentionally not applied here — zone filtering is
+    # handled structurally by loading only the zone's directory of .tres files.
+    # zone_weights is kept on CatchData for potential future multi-zone shared pools.
+
+    # Lure pool weight effects. SHOCK and DEEP_PULSE affect gameplay mechanics
+    # at the catch event level (DiveRun), not pool weighting.
     match lure_effect:
         LureData.LureEffect.DECOY:
             if catch.catch_type == CatchData.CatchType.ENTITY:
