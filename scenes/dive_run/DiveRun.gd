@@ -11,6 +11,7 @@ var _column: Array[CatchData] = []
 var _current_slot: int = 0
 var _zone_data: ZoneData = null
 var _run_credits: int = 0
+var _bio_credits: int = 0
 var _snapped: bool = false
 var _current_event: CatchEvent = null
 var _current_catch_data: CatchData = null  # augmented data shown to player (may have Shock option injected)
@@ -110,6 +111,8 @@ func _on_minigame_caught(catch_data: CatchData) -> void:
 		child.queue_free()
 	var reward_option: CatchOption = catch_data.options[0]
 	_run_credits += reward_option.credit_value
+	if catch_data.catch_type == CatchData.CatchType.BIO:
+		_bio_credits += reward_option.credit_value
 	line_system.add_corruption(catch_data.corruption_gain)
 	# Intentionally bypasses _advance_slot: FishingMini manages tension internally,
 	# so we skip the zone passive_tension_drain for AGGRESSIVE catches.
@@ -179,6 +182,8 @@ func _apply_option(option: CatchOption, catch_data: CatchData) -> void:
 	line_system.apply_tension(option.tension_delta)
 	line_system.add_corruption(catch_data.corruption_gain)
 	_run_credits += option.credit_value
+	if catch_data.catch_type == CatchData.CatchType.BIO:
+		_bio_credits += option.credit_value
 	_advance_slot()
 
 func _advance_slot() -> void:
@@ -206,7 +211,12 @@ func _on_line_snapped() -> void:
 	_end_run(true)
 
 func _end_run(snapped: bool) -> void:
-	GameState.add_credits(_run_credits)
-	GameState.last_run_result = {"credits": _run_credits, "snapped": snapped}
+	GameState.add_credits(_run_credits - _bio_credits)  # non-bio credits go directly to wallet
+	GameState.last_run_result = {
+		"credits": _run_credits,
+		"bio_credits": _bio_credits,
+		"snapped": snapped
+	}
+	GameState.on_run_complete(snapped, _bio_credits)
 	EventBus.run_ended.emit(GameState.last_run_result)
 	get_tree().change_scene_to_file("res://scenes/ui/PostRun.tscn")
