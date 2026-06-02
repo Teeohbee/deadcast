@@ -41,6 +41,8 @@ func equip_lure(lure: LureData) -> void:
     current_lure = lure
 
 func get_lure_id(lure: LureData) -> String:
+    # Only works for disk-loaded resources; LureData.new() has an empty path
+    assert(lure.resource_path != "", "LureData must be loaded from a .tres file to derive an ID")
     return lure.resource_path.get_file().get_basename()
 
 func has_lure_stock(lure: LureData) -> bool:
