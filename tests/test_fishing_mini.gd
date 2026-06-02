@@ -23,28 +23,26 @@ func test_stamina_decreases_over_time() -> void:
     assert_lt(fm.catch_stamina_current, 100.0)
 
 func test_reel_drains_stamina_faster() -> void:
-    var fm_normal = preload("res://scenes/dive_run/FishingMini.tscn").instantiate()
+    var fm_normal: FishingMini = preload("res://scenes/dive_run/FishingMini.tscn").instantiate()
     fm_normal.max_tension = 100
     fm_normal.catch_stamina = 100
     fm_normal.tension_rate = 10.0
-    add_child(fm_normal)
+    add_child_autofree(fm_normal)
     fm_normal.start("Test")
     fm_normal._process(1.0)
     var normal_stamina = fm_normal.catch_stamina_current
 
-    var fm_reel = preload("res://scenes/dive_run/FishingMini.tscn").instantiate()
+    var fm_reel: FishingMini = preload("res://scenes/dive_run/FishingMini.tscn").instantiate()
     fm_reel.max_tension = 100
     fm_reel.catch_stamina = 100
     fm_reel.tension_rate = 10.0
-    add_child(fm_reel)
+    add_child_autofree(fm_reel)
     fm_reel.start("Test")
     fm_reel._reel_held = true
     fm_reel._process(1.0)
     var reel_stamina = fm_reel.catch_stamina_current
 
     assert_lt(reel_stamina, normal_stamina, "Reeling should drain stamina faster")
-    fm_normal.queue_free()
-    fm_reel.queue_free()
 
 func test_stamina_depleted_transitions_to_reeling() -> void:
     fm.start("Test Catch")

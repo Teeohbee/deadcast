@@ -22,6 +22,9 @@ var _reel_held: bool = false
 @onready var instruction_label: Label = $VBoxContainer/InstructionLabel
 @onready var tension_bar: ProgressBar = $VBoxContainer/TensionBar
 
+func _ready() -> void:
+    set_process(false)
+
 func start(catch_name: String) -> void:
     catch_stamina_current = float(catch_stamina)
     _current_tension = 0.0
@@ -33,6 +36,7 @@ func start(catch_name: String) -> void:
     if tension_bar:
         tension_bar.max_value = max_tension
         tension_bar.value = 0.0
+    set_process(true)
 
 func _process(delta: float) -> void:
     if state == State.DONE:
@@ -89,4 +93,4 @@ func _process_reeling(delta: float) -> void:
 
     if _current_tension <= 0.0:
         state = State.DONE
-        caught.emit(0)
+        caught.emit(int(_current_tension))
