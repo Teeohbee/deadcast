@@ -13,6 +13,7 @@ var _zone_data: ZoneData = null
 var _run_credits: int = 0
 var _snapped: bool = false
 var _current_event: CatchEvent = null
+var _current_catch_data: CatchData = null  # augmented data shown to player (may have Shock option injected)
 
 func _ready() -> void:
 	line_system.snapped.connect(_on_line_snapped)
@@ -55,9 +56,11 @@ func _show_next_catch() -> void:
 
 func _show_deep_pulse_reveal(catch_data: CatchData) -> void:
 	var label = Label.new()
-	label.text = "DEEP PULSE: Incoming — [%s]" % CatchData.CatchType.keys()[catch_data.catch_type]
+	label.text = "DEEP PULSE: Incoming - [%s]" % CatchData.CatchType.keys()[catch_data.catch_type]
 	catch_container.add_child(label)
 	await get_tree().create_timer(2.0).timeout
+	if _snapped:
+		return
 	label.queue_free()
 	_show_catch_event(catch_data)
 
@@ -66,6 +69,7 @@ func _show_catch_event(catch_data: CatchData) -> void:
 	if GameState.current_lure and GameState.current_lure.effect == LureData.LureEffect.SHOCK:
 		if catch_data.catch_type == CatchData.CatchType.MECH:
 			augmented = _inject_shock_option(catch_data)
+	_current_catch_data = augmented
 	var event_ui: CatchEvent = catch_event_scene.instantiate()
 	catch_container.add_child(event_ui)
 	_current_event = event_ui
@@ -122,12 +126,9 @@ func _on_option_selected(index: int) -> void:
 		catch_data.catch_type == CatchData.CatchType.MECH)
 
 	if using_shock and index == 0:
-		# Overload selected
+		# Overload selected — read from augmented data stored at show time (single source of truth)
 		GameState.consume_lure_use()
-		var overload_opt = CatchOption.new()
-		overload_opt.tension_delta = 5
-		overload_opt.credit_value = int(catch_data.options[0].credit_value * 0.7)
-		_apply_option(overload_opt, catch_data)
+		_apply_option(_current_catch_data.options[0], catch_data)
 		return
 
 	# Adjust index back if Shock Lure injected an option at index 0
@@ -175,6 +176,7 @@ func _apply_option(option: CatchOption, catch_data: CatchData) -> void:
 	_advance_slot()
 
 func _advance_slot() -> void:
+	_current_catch_data = null
 	for child in catch_container.get_children():
 		child.queue_free()
 	if _zone_data and _zone_data.passive_tension_drain > 0:
