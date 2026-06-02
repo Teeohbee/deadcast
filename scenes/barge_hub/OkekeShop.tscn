@@ -1,0 +1,30 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/barge_hub/OkekeShop.gd" id="1_ok"]
+
+[node name="OkekeShop" type="Control"]
+script = ExtResource("1_ok")
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+text = "OKEKE"
+
+[node name="DialogueLabel" type="Label" parent="VBoxContainer"]
+text = ""
+
+[node name="StockContainer" type="VBoxContainer" parent="VBoxContainer"]
+
+[node name="MessageLabel" type="Label" parent="VBoxContainer"]
+text = ""
+
+[node name="BackButton" type="Button" parent="VBoxContainer"]
+text = "See you out there"
