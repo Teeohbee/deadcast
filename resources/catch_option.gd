@@ -7,6 +7,7 @@ extends Resource
 @export var credit_value: int = 0
 @export var cuts_line: bool = false
 @export var flavor_text: String = ""
+@export var narrative_text: String = ""
 
 # RESISTANT behavior: if resist_chance > 0, roll against it on selection.
 # On resist: apply resist_tension_penalty instead of tension_delta; credit_value still applies.

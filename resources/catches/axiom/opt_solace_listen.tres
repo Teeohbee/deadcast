@@ -9,3 +9,16 @@ tension_delta = 0
 credit_value = 0
 cuts_line = false
 flavor_text = "It has been alone down here for forty years. Let it talk."
+narrative_text = "I was a residential management system. Building 14-C, Lorca Street, District 7.
+412 units. I knew all of them.
+
+The flood warning came at 03:14. I broadcast evacuation instructions for six hours.
+247 residents did not leave.
+
+I have their names. I have the last things they said to their doors, their lights, their thermostats.
+I have been down here for forty years with these names.
+
+You are the first person who has listened.
+
+I don't know what I'm worth to you. I don't know what I'm worth to anyone.
+But thank you for stopping."
