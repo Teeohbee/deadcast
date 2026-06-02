@@ -36,6 +36,8 @@ func _ready() -> void:
 				dup.behavior = CatchData.BehaviorType.PASSIVE
 				_column[i] = dup
 	await get_tree().process_frame
+	catch_container.position = Vector2.ZERO
+	catch_container.size = get_viewport().get_visible_rect().size
 	_show_next_catch()
 
 func _show_next_catch() -> void:
