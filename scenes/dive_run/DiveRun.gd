@@ -2,6 +2,7 @@
 extends Node2D
 
 @export var catch_event_scene: PackedScene = preload("res://scenes/dive_run/CatchEvent.tscn")
+@export var fishing_mini_scene: PackedScene = preload("res://scenes/dive_run/FishingMini.tscn")
 @export var zone: String = "district7"
 
 @onready var line_system: LineSystem = $LineSystem
@@ -25,12 +26,33 @@ func _show_next_catch() -> void:
 	if _current_slot >= _column.size():
 		_end_run(false)
 		return
-	var event_ui: CatchEvent = catch_event_scene.instantiate()
-	catch_container.add_child(event_ui)
-	event_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_current_event = event_ui
-	event_ui.populate(_column[_current_slot])
-	event_ui.option_selected.connect(_on_option_selected)
+	var catch_data = _column[_current_slot]
+	if catch_data.behavior == CatchData.BehaviorType.AGGRESSIVE:
+		_show_fishing_mini(catch_data)
+	else:
+		var event_ui: CatchEvent = catch_event_scene.instantiate()
+		catch_container.add_child(event_ui)
+		_current_event = event_ui
+		event_ui.populate(catch_data)
+		event_ui.option_selected.connect(_on_option_selected)
+
+func _show_fishing_mini(catch_data: CatchData) -> void:
+	var mini: FishingMini = fishing_mini_scene.instantiate()
+	mini.max_tension = line_system.max_tension
+	mini.catch_stamina = catch_data.stamina
+	catch_container.add_child(mini)
+	mini.start(catch_data.catch_name)
+	mini.caught.connect(func(_t: int) -> void: _on_minigame_caught(catch_data))
+	mini.snapped.connect(_on_line_snapped)
+
+func _on_minigame_caught(catch_data: CatchData) -> void:
+	for child in catch_container.get_children():
+		child.queue_free()
+	var reward_option: CatchOption = catch_data.options[0]
+	_run_credits += reward_option.credit_value
+	line_system.add_corruption(catch_data.corruption_gain)
+	_current_slot += 1
+	_show_next_catch()
 
 func _on_option_selected(index: int) -> void:
 	if _snapped:
