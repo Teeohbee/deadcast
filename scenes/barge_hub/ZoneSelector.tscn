@@ -6,7 +6,7 @@
 script = ExtResource("1_zsel")
 
 [node name="ZoneLabel" type="Label" parent="."]
-text = "SELECT ZONE:"
+text = "── zone ────────────────────────────────"
 
 [node name="District7Button" type="Button" parent="."]
 text = "District 7 Ruins"

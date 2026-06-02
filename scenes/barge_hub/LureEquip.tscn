@@ -6,4 +6,4 @@
 script = ExtResource("1_leq")
 
 [node name="LureLabel" type="Label" parent="."]
-text = "EQUIPPED LURE:"
+text = "── lure ────────────────────────────────"

@@ -6,11 +6,13 @@ extends VBoxContainer
 @onready var axiom_btn: Button = $AxiomButton
 
 func _ready() -> void:
-	district7_btn.focus_mode = Control.FOCUS_ALL
-	exchange_btn.focus_mode = Control.FOCUS_ALL
-	axiom_btn.focus_mode = Control.FOCUS_ALL
+	self.theme = UIStyle.get_theme()
+	UIStyle.apply_label($ZoneLabel, UIStyle.COL_SEP)
 
-	# D-pad up/down navigation within zone selector
+	for btn in [district7_btn, exchange_btn, axiom_btn]:
+		btn.focus_mode = Control.FOCUS_ALL
+		UIStyle.apply_button(btn)
+
 	district7_btn.focus_neighbor_bottom = district7_btn.get_path_to(exchange_btn)
 	exchange_btn.focus_neighbor_top = exchange_btn.get_path_to(district7_btn)
 	exchange_btn.focus_neighbor_bottom = exchange_btn.get_path_to(axiom_btn)
@@ -24,6 +26,6 @@ func _ready() -> void:
 	_on_zone_changed(GameState.selected_zone)
 
 func _on_zone_changed(zone_id: String) -> void:
-	district7_btn.text = ("▶ " if zone_id == "district7" else "") + "District 7 Ruins"
-	exchange_btn.text = ("▶ " if zone_id == "exchange" else "") + "The Voss Exchange"
-	axiom_btn.text = ("▶ " if zone_id == "axiom" else "") + "Axiom Tower Sub-Basement"
+	district7_btn.text = ("▶ " if zone_id == "district7" else "  ") + "district 7 ruins"
+	exchange_btn.text = ("▶ " if zone_id == "exchange" else "  ") + "the voss exchange"
+	axiom_btn.text = ("▶ " if zone_id == "axiom" else "  ") + "axiom tower sub-basement"
