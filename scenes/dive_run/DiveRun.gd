@@ -39,22 +39,53 @@ func _on_option_selected(index: int) -> void:
 	if _current_event:
 		_current_event.option_selected.disconnect(_on_option_selected)
 		_current_event = null
-	for child in catch_container.get_children():
-		child.queue_free()
 
-	var catch_data: CatchData = _column[_current_slot]
+	var catch_data = _column[_current_slot]
 	var option: CatchOption = catch_data.options[index]
 
 	if option.cuts_line:
 		line_system.reset()
-	else:
-		line_system.apply_tension(option.tension_delta)
-		line_system.add_corruption(catch_data.corruption_gain)
-
-	if _snapped:
+		_advance_slot()
 		return
 
+	match catch_data.behavior:
+		CatchData.BehaviorType.RESISTANT:
+			_resolve_resistant(option, catch_data)
+		CatchData.BehaviorType.NEGOTIATING:
+			_resolve_negotiating(option, catch_data)
+		_:
+			_apply_option(option, catch_data)
+
+func _resolve_resistant(option: CatchOption, catch_data: CatchData) -> void:
+	if option.resist_chance > 0.0 and randf() < option.resist_chance:
+		# Resisted — apply penalty tension, no credits
+		line_system.apply_tension(option.resist_tension_penalty)
+		line_system.add_corruption(catch_data.corruption_gain)
+	else:
+		_apply_option(option, catch_data)
+		return
+	_advance_slot()
+
+func _resolve_negotiating(option: CatchOption, catch_data: CatchData) -> void:
+	if option.roll_difficulty > 0.0 and randf() < option.roll_difficulty:
+		# Roll failed — apply fail outcomes
+		line_system.apply_tension(option.fail_tension_delta)
+		_run_credits += option.fail_credit_value
+		line_system.add_corruption(catch_data.corruption_gain)
+	else:
+		_apply_option(option, catch_data)
+		return
+	_advance_slot()
+
+func _apply_option(option: CatchOption, catch_data: CatchData) -> void:
+	line_system.apply_tension(option.tension_delta)
+	line_system.add_corruption(catch_data.corruption_gain)
 	_run_credits += option.credit_value
+	_advance_slot()
+
+func _advance_slot() -> void:
+	for child in catch_container.get_children():
+		child.queue_free()
 	_current_slot += 1
 	_show_next_catch()
 
