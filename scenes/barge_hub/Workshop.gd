@@ -50,13 +50,12 @@ func _on_repair_pressed() -> void:
 
 func _on_depth_upgrade_pressed() -> void:
 	if GameState.spend_credits(DEPTH_UPGRADE_COST):
-		# Duplicate rod resource and increase depth permanently
+		GameState.max_depth_bonus += DEPTH_UPGRADE_AMOUNT
 		var rod = GameState.current_rod.duplicate()
 		rod.max_depth += DEPTH_UPGRADE_AMOUNT
 		GameState.current_rod = rod
 		GameState.save()
 		message_label.text = "Depth increased to %dft." % rod.max_depth
 		_refresh()
-		depth_upgrade_button.disabled = true
 	else:
 		message_label.text = "Not enough credits."

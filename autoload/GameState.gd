@@ -13,6 +13,7 @@ var last_run_result: Dictionary = {}
 var current_rod: RodData = null
 var current_lure: LureData = null
 var rod_damaged: bool = false
+var max_depth_bonus: int = 0
 var selected_zone: String = "district7"
 
 var lure_inventory: Dictionary = {
@@ -113,7 +114,12 @@ func equip_lure(lure: LureData) -> void:
 	current_lure = lure
 
 func equip_rod(rod: RodData) -> void:
-	current_rod = rod
+	if max_depth_bonus > 0:
+		var upgraded = rod.duplicate()
+		upgraded.max_depth = rod.max_depth + max_depth_bonus
+		current_rod = upgraded
+	else:
+		current_rod = rod
 	rod_damaged = false
 
 func get_lure_id(lure: LureData) -> String:
@@ -151,6 +157,7 @@ func _save_to(path: String) -> void:
 	cfg.set_value("player", "runs_since_payment", runs_since_payment)
 	cfg.set_value("player", "debt_collector_triggered", debt_collector_triggered)
 	cfg.set_value("gear", "rod_damaged", rod_damaged)
+	cfg.set_value("gear", "max_depth_bonus", max_depth_bonus)
 	cfg.set_value("gear", "current_rod_path", current_rod.resource_path if current_rod else "")
 	cfg.set_value("gear", "current_lure_path", current_lure.resource_path if current_lure else "")
 	cfg.set_value("gear", "lure_inventory", lure_inventory)
@@ -172,9 +179,16 @@ func _load_from(path: String) -> void:
 	runs_since_payment = cfg.get_value("player", "runs_since_payment", 0)
 	debt_collector_triggered = cfg.get_value("player", "debt_collector_triggered", false)
 	rod_damaged = cfg.get_value("gear", "rod_damaged", false)
+	max_depth_bonus = cfg.get_value("gear", "max_depth_bonus", 0)
 	var rod_path = cfg.get_value("gear", "current_rod_path", "")
 	if rod_path != "":
-		current_rod = load(rod_path)
+		var base_rod = load(rod_path)
+		if max_depth_bonus > 0:
+			var upgraded = base_rod.duplicate()
+			upgraded.max_depth = base_rod.max_depth + max_depth_bonus
+			current_rod = upgraded
+		else:
+			current_rod = base_rod
 	var lure_path = cfg.get_value("gear", "current_lure_path", "")
 	if lure_path != "":
 		current_lure = load(lure_path)
@@ -196,6 +210,7 @@ func new_game() -> void:
 	runs_since_payment = 0
 	debt_collector_triggered = false
 	rod_damaged = false
+	max_depth_bonus = 0
 	lure_inventory = { "basic_hook": 99, "shock_lure": 3, "decoy_swarm": 2, "deep_pulse": 2, "ghost_bait": 2 }
 	decrypt_box_queue = 0
 	decrypt_box_runs = 0
