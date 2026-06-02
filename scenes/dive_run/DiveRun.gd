@@ -72,6 +72,7 @@ func _show_catch_event(catch_data: CatchData) -> void:
 	_current_catch_data = augmented
 	var event_ui: CatchEvent = catch_event_scene.instantiate()
 	catch_container.add_child(event_ui)
+	event_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_current_event = event_ui
 	event_ui.populate(augmented)
 	event_ui.option_selected.connect(_on_option_selected)
