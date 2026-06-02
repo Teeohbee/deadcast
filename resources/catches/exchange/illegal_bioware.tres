@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CatchData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://resources/catch_data.gd" id="1_data"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/opt_bioware_bag.tres" id="2_opt1"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/opt_bioware_scan.tres" id="3_opt2"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/opt_bioware_release.tres" id="4_opt3"]
+
+[resource]
+script = ExtResource("1_data")
+catch_name = "Illegal Bioware Implant"
+catch_type = 1
+behavior = 0
+corruption_gain = 0
+options = [ExtResource("2_opt1"), ExtResource("3_opt2"), ExtResource("4_opt3")]
+zone_weights = {"district7": 1, "exchange": 4, "axiom": 2}
+flavor_text = "Still sterile. Still viable. Very illegal."
+layer = 1
+stamina = 100

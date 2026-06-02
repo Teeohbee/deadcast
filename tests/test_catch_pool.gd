@@ -38,19 +38,28 @@ func test_calculate_weight_halves_for_duplicate_type() -> void:
     assert_eq(weight_seen, weight_fresh * 0.5)
 
 func test_scrap_rod_column_has_shallows_and_mid_only() -> void:
-    pending("Needs Task 13 content")
+    var column = CatchPool.generate_column("axiom", 0.0, 100)
+    var has_deep = column.any(func(c: CatchData) -> bool: return c.layer == CatchData.Layer.DEEP)
+    assert_false(has_deep, "Scrap rod (max_depth=100) should not yield deep catches")
+    assert_eq(column.size(), 6, "Scrap rod should generate 6 slots (shallows + mid)")
 
 func test_monocarbon_rod_column_has_all_layers() -> void:
-    pending("Needs Task 13 content")
+    var column = CatchPool.generate_column("axiom", 0.0, 180)
+    var has_deep = column.any(func(c: CatchData) -> bool: return c.layer == CatchData.Layer.DEEP)
+    assert_true(has_deep, "Monocarbon rod (max_depth=180) should yield deep catches")
+    assert_eq(column.size(), 8, "Monocarbon rod should generate 8 slots (shallows + mid + deep)")
 
 func test_column_has_correct_slot_counts_for_full_depth() -> void:
-    pending("Needs Task 13 content")
+    var column = CatchPool.generate_column("axiom", 0.0, 180)
+    assert_eq(column.size(), 8, "Full depth column should have 8 slots")
 
 func test_column_has_correct_slot_counts_for_mid_depth() -> void:
-    pending("Needs Task 13 content")
+    var column = CatchPool.generate_column("axiom", 0.0, 100)
+    assert_eq(column.size(), 6, "Mid depth column should have 6 slots")
 
 func test_column_has_shallows_only_for_shallow_rod() -> void:
-    pending("Needs Task 13 content")
+    var column = CatchPool.generate_column("axiom", 0.0, 50)
+    assert_eq(column.size(), 3, "Shallow rod (max_depth=50) should generate only 3 shallows slots")
 
 func test_ghost_bait_boosts_entity_weight_vs_none() -> void:
     var entity_catch = CatchData.new()

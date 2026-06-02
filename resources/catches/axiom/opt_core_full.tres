@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CatchOption" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/catch_option.gd" id="1_opt"]
+
+[resource]
+script = ExtResource("1_opt")
+label = "Full Extract"
+tension_delta = 25
+credit_value = 4000
+cuts_line = false
+flavor_text = "The data inside could ruin twenty companies."
+roll_difficulty = 0.7
+fail_tension_delta = 40
+fail_credit_value = 0

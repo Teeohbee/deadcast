@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CatchData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://resources/catch_data.gd" id="1_data"]
+[ext_resource type="Resource" path="res://resources/catches/axiom/opt_drone_engage.tres" id="2_opt1"]
+[ext_resource type="Resource" path="res://resources/catches/axiom/opt_drone_cut.tres" id="3_opt2"]
+
+[resource]
+script = ExtResource("1_data")
+catch_name = "Axiom Security Drone — Mark IV"
+catch_type = 2
+behavior = 2
+corruption_gain = 0
+options = [ExtResource("2_opt1"), ExtResource("3_opt2")]
+zone_weights = {"district7": 0, "exchange": 1, "axiom": 5}
+flavor_text = "Still active. Still armed. Locked onto your line."
+layer = 0
+stamina = 80

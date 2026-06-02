@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CatchOption" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/catch_option.gd" id="1_opt"]
+
+[resource]
+script = ExtResource("1_opt")
+label = "Brute Force"
+tension_delta = 20
+credit_value = 1200
+cuts_line = false
+flavor_text = "Encrypted with Axiom corporate keys. It fights back."
+resist_chance = 0.5
+resist_tension_penalty = 30
