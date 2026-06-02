@@ -51,3 +51,17 @@ func test_column_has_correct_slot_counts_for_mid_depth() -> void:
 
 func test_column_has_shallows_only_for_shallow_rod() -> void:
     pending("Needs Task 13 content")
+
+func test_ghost_bait_boosts_entity_weight_vs_none() -> void:
+    var entity_catch = CatchData.new()
+    entity_catch.catch_type = CatchData.CatchType.ENTITY
+    var weight_none = CatchPool._calculate_weight(entity_catch, 0.0, [], LureData.LureEffect.NONE)
+    var weight_ghost = CatchPool._calculate_weight(entity_catch, 0.0, [], LureData.LureEffect.GHOST_BAIT)
+    assert_gt(weight_ghost, weight_none)
+
+func test_decoy_reduces_entity_weight() -> void:
+    var entity_catch = CatchData.new()
+    entity_catch.catch_type = CatchData.CatchType.ENTITY
+    var weight_none = CatchPool._calculate_weight(entity_catch, 0.0, [], LureData.LureEffect.NONE)
+    var weight_decoy = CatchPool._calculate_weight(entity_catch, 0.0, [], LureData.LureEffect.DECOY)
+    assert_lt(weight_decoy, weight_none)

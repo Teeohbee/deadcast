@@ -27,6 +27,13 @@ func _ready() -> void:
 	var max_depth = GameState.current_rod.max_depth if GameState.current_rod else 100
 	var lure_effect = GameState.current_lure.effect if GameState.current_lure else LureData.LureEffect.NONE
 	_column = CatchPool.generate_column(zone_id, line_system.corruption, max_depth, lure_effect)
+	if GameState.current_lure and GameState.current_lure.effect == LureData.LureEffect.GHOST_BAIT:
+		for i in _column.size():
+			var c = _column[i]
+			if c.catch_type == CatchData.CatchType.ENTITY and c.behavior == CatchData.BehaviorType.AGGRESSIVE:
+				var dup = c.duplicate()
+				dup.behavior = CatchData.BehaviorType.PASSIVE
+				_column[i] = dup
 	await get_tree().process_frame
 	_show_next_catch()
 
@@ -35,14 +42,49 @@ func _show_next_catch() -> void:
 		_end_run(false)
 		return
 	var catch_data = _column[_current_slot]
+
 	if catch_data.behavior == CatchData.BehaviorType.AGGRESSIVE:
 		_show_fishing_mini(catch_data)
-	else:
-		var event_ui: CatchEvent = catch_event_scene.instantiate()
-		catch_container.add_child(event_ui)
-		_current_event = event_ui
-		event_ui.populate(catch_data)
-		event_ui.option_selected.connect(_on_option_selected)
+		return
+
+	if GameState.current_lure and GameState.current_lure.effect == LureData.LureEffect.DEEP_PULSE:
+		_show_deep_pulse_reveal(catch_data)
+		return
+
+	_show_catch_event(catch_data)
+
+func _show_deep_pulse_reveal(catch_data: CatchData) -> void:
+	var label = Label.new()
+	label.text = "DEEP PULSE: Incoming — [%s]" % CatchData.CatchType.keys()[catch_data.catch_type]
+	catch_container.add_child(label)
+	await get_tree().create_timer(2.0).timeout
+	label.queue_free()
+	_show_catch_event(catch_data)
+
+func _show_catch_event(catch_data: CatchData) -> void:
+	var augmented = catch_data
+	if GameState.current_lure and GameState.current_lure.effect == LureData.LureEffect.SHOCK:
+		if catch_data.catch_type == CatchData.CatchType.MECH:
+			augmented = _inject_shock_option(catch_data)
+	var event_ui: CatchEvent = catch_event_scene.instantiate()
+	catch_container.add_child(event_ui)
+	_current_event = event_ui
+	event_ui.populate(augmented)
+	event_ui.option_selected.connect(_on_option_selected)
+
+func _inject_shock_option(catch_data: CatchData) -> CatchData:
+	var overload_opt = CatchOption.new()
+	overload_opt.label = "Overload (Shock Lure)"
+	overload_opt.tension_delta = 5
+	overload_opt.credit_value = int(catch_data.options[0].credit_value * 0.7)
+	overload_opt.flavor_text = "Short-circuit it. Destroys one Shock Lure use."
+	var augmented = catch_data.duplicate()
+	var new_options: Array[CatchOption] = []
+	for opt in catch_data.options:
+		new_options.append(opt)
+	new_options.insert(0, overload_opt)
+	augmented.options = new_options
+	return augmented
 
 func _show_fishing_mini(catch_data: CatchData) -> void:
 	var mini: FishingMini = fishing_mini_scene.instantiate()
@@ -73,7 +115,24 @@ func _on_option_selected(index: int) -> void:
 		_current_event = null
 
 	var catch_data = _column[_current_slot]
-	var option: CatchOption = catch_data.options[index]
+
+	# Shock Lure: if MECH catch with Shock equipped, index 0 is the injected Overload
+	var using_shock = (GameState.current_lure != null and
+		GameState.current_lure.effect == LureData.LureEffect.SHOCK and
+		catch_data.catch_type == CatchData.CatchType.MECH)
+
+	if using_shock and index == 0:
+		# Overload selected
+		GameState.consume_lure_use()
+		var overload_opt = CatchOption.new()
+		overload_opt.tension_delta = 5
+		overload_opt.credit_value = int(catch_data.options[0].credit_value * 0.7)
+		_apply_option(overload_opt, catch_data)
+		return
+
+	# Adjust index back if Shock Lure injected an option at index 0
+	var effective_index = index - 1 if using_shock else index
+	var option: CatchOption = catch_data.options[effective_index]
 
 	if option.cuts_line:
 		line_system.reset()
