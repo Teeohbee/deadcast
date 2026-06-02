@@ -1,0 +1,40 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/title_screen/TitleScreen.gd" id="1_TitleScreen"]
+
+[node name="TitleScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_TitleScreen")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+text = "DEADCAST"
+
+[node name="ContinueButton" type="Button" parent="VBoxContainer"]
+text = "CONTINUE"
+
+[node name="NewGameButton" type="Button" parent="VBoxContainer"]
+text = "NEW GAME"
+
+[node name="ConfirmPanel" type="VBoxContainer" parent="VBoxContainer"]
+
+[node name="ConfirmLabel" type="Label" parent="VBoxContainer/ConfirmPanel"]
+text = "This will erase your progress. Are you sure?"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/ConfirmPanel"]
+
+[node name="YesButton" type="Button" parent="VBoxContainer/ConfirmPanel/HBoxContainer"]
+text = "YES"
+
+[node name="NoButton" type="Button" parent="VBoxContainer/ConfirmPanel/HBoxContainer"]
+text = "NO"
