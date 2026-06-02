@@ -172,6 +172,8 @@ func _resolve_negotiating(option: CatchOption, catch_data: CatchData) -> void:
 		# Roll failed — apply fail outcomes
 		line_system.apply_tension(option.fail_tension_delta)
 		_run_credits += option.fail_credit_value
+		if catch_data.catch_type == CatchData.CatchType.BIO:
+			_bio_credits += option.fail_credit_value
 		line_system.add_corruption(catch_data.corruption_gain)
 	else:
 		_apply_option(option, catch_data)
