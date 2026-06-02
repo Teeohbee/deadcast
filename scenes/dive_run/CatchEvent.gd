@@ -7,8 +7,19 @@ signal option_selected(index: int)
 @onready var name_label: Label = $VBoxContainer/NameLabel
 @onready var flavor_label: Label = $VBoxContainer/FlavorLabel
 @onready var options_container: VBoxContainer = $VBoxContainer/OptionsContainer
+@onready var narrative_panel: VBoxContainer = $VBoxContainer/NarrativePanel
+@onready var narrative_text: RichTextLabel = $VBoxContainer/NarrativePanel/NarrativeText
+@onready var continue_button: Button = $VBoxContainer/NarrativePanel/ContinueButton
+
+var _catch_data: CatchData = null
+var _pending_narrative_index: int = -1
+
+func _ready() -> void:
+	continue_button.focus_mode = Control.FOCUS_ALL
+	continue_button.pressed.connect(_on_continue_pressed)
 
 func populate(catch_data: CatchData) -> void:
+	_catch_data = catch_data
 	var behavior_tag = _behavior_tag(catch_data.behavior)
 	name_label.text = "%s  %s" % [behavior_tag, catch_data.catch_name]
 	flavor_label.text = catch_data.flavor_text
@@ -20,7 +31,7 @@ func populate(catch_data: CatchData) -> void:
 		btn.text = option.label
 		btn.focus_mode = Control.FOCUS_ALL
 		var idx = i
-		btn.pressed.connect(func() -> void: option_selected.emit(idx))
+		btn.pressed.connect(func() -> void: _on_button_pressed(idx))
 		options_container.add_child(btn)
 		var cost_label = Label.new()
 		cost_label.text = _format_cost(option, catch_data.behavior)
@@ -33,6 +44,28 @@ func populate(catch_data: CatchData) -> void:
 			options_container.add_child(flavor)
 	if options_container.get_child_count() > 0:
 		options_container.get_child(0).grab_focus()
+
+func _on_button_pressed(index: int) -> void:
+	var option = _catch_data.options[index]
+	if option.narrative_text != "":
+		_pending_narrative_index = index
+		_show_narrative_panel(option)
+	else:
+		option_selected.emit(index)
+
+func _show_narrative_panel(option: CatchOption) -> void:
+	options_container.visible = false
+	narrative_panel.visible = true
+	narrative_text.text = option.narrative_text
+	var entry = "[%s]\n\n%s" % [_catch_data.catch_name, option.narrative_text]
+	GameState.journal_entries.append(entry)
+	GameState.save()
+	continue_button.grab_focus()
+
+func _on_continue_pressed() -> void:
+	narrative_panel.visible = false
+	options_container.visible = true
+	option_selected.emit(_pending_narrative_index)
 
 func _behavior_tag(behavior: CatchData.BehaviorType) -> String:
 	match behavior:

@@ -22,3 +22,14 @@ text = ""
 text = ""
 
 [node name="OptionsContainer" type="VBoxContainer" parent="VBoxContainer"]
+
+[node name="NarrativePanel" type="VBoxContainer" parent="VBoxContainer"]
+visible = false
+
+[node name="NarrativeText" type="RichTextLabel" parent="VBoxContainer/NarrativePanel"]
+fit_content = true
+scroll_active = false
+bbcode_enabled = false
+
+[node name="ContinueButton" type="Button" parent="VBoxContainer/NarrativePanel"]
+text = "Continue"
