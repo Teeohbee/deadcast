@@ -59,6 +59,8 @@ func _on_minigame_caught(catch_data: CatchData) -> void:
 	var reward_option: CatchOption = catch_data.options[0]
 	_run_credits += reward_option.credit_value
 	line_system.add_corruption(catch_data.corruption_gain)
+	# Intentionally bypasses _advance_slot: FishingMini manages tension internally,
+	# so we skip the zone passive_tension_drain for AGGRESSIVE catches.
 	_current_slot += 1
 	_show_next_catch()
 
