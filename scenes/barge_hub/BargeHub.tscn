@@ -18,40 +18,52 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 
 [node name="TitleLabel" type="Label" parent="VBoxContainer"]
-text = "THE MERIDIAN"
+text = "// the meridian — surface deck"
 
-[node name="DebtLabel" type="Label" parent="VBoxContainer"]
-text = "DEBT: 80000 CR"
+[node name="EconomyRow" type="HBoxContainer" parent="VBoxContainer"]
 
-[node name="CreditsLabel" type="Label" parent="VBoxContainer"]
-text = "CREDITS: 0 CR"
+[node name="DebtPanel" type="PanelContainer" parent="VBoxContainer/EconomyRow"]
+size_flags_horizontal = 3
+
+[node name="DebtLabel" type="Label" parent="VBoxContainer/EconomyRow/DebtPanel"]
+text = ""
+autowrap_mode = 3
+
+[node name="CreditsPanel" type="PanelContainer" parent="VBoxContainer/EconomyRow"]
+size_flags_horizontal = 3
+
+[node name="CreditsLabel" type="Label" parent="VBoxContainer/EconomyRow/CreditsPanel"]
+text = ""
 
 [node name="ZoneSelector" parent="VBoxContainer" instance=ExtResource("2_zsel")]
 
 [node name="LureEquip" parent="VBoxContainer" instance=ExtResource("3_leq")]
 
+[node name="SeparatorLabel" type="Label" parent="VBoxContainer"]
+text = "── locations ───────────────────────────"
+
 [node name="LocationButtons" type="HBoxContainer" parent="VBoxContainer"]
 
 [node name="WorkshopBtn" type="Button" parent="VBoxContainer/LocationButtons"]
-text = "Workshop"
+text = "workshop"
 
 [node name="DecryptBtn" type="Button" parent="VBoxContainer/LocationButtons"]
-text = "Decrypt Box"
+text = "decrypt box"
 
 [node name="FreezerBtn" type="Button" parent="VBoxContainer/LocationButtons"]
-text = "Freezer"
+text = "freezer"
 
 [node name="BunkBtn" type="Button" parent="VBoxContainer/LocationButtons"]
-text = "Bunk"
+text = "bunk"
 
 [node name="MartaBtn" type="Button" parent="VBoxContainer/LocationButtons"]
-text = "Marta"
+text = "marta"
 
 [node name="OkekeBtn" type="Button" parent="VBoxContainer/LocationButtons"]
-text = "Okeke"
+text = "okeke"
 
 [node name="VendorBtn" type="Button" parent="VBoxContainer/LocationButtons"]
-text = "Vendor"
+text = "vendor"
 
 [node name="DiveButton" type="Button" parent="VBoxContainer"]
-text = "DIVE"
+text = "▶ dive"
