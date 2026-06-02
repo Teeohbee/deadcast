@@ -49,3 +49,12 @@ func test_save_and_load_rod_damaged() -> void:
 	GameState.rod_damaged = false
 	GameState._load_from("user://save_test.cfg")
 	assert_true(GameState.rod_damaged)
+
+func test_load_from_emits_credits_changed() -> void:
+	watch_signals(EventBus)
+	GameState.credits = 1234
+	GameState._save_to("user://save_test.cfg")
+	GameState.credits = 0
+	GameState._load_from("user://save_test.cfg")
+	assert_signal_emitted(EventBus, "credits_changed")
+	assert_eq(GameState.credits, 1234)

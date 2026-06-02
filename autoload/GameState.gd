@@ -200,6 +200,7 @@ func _load_from(path: String) -> void:
 	decrypt_box_runs = cfg.get_value("decrypt", "box_runs", 0)
 	freezer_value = cfg.get_value("freezer", "value", 0)
 	freezer_runs = cfg.get_value("freezer", "runs", 0)
+	EventBus.credits_changed.emit(credits)
 
 func new_game() -> void:
 	credits = 0
