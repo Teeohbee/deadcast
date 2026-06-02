@@ -13,6 +13,7 @@ func _rebuild() -> void:
 
 	await get_tree().process_frame
 
+	var focus_btn: Button = null
 	for lure_id in LURE_IDS:
 		var lure_path = "res://resources/lures/%s.tres" % lure_id
 		var lure: LureData = load(lure_path)
@@ -24,6 +25,10 @@ func _rebuild() -> void:
 		btn.disabled = qty == 0
 		btn.pressed.connect(func() -> void: _on_lure_selected(lure))
 		add_child(btn)
+		if is_equipped:
+			focus_btn = btn
+	if focus_btn:
+		focus_btn.grab_focus()
 
 func _on_lure_selected(lure: LureData) -> void:
 	GameState.equip_lure(lure)
