@@ -18,8 +18,11 @@ anchor_bottom = 1.0
 [node name="TitleLabel" type="Label" parent="VBoxContainer"]
 text = "THE BUNK"
 
-[node name="JournalLabel" type="Label" parent="VBoxContainer"]
-text = ""
+[node name="JournalLabel" type="RichTextLabel" parent="VBoxContainer"]
+fit_content = true
+scroll_active = false
+bbcode_enabled = false
+size_flags_vertical = 3
 
 [node name="BackButton" type="Button" parent="VBoxContainer"]
 text = "Return to Deck"
