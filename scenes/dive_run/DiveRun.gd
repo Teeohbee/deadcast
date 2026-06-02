@@ -78,7 +78,7 @@ func _show_catch_event(catch_data: CatchData) -> void:
 	catch_container.add_child(event_ui)
 	event_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_current_event = event_ui
-	event_ui.populate(augmented)
+	event_ui.populate(augmented, _current_slot + 1, _column.size(), int(line_system.tension), line_system.max_tension)
 	event_ui.option_selected.connect(_on_option_selected)
 
 func _inject_shock_option(catch_data: CatchData) -> CatchData:
