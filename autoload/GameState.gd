@@ -19,6 +19,10 @@ var lure_inventory: Dictionary = {
 }
 
 func _ready() -> void:
+    # Deferred so all class_name scripts are parsed before loading typed resources
+    call_deferred("_load_defaults")
+
+func _load_defaults() -> void:
     current_rod = load("res://resources/rods/scrap_rod.tres")
     current_lure = load("res://resources/lures/basic_hook.tres")
 
