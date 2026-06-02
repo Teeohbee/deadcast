@@ -24,5 +24,14 @@ text = "EARNED: 0 CR"
 [node name="TotalCreditsLabel" type="Label" parent="VBoxContainer"]
 text = "TOTAL: 0 CR"
 
+[node name="DebtLabel" type="Label" parent="VBoxContainer"]
+text = ""
+
+[node name="PaymentLabel" type="Label" parent="VBoxContainer"]
+text = ""
+
+[node name="FreezerLabel" type="Label" parent="VBoxContainer"]
+text = ""
+
 [node name="ReturnButton" type="Button" parent="VBoxContainer"]
 text = "RETURN TO BARGE"
