@@ -21,9 +21,6 @@ offset_top = 20.0
 offset_right = -20.0
 offset_bottom = -20.0
 
-[node name="TitleLabel" type="Label" parent="VBoxContainer"]
-text = "// the meridian — surface deck"
-
 [node name="ContentRow" type="HBoxContainer" parent="VBoxContainer"]
 
 [node name="LeftColumn" type="VBoxContainer" parent="VBoxContainer/ContentRow"]
@@ -33,17 +30,26 @@ size_flags_horizontal = 3
 
 [node name="LureEquip" parent="VBoxContainer/ContentRow/LeftColumn" instance=ExtResource("3_leq")]
 
-[node name="AccountLabel" type="Label" parent="VBoxContainer/ContentRow"]
+[node name="RightColumn" type="VBoxContainer" parent="VBoxContainer/ContentRow"]
 custom_minimum_size = Vector2(240, 0)
 size_flags_horizontal = 4
-vertical_alignment = 0
+
+[node name="AccountLabel" type="Label" parent="VBoxContainer/ContentRow/RightColumn"]
 autowrap_mode = 0
 text = ""
+
+[node name="FreezerLabel" type="Label" parent="VBoxContainer/ContentRow/RightColumn"]
+autowrap_mode = 0
+text = ""
+
+[node name="FreezerSellButton" type="Button" parent="VBoxContainer/ContentRow/RightColumn"]
+text = ""
+visible = false
 
 [node name="Spacer" type="Control" parent="VBoxContainer"]
 size_flags_vertical = 3
 
-[node name="SeparatorLabel" type="Label" parent="VBoxContainer"]
+[node name="LocHeader" type="Label" parent="VBoxContainer"]
 text = "┌── [ LOCATIONS ] ──────────────────────────────────────────────"
 
 [node name="LocationButtons" type="HBoxContainer" parent="VBoxContainer"]
@@ -54,20 +60,14 @@ text = "workshop"
 [node name="DecryptBtn" type="Button" parent="VBoxContainer/LocationButtons"]
 text = "decrypt box"
 
-[node name="FreezerBtn" type="Button" parent="VBoxContainer/LocationButtons"]
-text = "freezer"
-
 [node name="BunkBtn" type="Button" parent="VBoxContainer/LocationButtons"]
 text = "bunk"
 
 [node name="MartaBtn" type="Button" parent="VBoxContainer/LocationButtons"]
 text = "marta"
 
-[node name="OkekeBtn" type="Button" parent="VBoxContainer/LocationButtons"]
-text = "okeke"
-
-[node name="VendorBtn" type="Button" parent="VBoxContainer/LocationButtons"]
-text = "vendor"
+[node name="VendorsBtn" type="Button" parent="VBoxContainer/LocationButtons"]
+text = "vendors"
 
 [node name="LocFooter" type="Label" parent="VBoxContainer"]
 text = "└────────────────────────────────────────────────────────────────"
