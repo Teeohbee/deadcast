@@ -244,53 +244,7 @@ func _on_line_snapped() -> void:
 	_snapped = true
 	_run_credits = 0
 	_bio_credits = 0
-	for child in catch_container.get_children():
-		child.queue_free()
-
-	# Build corrupted terminal screen that mirrors CatchEvent's layout
-	var root := VBoxContainer.new()
-	root.theme = UIStyle.get_theme()
-	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	root.offset_left = 20.0
-	root.offset_top = 20.0
-	root.offset_right = -20.0
-	root.offset_bottom = -20.0
-	catch_container.add_child(root)
-
-	var _row := func(text: String, color: Color) -> void:
-		var lbl := Label.new()
-		lbl.text = text
-		UIStyle.apply_label(lbl, color)
-		root.add_child(lbl)
-
-	var sep  := "────────────────────────────────────────────────────────────────"
-	var sep_s := "────────────────────────────────────────────────"
-
-	_row.call("SLOT: %d/%d  │  ZONE: %s  │  TENSION: [OVERFLOW]" % [
-		_current_slot + 1, _column.size(),
-		GameState.selected_zone.to_upper().replace("_", " ")],
-		UIStyle.COL_DIM)
-
-	_row.call(
-		"%s\n[!!! SIGNAL LOST !!!]\nNAME:     ░░░░░░░░░░░░░░░░░░░░░░░░\nSTATUS:   [CRITICAL FAILURE]\n%s" % [sep, sep],
-		UIStyle.COL_DEBT)
-
-	_row.call(
-		"┌── TELEMETRY_READOUT %s\n│  [ !!! CONNECTION TERMINATED !!! ]\n│  CRITICAL: LINE TENSION EXCEEDED / SIGNAL LOST\n└%s" % [sep_s, sep_s],
-		UIStyle.COL_DEBT)
-
-	var dismiss := Button.new()
-	dismiss.text = ">>> [ RETREAT TO SURFACE ]"
-	dismiss.focus_mode = Control.FOCUS_ALL
-	dismiss.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	UIStyle.apply_button(dismiss)
-	root.add_child(dismiss)
-
-	await get_tree().create_timer(0.5).timeout
-	if is_instance_valid(dismiss):
-		dismiss.grab_focus()
-		await dismiss.pressed
-
+	await get_tree().create_timer(1.0).timeout
 	_end_run(true)
 
 func _end_run(snapped: bool) -> void:

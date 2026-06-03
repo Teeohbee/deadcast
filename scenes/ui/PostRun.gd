@@ -1,52 +1,70 @@
 # scenes/ui/PostRun.gd
 extends Control
 
-@onready var result_label: Label = $VBoxContainer/ResultLabel
-@onready var run_credits_label: Label = $VBoxContainer/RunCreditsLabel
-@onready var total_credits_label: Label = $VBoxContainer/TotalCreditsLabel
-@onready var debt_label: Label = $VBoxContainer/DebtLabel
-@onready var payment_label: Label = $VBoxContainer/PaymentLabel
-@onready var freezer_label: Label = $VBoxContainer/FreezerLabel
-@onready var return_button: Button = $VBoxContainer/ReturnButton
+const _SEP  := "────────────────────────────────────────────────────────────────"
+const _SEP_S := "────────────────────────────────────────────────"
+
+@onready var container: VBoxContainer = $VBoxContainer
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
+	UIStyle.apply_background(self)
 
-	return_button.focus_mode = Control.FOCUS_ALL
-	UIStyle.apply_button(return_button)
-	return_button.text = "[ RETURN TO DECK ]"
-	return_button.pressed.connect(_on_return_pressed)
-	return_button.grab_focus()
+	for child in container.get_children():
+		child.queue_free()
+	await get_tree().process_frame
 
-	var result = GameState.last_run_result
-	var snapped = result.get("snapped", false)
-	var earned = result.get("credits", 0)
-	var bio = result.get("bio_credits", 0)
+	var result  := GameState.last_run_result
+	var snapped := result.get("snapped", false) as bool
+	var earned  := result.get("credits", 0) as int
+	var bio     := result.get("bio_credits", 0) as int
 
-	result_label.text = "line snapped" if snapped else "run complete"
-	UIStyle.apply_label(result_label, UIStyle.COL_DEBT if snapped else UIStyle.COL_TEXT)
+	_row("─── RUN_LOG " + _SEP, UIStyle.COL_SEP)
 
-	run_credits_label.text = "earned: %d cr" % earned
-	UIStyle.apply_label(run_credits_label, UIStyle.COL_ACCENT)
+	if snapped:
+		_row("\n[!!! SIGNAL LOST !!!]\nCRITICAL: LINE TENSION EXCEEDED / SIGNAL LOST\n", UIStyle.COL_DEBT)
+	else:
+		_row("\n>>> connection closed  ·  run complete\n", UIStyle.COL_TEXT)
 
-	total_credits_label.text = "wallet: %d cr  ·  debt: %d cr" % [GameState.credits, GameState.debt]
-	UIStyle.apply_label(total_credits_label, UIStyle.COL_TEXT)
+	_row(_SEP_S, UIStyle.COL_SEP)
+
+	if snapped:
+		_row("yield:    +0cr  (run forfeited)", UIStyle.COL_DEBT)
+	elif earned > 0:
+		_row("yield:    +%dcr" % earned, UIStyle.COL_ACCENT)
+
+	_row("wallet:   %dcr  ·  debt: %dcr" % [GameState.credits, GameState.debt], UIStyle.COL_TEXT)
 
 	if GameState.victory:
-		debt_label.text = "debt cleared. the meridian is yours."
-		UIStyle.apply_label(debt_label, UIStyle.COL_ACCENT)
+		_row("\ndebt cleared. the meridian is yours.", UIStyle.COL_ACCENT)
 	else:
-		UIStyle.apply_label(debt_label, UIStyle.COL_DEBT)
-		var runs_to_payment = 5 - GameState.runs_since_payment
+		var runs_to_payment := 5 - GameState.runs_since_payment
 		if GameState.pressure_level == 0:
-			payment_label.text = "next payment: 10,000cr in %d run%s" % [runs_to_payment, "s" if runs_to_payment != 1 else ""]
+			_row("next payment: 10,000cr in %d run%s" % [
+				runs_to_payment, "s" if runs_to_payment != 1 else ""], UIStyle.COL_DIM)
 		else:
-			payment_label.text = "pressure %d — %s" % [GameState.pressure_level, _pressure_label(GameState.pressure_level)]
-		UIStyle.apply_label(payment_label, UIStyle.COL_DIM)
+			_row("pressure %d — %s" % [
+				GameState.pressure_level, _pressure_label(GameState.pressure_level)], UIStyle.COL_DIM)
 
 	if bio > 0:
-		freezer_label.text = "bio catches stored in freezer: %d cr" % bio
-		UIStyle.apply_label(freezer_label, UIStyle.COL_DIM)
+		_row("bio cache: %dcr stored in freezer" % bio, UIStyle.COL_DIM)
+
+	_row("", UIStyle.COL_DIM)
+
+	var btn := Button.new()
+	btn.text = "[ RETURN TO DECK ]"
+	btn.focus_mode = Control.FOCUS_ALL
+	UIStyle.apply_button(btn)
+	btn.pressed.connect(func(): UIController.navigate_to("deck"))
+	container.add_child(btn)
+	await get_tree().process_frame
+	btn.grab_focus()
+
+func _row(text: String, color: Color) -> void:
+	var lbl := Label.new()
+	lbl.text = text
+	UIStyle.apply_label(lbl, color)
+	container.add_child(lbl)
 
 func _pressure_label(level: int) -> String:
 	match level:
@@ -56,6 +74,3 @@ func _pressure_label(level: int) -> String:
 		4: return "debt collector is coming."
 		5: return "forced surrender."
 		_: return ""
-
-func _on_return_pressed() -> void:
-	UIController.navigate_to("deck")
