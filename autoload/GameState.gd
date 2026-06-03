@@ -246,3 +246,16 @@ func new_game() -> void:
 	current_lure = load("res://resources/lures/basic_hook.tres")
 	save()
 	EventBus.credits_changed.emit(credits)
+
+func has_new_marta_beat() -> bool:
+	return _beat_index(run_count) > _beat_index(marta_last_seen_run)
+
+static func _beat_index(run: int) -> int:
+	if run >= 12: return 7
+	if run >= 10: return 6
+	if run >= 8:  return 5
+	if run >= 6:  return 4
+	if run >= 5:  return 3
+	if run >= 3:  return 2
+	if run >= 1:  return 1
+	return 0

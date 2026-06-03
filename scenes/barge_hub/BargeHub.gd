@@ -56,7 +56,7 @@ func _ready() -> void:
 		workshop_btn.text = "workshop ⚠"
 		workshop_btn.add_theme_color_override("font_color", UIStyle.COL_WARNING)
 
-	if _has_new_marta_beat():
+	if GameState.has_new_marta_beat():
 		marta_btn.text = "marta !"
 		marta_btn.add_theme_color_override("font_color", UIStyle.COL_DEBT)
 
@@ -104,15 +104,3 @@ func _go_to(location: String) -> void:
 	GameState.last_hub_focus = location
 	get_tree().change_scene_to_file(SCENES[location])
 
-func _has_new_marta_beat() -> bool:
-	return _beat_index(GameState.run_count) > _beat_index(GameState.marta_last_seen_run)
-
-static func _beat_index(run: int) -> int:
-	if run >= 12: return 7
-	if run >= 10: return 6
-	if run >= 8:  return 5
-	if run >= 6:  return 4
-	if run >= 5:  return 3
-	if run >= 3:  return 2
-	if run >= 1:  return 1
-	return 0
