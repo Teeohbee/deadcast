@@ -58,11 +58,6 @@ func populate(catch_data: CatchData, slot: int = 0, total_slots: int = 0, tensio
 		var idx := i
 		btn.pressed.connect(func() -> void: _on_button_pressed(idx))
 		options_container.add_child(btn)
-		if option.flavor_text != "":
-			var flav := Label.new()
-			flav.text = "     │  " + option.flavor_text
-			UIStyle.apply_label(flav, UIStyle.COL_DIM)
-			options_container.add_child(flav)
 
 	if options_container.get_child_count() > 0:
 		options_container.get_child(0).grab_focus()
@@ -95,11 +90,28 @@ func show_result(text: String, color: Color) -> void:
 	narrative_panel.visible = false
 	for child in options_container.get_children():
 		child.queue_free()
+	_animate_result(text, color)
+
+func _animate_result(text: String, color: Color) -> void:
 	var label := Label.new()
 	label.theme = UIStyle.get_theme()
+	options_container.add_child(label)
+
+	label.text = ">>> [PROCESSING...]"
+	UIStyle.apply_label(label, UIStyle.COL_DIM)
+	await get_tree().create_timer(0.35).timeout
+	if not is_instance_valid(self):
+		return
+
+	if color == UIStyle.COL_DEBT:
+		label.text = ">>> [!!! COUNTERMEASURE TRIGGERED !!!]"
+		UIStyle.apply_label(label, UIStyle.COL_WARNING)
+		await get_tree().create_timer(0.25).timeout
+		if not is_instance_valid(self):
+			return
+
 	label.text = ">>> " + text
 	UIStyle.apply_label(label, color)
-	options_container.add_child(label)
 
 func _type_tag(catch_type: CatchData.CatchType) -> String:
 	match catch_type:
@@ -150,5 +162,5 @@ func _format_option(num: int, option: CatchOption, behavior: CatchData.BehaviorT
 			risk_str = "none"
 
 	var slug := option.label.to_upper().replace(" ", "_").rpad(26)
-	return "[%d] %s  COST: %-5s  │  REWARD: %-8s  │  RISK: %s" % [
-		num, slug, t_str, cr_str, risk_str]
+	return "[%d] %s  COST: %s│  REWARD: %s│  RISK: %s" % [
+		num, slug, t_str.rpad(8), cr_str.rpad(11), risk_str]
