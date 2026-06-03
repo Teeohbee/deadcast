@@ -1,3 +1,6 @@
+# Builds
+builds/
+
 # Godot
 .godot/
 *.translation
