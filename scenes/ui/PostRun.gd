@@ -11,11 +11,10 @@ extends Control
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
-	UIStyle.apply_background(self)
 
 	return_button.focus_mode = Control.FOCUS_ALL
 	UIStyle.apply_button(return_button)
-	return_button.text = "▶ return to deck"
+	return_button.text = "[ RETURN TO DECK ]"
 	return_button.pressed.connect(_on_return_pressed)
 	return_button.grab_focus()
 
@@ -59,4 +58,4 @@ func _pressure_label(level: int) -> String:
 		_: return ""
 
 func _on_return_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/barge_hub/BargeHub.tscn")
+	UIController.navigate_to("deck")
