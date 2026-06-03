@@ -1,8 +1,7 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scenes/dive_run/DiveRun.gd" id="1_DiveRun"]
 [ext_resource type="PackedScene" path="res://scenes/dive_run/LineSystem.tscn" id="2_LineSystem"]
-[ext_resource type="PackedScene" path="res://scenes/ui/HUD.tscn" id="3_HUD"]
 
 [node name="DiveRun" type="Node2D"]
 script = ExtResource("1_DiveRun")
@@ -15,5 +14,3 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-
-[node name="HUD" parent="." instance=ExtResource("3_HUD")]

@@ -18,7 +18,6 @@ var _pending_narrative_index: int = -1
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
 	UIStyle.apply_background(self)
-	$VBoxContainer.offset_right = -220.0
 	continue_button.focus_mode = Control.FOCUS_ALL
 	UIStyle.apply_button(continue_button)
 	continue_button.pressed.connect(_on_continue_pressed)
@@ -81,6 +80,16 @@ func _on_continue_pressed() -> void:
 	narrative_panel.visible = false
 	options_container.visible = true
 	option_selected.emit(_pending_narrative_index)
+
+func show_result(text: String, color: Color) -> void:
+	narrative_panel.visible = false
+	for child in options_container.get_children():
+		child.queue_free()
+	var label = Label.new()
+	label.theme = UIStyle.get_theme()
+	label.text = text
+	UIStyle.apply_label(label, color)
+	options_container.add_child(label)
 
 func _behavior_tag(behavior: CatchData.BehaviorType) -> String:
 	match behavior:

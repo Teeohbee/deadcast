@@ -8,7 +8,6 @@ const ROD_DAMAGE_TENSION_PENALTY: int = 25
 const RESULT_BEAT_SECS: float = 1.5
 @onready var line_system: LineSystem = $LineSystem
 @onready var catch_container: Control = $CatchContainer
-@onready var hud: HUD = $HUD
 
 var _column: Array[CatchData] = []
 var _current_slot: int = 0
@@ -27,7 +26,6 @@ func _ready() -> void:
 		line_system.max_tension = GameState.current_rod.tension_cap
 		if GameState.rod_damaged:
 			line_system.max_tension = max(10, line_system.max_tension - ROD_DAMAGE_TENSION_PENALTY)
-		hud.set_max_tension(line_system.max_tension)
 
 	var zone_id = GameState.selected_zone
 	_zone_data = load("res://resources/zones/%s.tres" % zone_id)
@@ -131,7 +129,6 @@ func _on_option_selected(index: int) -> void:
 
 	if _current_event:
 		_current_event.option_selected.disconnect(_on_option_selected)
-		_current_event = null
 
 	var catch_data = _column[_current_slot]
 
@@ -164,13 +161,8 @@ func _on_option_selected(index: int) -> void:
 			_apply_option(option, catch_data)
 
 func _show_result_beat(text: String, color: Color) -> void:
-	for child in catch_container.get_children():
-		child.queue_free()
-	var label = Label.new()
-	label.theme = UIStyle.get_theme()
-	label.text = text
-	UIStyle.apply_label(label, color)
-	catch_container.add_child(label)
+	if _current_event:
+		_current_event.show_result(text, color)
 	await get_tree().create_timer(RESULT_BEAT_SECS).timeout
 
 func _apply_and_record(option: CatchOption, catch_data: CatchData) -> void:
@@ -213,6 +205,7 @@ func _resolve_negotiating(option: CatchOption, catch_data: CatchData) -> void:
 
 func _advance_slot() -> void:
 	_current_catch_data = null
+	_current_event = null
 	for child in catch_container.get_children():
 		child.queue_free()
 	if _zone_data and _zone_data.passive_tension_drain > 0:
