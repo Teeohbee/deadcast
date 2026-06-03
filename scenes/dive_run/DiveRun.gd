@@ -36,7 +36,7 @@ func _ready() -> void:
 	var max_depth = GameState.current_rod.max_depth if GameState.current_rod else 100
 	var lure_effect = GameState.current_lure.effect if GameState.current_lure else LureData.LureEffect.NONE
 	_column = CatchPool.generate_column(zone_id, line_system.corruption, max_depth, lure_effect)
-if GameState.current_lure and GameState.current_lure.effect == LureData.LureEffect.GHOST_BAIT:
+	if GameState.current_lure and GameState.current_lure.effect == LureData.LureEffect.GHOST_BAIT:
 		for i in _column.size():
 			var c = _column[i]
 			if c.catch_type == CatchData.CatchType.ENTITY and c.behavior == CatchData.BehaviorType.AGGRESSIVE:
