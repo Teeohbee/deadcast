@@ -18,7 +18,7 @@ var _theme: Theme = null
 func get_theme() -> Theme:
 	if _theme:
 		return _theme
-	var font := load("res://fonts/AnonymousPro-Regular.ttf") as FontFile
+	var font := load("res://fonts/IBMPlexMono-Regular.otf") as FontFile
 	_theme = Theme.new()
 	_theme.set_font("font", "Label", font)
 	_theme.set_font("font", "Button", font)
