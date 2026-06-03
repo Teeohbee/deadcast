@@ -5,20 +5,13 @@ var _loaded_catches: Array[CatchData] = []
 
 func load_catches_for_zone(zone: String) -> void:
     _loaded_catches = []
-    var path = "res://resources/catches/%s/" % zone
-    var dir = DirAccess.open(path)
-    if not dir:
-        push_warning("CatchPool: no directory found at %s" % path)
+    var zone_data: ZoneData = load("res://resources/zones/%s.tres" % zone)
+    if not zone_data:
+        push_warning("CatchPool: could not load zone resource for '%s'" % zone)
         return
-    dir.list_dir_begin()
-    var file_name = dir.get_next()
-    while file_name != "":
-        if not dir.current_is_dir() and file_name.ends_with(".tres"):
-            var resource = load(path.path_join(file_name))
-            if resource is CatchData:
-                _loaded_catches.append(resource)
-        file_name = dir.get_next()
-    dir.list_dir_end()
+    for catch in zone_data.catches:
+        if catch is CatchData:
+            _loaded_catches.append(catch)
 
 func generate_column(zone: String, corruption: float = 0.0, max_depth: int = 100, lure_effect: LureData.LureEffect = LureData.LureEffect.NONE) -> Array[CatchData]:
     load_catches_for_zone(zone)

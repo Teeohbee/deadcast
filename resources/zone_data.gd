@@ -6,3 +6,4 @@ extends Resource
 @export var display_name: String = ""
 @export var passive_tension_drain: int = 0
 @export var description: String = ""
+@export var catches: Array[CatchData] = []

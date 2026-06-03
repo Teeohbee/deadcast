@@ -1,6 +1,11 @@
-[gd_resource type="Resource" format=3]
+[gd_resource type="Resource" script_class="ZoneData" load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://resources/zone_data.gd" id="1_zone"]
+[ext_resource type="Resource" path="res://resources/catches/axiom/axiom_drone_mk4.tres" id="2_catch"]
+[ext_resource type="Resource" path="res://resources/catches/axiom/axiom_vault_shard.tres" id="3_catch"]
+[ext_resource type="Resource" path="res://resources/catches/axiom/bioweapon_prototype.tres" id="4_catch"]
+[ext_resource type="Resource" path="res://resources/catches/axiom/deep_archive_core.tres" id="5_catch"]
+[ext_resource type="Resource" path="res://resources/catches/axiom/solace7.tres" id="6_catch"]
 
 [resource]
 script = ExtResource("1_zone")
@@ -8,3 +13,4 @@ zone_id = "axiom"
 display_name = "Axiom Tower Sub-Basement"
 passive_tension_drain = 5
 description = "Corporate server farm. Security countermeasures active."
+catches = [ExtResource("2_catch"), ExtResource("3_catch"), ExtResource("4_catch"), ExtResource("5_catch"), ExtResource("6_catch")]

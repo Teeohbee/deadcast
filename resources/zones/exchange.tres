@@ -1,6 +1,11 @@
-[gd_resource type="Resource" format=3]
+[gd_resource type="Resource" script_class="ZoneData" load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://resources/zone_data.gd" id="1_zone"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/black_market_shard.tres" id="2_catch"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/contraband_medkit.tres" id="3_catch"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/fixer_network_node.tres" id="4_catch"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/illegal_bioware.tres" id="5_catch"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/rival_fisher_line.tres" id="6_catch"]
 
 [resource]
 script = ExtResource("1_zone")
@@ -8,3 +13,4 @@ zone_id = "exchange"
 display_name = "The Voss Exchange"
 passive_tension_drain = 0
 description = "Sunken black market. Rival fishers active."
+catches = [ExtResource("2_catch"), ExtResource("3_catch"), ExtResource("4_catch"), ExtResource("5_catch"), ExtResource("6_catch")]
