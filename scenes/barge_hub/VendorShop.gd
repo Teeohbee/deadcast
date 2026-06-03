@@ -67,6 +67,11 @@ func _build_stock() -> void:
 		var price_ref = price
 		btn.pressed.connect(func(): _buy_rod(rod_ref, price_ref))
 		stock_container.add_child(btn)
+		if rod.description != "":
+			var desc = Label.new()
+			desc.text = "  " + rod.description.to_lower()
+			UIStyle.apply_label(desc, UIStyle.COL_DIM)
+			stock_container.add_child(desc)
 
 	var lure_header = Label.new()
 	lure_header.text = "── lures ────────────────────────"
@@ -80,12 +85,20 @@ func _build_stock() -> void:
 		var btn = Button.new()
 		btn.focus_mode = Control.FOCUS_ALL
 		UIStyle.apply_button(btn)
-		btn.text = "%s — x%d in stock — %dcr" % [lure.lure_name.to_lower(), qty, price]
+		btn.text = "%s — %s in stock — %dcr" % [lure.lure_name.to_lower(), _stock_display(qty), price]
 		btn.disabled = price == 0 or GameState.credits < price
 		var lure_ref = lure
 		var price_ref = price
 		btn.pressed.connect(func(): _buy_lure(lure_ref, price_ref))
 		stock_container.add_child(btn)
+		if lure.description != "":
+			var desc = Label.new()
+			desc.text = "  " + lure.description.to_lower()
+			UIStyle.apply_label(desc, UIStyle.COL_DIM)
+			stock_container.add_child(desc)
+
+func _stock_display(qty: int) -> String:
+	return "∞" if qty == GameState.INFINITE_STOCK else "x%d" % qty
 
 func _buy_rod(rod: RodData, price: int) -> void:
 	if GameState.spend_credits(price):

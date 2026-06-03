@@ -18,6 +18,7 @@ var _pending_narrative_index: int = -1
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
 	UIStyle.apply_background(self)
+	$VBoxContainer.offset_right = -220.0
 	continue_button.focus_mode = Control.FOCUS_ALL
 	UIStyle.apply_button(continue_button)
 	continue_button.pressed.connect(_on_continue_pressed)
@@ -73,6 +74,7 @@ func _show_narrative_panel(option: CatchOption) -> void:
 	var entry = "[%s]\n\n%s" % [_catch_data.catch_name, option.narrative_text]
 	GameState.journal_entries.append(entry)
 	GameState.save()
+	await get_tree().process_frame
 	continue_button.grab_focus()
 
 func _on_continue_pressed() -> void:

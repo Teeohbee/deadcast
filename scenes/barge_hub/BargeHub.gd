@@ -73,7 +73,17 @@ func _ready() -> void:
 	vendor_btn.pressed.connect(func(): _go_to("vendor"))
 
 	await get_tree().process_frame
-	$VBoxContainer/ZoneSelector/District7Button.grab_focus()
+	var focus_id := GameState.last_hub_focus
+	GameState.last_hub_focus = ""
+	match focus_id:
+		"workshop": workshop_btn.grab_focus()
+		"decrypt":  decrypt_btn.grab_focus()
+		"freezer":  freezer_btn.grab_focus()
+		"bunk":     bunk_btn.grab_focus()
+		"marta":    marta_btn.grab_focus()
+		"okeke":    okeke_btn.grab_focus()
+		"vendor":   vendor_btn.grab_focus()
+		_:          $VBoxContainer/ZoneSelector.get_child(1).grab_focus()
 
 func _refresh_labels(_ignored: int = 0) -> void:
 	var runs_to_pmt = 5 - GameState.runs_since_payment
@@ -89,6 +99,7 @@ func _on_dive_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/dive_run/DiveRun.tscn")
 
 func _go_to(location: String) -> void:
+	GameState.last_hub_focus = location
 	get_tree().change_scene_to_file(SCENES[location])
 
 func _has_new_marta_beat() -> bool:

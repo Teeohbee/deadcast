@@ -27,6 +27,8 @@ func _ready() -> void:
 	back_button.grab_focus()
 
 func _refresh() -> void:
+	var decrypting = GameState.decrypt_box_runs > 0
+
 	if GameState.decrypt_box_queue == 0:
 		status_label.text = "box is empty.\nload credits to decrypt at 4x after %d runs." % GameState.DECRYPT_THRESHOLD
 	else:
@@ -37,8 +39,13 @@ func _refresh() -> void:
 			"s" if runs_left != 1 else "",
 			GameState.decrypt_box_queue * GameState.DECRYPT_MULTIPLIER
 		]
-	load_button.text = "load %dcr of data" % LOAD_AMOUNT
-	load_button.disabled = GameState.credits < LOAD_AMOUNT
+
+	if decrypting:
+		load_button.text = "decryption in progress"
+		load_button.disabled = true
+	else:
+		load_button.text = "load %dcr of data" % LOAD_AMOUNT
+		load_button.disabled = GameState.credits < LOAD_AMOUNT
 
 func _on_load_pressed() -> void:
 	if GameState.spend_credits(LOAD_AMOUNT):

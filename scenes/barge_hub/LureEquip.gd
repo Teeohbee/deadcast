@@ -20,18 +20,27 @@ func _rebuild() -> void:
 		var lure_path = "res://resources/lures/%s.tres" % lure_id
 		var lure: LureData = load(lure_path)
 		var qty = GameState.lure_inventory.get(lure_id, 0)
+		var infinite = qty == GameState.INFINITE_STOCK
 		var btn = Button.new()
 		btn.focus_mode = Control.FOCUS_ALL
 		UIStyle.apply_button(btn)
 		var is_equipped = GameState.current_lure != null and GameState.get_lure_id(GameState.current_lure) == lure_id
-		btn.text = "%s%s (x%d)" % ["▶ " if is_equipped else "  ", lure.lure_name.to_lower(), qty]
-		btn.disabled = qty == 0
+		btn.text = "%s%s (%s)" % ["▶ " if is_equipped else "  ", lure.lure_name.to_lower(), _stock_display(qty)]
+		btn.disabled = not infinite and qty == 0
 		btn.pressed.connect(func() -> void: _on_lure_selected(lure))
 		add_child(btn)
+		if lure.description != "":
+			var desc = Label.new()
+			desc.text = "  " + lure.description.to_lower()
+			UIStyle.apply_label(desc, UIStyle.COL_DIM)
+			add_child(desc)
 		if is_equipped:
 			focus_btn = btn
 	if focus_btn:
 		focus_btn.grab_focus()
+
+func _stock_display(qty: int) -> String:
+	return "∞" if qty == GameState.INFINITE_STOCK else "x%d" % qty
 
 func _on_lure_selected(lure: LureData) -> void:
 	GameState.equip_lure(lure)

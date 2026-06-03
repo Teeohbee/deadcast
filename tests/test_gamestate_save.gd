@@ -6,7 +6,7 @@ func before_each() -> void:
 	GameState.pressure_level = 0
 	GameState.rod_damaged = false
 	GameState.lure_inventory = {
-		"basic_hook": 99,
+		"basic_hook": GameState.INFINITE_STOCK,
 		"shock_lure": 3,
 		"decoy_swarm": 2,
 		"deep_pulse": 2,
@@ -58,3 +58,24 @@ func test_load_from_emits_credits_changed() -> void:
 	GameState._load_from("user://save_test.cfg")
 	assert_signal_emitted(EventBus, "credits_changed")
 	assert_eq(GameState.credits, 1234)
+
+func test_new_game_starts_with_only_basic_hook() -> void:
+	GameState.new_game()
+	assert_true(GameState.lure_inventory.has("basic_hook"))
+	assert_eq(GameState.lure_inventory.size(), 1)
+
+func test_basic_hook_stock_is_infinite() -> void:
+	GameState.new_game()
+	assert_eq(GameState.lure_inventory.get("basic_hook"), GameState.INFINITE_STOCK)
+
+func test_has_lure_stock_true_for_infinite() -> void:
+	var lure: LureData = load("res://resources/lures/basic_hook.tres")
+	GameState.lure_inventory["basic_hook"] = GameState.INFINITE_STOCK
+	assert_true(GameState.has_lure_stock(lure))
+
+func test_consume_lure_does_not_decrement_infinite() -> void:
+	var lure: LureData = load("res://resources/lures/basic_hook.tres")
+	GameState.current_lure = lure
+	GameState.lure_inventory["basic_hook"] = GameState.INFINITE_STOCK
+	GameState.consume_lure_use()
+	assert_eq(GameState.lure_inventory.get("basic_hook"), GameState.INFINITE_STOCK)
