@@ -16,31 +16,33 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
 
 [node name="TitleLabel" type="Label" parent="VBoxContainer"]
 text = "// the meridian — surface deck"
 
-[node name="EconomyRow" type="HBoxContainer" parent="VBoxContainer"]
+[node name="ContentRow" type="HBoxContainer" parent="VBoxContainer"]
+size_flags_vertical = 3
 
-[node name="DebtPanel" type="PanelContainer" parent="VBoxContainer/EconomyRow"]
+[node name="LeftColumn" type="VBoxContainer" parent="VBoxContainer/ContentRow"]
 size_flags_horizontal = 3
 
-[node name="DebtLabel" type="Label" parent="VBoxContainer/EconomyRow/DebtPanel"]
+[node name="ZoneSelector" parent="VBoxContainer/ContentRow/LeftColumn" instance=ExtResource("2_zsel")]
+
+[node name="LureEquip" parent="VBoxContainer/ContentRow/LeftColumn" instance=ExtResource("3_leq")]
+
+[node name="AccountLabel" type="Label" parent="VBoxContainer/ContentRow"]
+custom_minimum_size = Vector2(240, 0)
+size_flags_horizontal = 4
+vertical_alignment = 0
+autowrap_mode = 0
 text = ""
-autowrap_mode = 3
-
-[node name="CreditsPanel" type="PanelContainer" parent="VBoxContainer/EconomyRow"]
-size_flags_horizontal = 3
-
-[node name="CreditsLabel" type="Label" parent="VBoxContainer/EconomyRow/CreditsPanel"]
-text = ""
-
-[node name="ZoneSelector" parent="VBoxContainer" instance=ExtResource("2_zsel")]
-
-[node name="LureEquip" parent="VBoxContainer" instance=ExtResource("3_leq")]
 
 [node name="SeparatorLabel" type="Label" parent="VBoxContainer"]
-text = "── locations ───────────────────────────"
+text = "── locations ─────────────────────────────────────────────────"
 
 [node name="LocationButtons" type="HBoxContainer" parent="VBoxContainer"]
 
@@ -65,5 +67,15 @@ text = "okeke"
 [node name="VendorBtn" type="Button" parent="VBoxContainer/LocationButtons"]
 text = "vendor"
 
-[node name="DiveButton" type="Button" parent="VBoxContainer"]
-text = "▶ dive"
+[node name="DiveRow" type="HBoxContainer" parent="VBoxContainer"]
+
+[node name="DiveSpacer" type="Label" parent="VBoxContainer/DiveRow"]
+size_flags_horizontal = 3
+text = ""
+
+[node name="DiveButton" type="Button" parent="VBoxContainer/DiveRow"]
+text = "[ READY TO DIVE ]"
+
+[node name="DiveSpacer2" type="Label" parent="VBoxContainer/DiveRow"]
+size_flags_horizontal = 3
+text = ""

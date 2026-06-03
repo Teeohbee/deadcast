@@ -1,13 +1,10 @@
 # scenes/barge_hub/BargeHub.gd
 extends Control
 
-@onready var debt_label: Label = $VBoxContainer/EconomyRow/DebtPanel/DebtLabel
-@onready var credits_label: Label = $VBoxContainer/EconomyRow/CreditsPanel/CreditsLabel
-@onready var debt_panel: PanelContainer = $VBoxContainer/EconomyRow/DebtPanel
-@onready var credits_panel: PanelContainer = $VBoxContainer/EconomyRow/CreditsPanel
 @onready var title_label: Label = $VBoxContainer/TitleLabel
+@onready var account_label: Label = $VBoxContainer/ContentRow/AccountLabel
 @onready var separator_label: Label = $VBoxContainer/SeparatorLabel
-@onready var dive_button: Button = $VBoxContainer/DiveButton
+@onready var dive_button: Button = $VBoxContainer/DiveRow/DiveButton
 @onready var workshop_btn: Button = $VBoxContainer/LocationButtons/WorkshopBtn
 @onready var decrypt_btn: Button = $VBoxContainer/LocationButtons/DecryptBtn
 @onready var freezer_btn: Button = $VBoxContainer/LocationButtons/FreezerBtn
@@ -34,20 +31,17 @@ func _ready() -> void:
 		get_tree().change_scene_to_file("res://scenes/barge_hub/GameOver.tscn")
 		return
 
-	# P4 debt collector one-time event
 	if GameState.pressure_level >= 4 and not GameState.debt_collector_triggered:
 		GameState.debt_collector_triggered = true
 		GameState.spend_credits(5000)
 		GameState.save()
 
 	dive_button.pressed.connect(_on_dive_pressed)
-	EventBus.credits_changed.connect(_refresh_labels)
-	_refresh_labels(GameState.credits)
+	EventBus.credits_changed.connect(_refresh_account)
 
 	UIStyle.apply_label(title_label, UIStyle.COL_DIM)
-	UIStyle.apply_label(separator_label, UIStyle.COL_SEP)
-	UIStyle.apply_panel(debt_panel)
-	UIStyle.apply_panel(credits_panel)
+	UIStyle.apply_label(separator_label, UIStyle.COL_DIM)
+	UIStyle.apply_label(account_label, UIStyle.COL_TEXT)
 	UIStyle.apply_button(dive_button)
 	dive_button.focus_mode = Control.FOCUS_ALL
 
@@ -72,6 +66,8 @@ func _ready() -> void:
 	okeke_btn.pressed.connect(func(): _go_to("okeke"))
 	vendor_btn.pressed.connect(func(): _go_to("vendor"))
 
+	_refresh_account()
+
 	await get_tree().process_frame
 	var focus_id := GameState.last_hub_focus
 	GameState.last_hub_focus = ""
@@ -83,17 +79,21 @@ func _ready() -> void:
 		"marta":    marta_btn.grab_focus()
 		"okeke":    okeke_btn.grab_focus()
 		"vendor":   vendor_btn.grab_focus()
-		_:          $VBoxContainer/ZoneSelector.get_child(1).grab_focus()
+		_:          $VBoxContainer/ContentRow/LeftColumn/ZoneSelector.get_child(1).grab_focus()
 
-func _refresh_labels(_ignored: int = 0) -> void:
-	var runs_to_pmt = 5 - GameState.runs_since_payment
-	debt_label.text = "debt  %d cr\npressure %d/5  ·  payment in %d run%s" % [
-		GameState.debt, GameState.pressure_level,
-		runs_to_pmt, "s" if runs_to_pmt != 1 else ""]
-	UIStyle.apply_label(debt_label, UIStyle.COL_DEBT)
-
-	credits_label.text = "wallet\n%d cr" % GameState.credits
-	UIStyle.apply_label(credits_label, UIStyle.COL_TEXT)
+func _refresh_account(_ignored: int = 0) -> void:
+	var runs_to_pmt := 5 - GameState.runs_since_payment
+	var run_str := "in %d run%s" % [runs_to_pmt, "s" if runs_to_pmt != 1 else ""]
+	account_label.text = (
+		"┌── [ ACCOUNT STATUS ] ────────────\n"
+		+ "│  WALLET:   %dcr\n" % GameState.credits
+		+ "│  DEBT:     %dcr\n" % GameState.debt
+		+ "│  PRESSURE: %d/5\n" % GameState.pressure_level
+		+ "│  PAYMENT:  %s\n" % run_str
+		+ "└──────────────────────────────────"
+	)
+	var color := UIStyle.COL_DEBT if GameState.pressure_level >= 3 else UIStyle.COL_TEXT
+	UIStyle.apply_label(account_label, color)
 
 func _on_dive_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/dive_run/DiveRun.tscn")
