@@ -10,14 +10,44 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
 
 [node name="CatchLabel" type="Label" parent="VBoxContainer"]
 text = "Catch"
 
-[node name="InstructionLabel" type="Label" parent="VBoxContainer"]
-text = "REEL [SPACE/A]   SLACK [J/B]"
+[node name="PhaseLabel" type="Label" parent="VBoxContainer"]
+text = "[ fighting ]"
 
-[node name="TensionBar" type="ProgressBar" parent="VBoxContainer"]
+[node name="TensionRow" type="HBoxContainer" parent="VBoxContainer"]
+
+[node name="TensionRowLabel" type="Label" parent="VBoxContainer/TensionRow"]
+text = "tension  "
+custom_minimum_size = Vector2(120, 0)
+
+[node name="TensionBar" type="ProgressBar" parent="VBoxContainer/TensionRow"]
+custom_minimum_size = Vector2(0, 10)
+size_flags_horizontal = 3
 min_value = 0.0
 max_value = 100.0
 value = 0.0
+show_percentage = false
+
+[node name="StaminaRow" type="HBoxContainer" parent="VBoxContainer"]
+
+[node name="StaminaRowLabel" type="Label" parent="VBoxContainer/StaminaRow"]
+text = "stamina  "
+custom_minimum_size = Vector2(120, 0)
+
+[node name="StaminaBar" type="ProgressBar" parent="VBoxContainer/StaminaRow"]
+custom_minimum_size = Vector2(0, 10)
+size_flags_horizontal = 3
+min_value = 0.0
+max_value = 100.0
+value = 100.0
+show_percentage = false
+
+[node name="InstructionLabel" type="Label" parent="VBoxContainer"]
+text = "slack [j/b] slows tension  ·  reel [space/a] tires it faster"
