@@ -14,7 +14,6 @@ const _TABS: Array[Dictionary] = [
 @onready var sep_label: Label = $VBoxContainer/SepLabel
 
 var _tab_buttons: Array[Button] = []
-var _action_hint: Label = null
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
@@ -30,15 +29,6 @@ func _ready() -> void:
 		tab_row.add_child(btn)
 		_tab_buttons.append(btn)
 
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	tab_row.add_child(spacer)
-
-	_action_hint = Label.new()
-	_action_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	UIStyle.apply_label(_action_hint, UIStyle.COL_DIM)
-	tab_row.add_child(_action_hint)
-
 	UIController.screen_changed.connect(_on_screen_changed)
 
 func _on_screen_changed(id: String) -> void:
@@ -51,7 +41,7 @@ func _on_screen_changed(id: String) -> void:
 
 		if tab_id == "marta" and GameState.has_new_marta_beat():
 			btn.text = base_label + " !"
-			btn.add_theme_color_override("font_color", UIStyle.COL_DEBT)
+			btn.add_theme_color_override("font_color", UIStyle.COL_WARNING)
 		elif tab_id == id:
 			btn.text = base_label
 			btn.add_theme_color_override("font_color", UIStyle.COL_ACCENT)
@@ -59,4 +49,3 @@ func _on_screen_changed(id: String) -> void:
 			btn.text = base_label
 			btn.add_theme_color_override("font_color", UIStyle.COL_DIM)
 
-	_action_hint.text = "[ENTER] DIVE" if id == "deck" else ""

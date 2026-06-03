@@ -71,7 +71,7 @@ func start() -> void:
     _tension_fill = StyleBoxFlat.new()
     _tension_fill.bg_color = UIStyle.COL_TEXT
     var tension_bg := StyleBoxFlat.new()
-    tension_bg.bg_color = Color("#1a1a1a")
+    tension_bg.bg_color = UIStyle.COL_BAR_BG
     tension_bar.add_theme_stylebox_override("background", tension_bg)
     tension_bar.add_theme_stylebox_override("fill", _tension_fill)
     tension_bar.show_percentage = false

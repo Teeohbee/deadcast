@@ -1,5 +1,5 @@
 # scenes/dive_run/DiveRun.gd
-extends Node2D
+extends Control
 
 @export var catch_event_scene: PackedScene = preload("res://scenes/dive_run/CatchEvent.tscn")
 @export var terminal_overload_scene: PackedScene = preload("res://scenes/dive_run/TerminalOverloadMini.tscn")
@@ -43,8 +43,6 @@ func _ready() -> void:
 				dup.behavior = CatchData.BehaviorType.PASSIVE
 				_column[i] = dup
 	await get_tree().process_frame
-	catch_container.position = Vector2.ZERO
-	catch_container.size = get_viewport().get_visible_rect().size
 	_show_next_catch()
 
 func _show_next_catch() -> void:
@@ -65,8 +63,15 @@ func _show_next_catch() -> void:
 	_show_catch_event(catch_data)
 
 func _show_deep_pulse_reveal(catch_data: CatchData) -> void:
-	var label = Label.new()
-	label.text = "DEEP PULSE: Incoming - [%s]" % CatchData.CatchType.keys()[catch_data.catch_type]
+	var type_str := CatchData.CatchType.keys()[catch_data.catch_type].to_lower()
+	var label := Label.new()
+	label.theme = UIStyle.get_theme()
+	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.text = "deep_pulse  ·  slot %d / %d  ·  incoming: [%s]" % [
+		_current_slot + 1, _column.size(), type_str]
+	UIStyle.apply_label(label, UIStyle.COL_DIM)
 	catch_container.add_child(label)
 	await get_tree().create_timer(2.0).timeout
 	if _snapped:
@@ -89,7 +94,7 @@ func _show_catch_event(catch_data: CatchData) -> void:
 
 func _inject_shock_option(catch_data: CatchData) -> CatchData:
 	var overload_opt = CatchOption.new()
-	overload_opt.label = "Overload (Shock Lure)"
+	overload_opt.label = "shock overload"
 	overload_opt.tension_delta = 5
 	overload_opt.credit_value = int(catch_data.options[0].credit_value * 0.7)
 	overload_opt.flavor_text = "Short-circuit it. Destroys one Shock Lure use."

@@ -11,6 +11,7 @@ const COL_COST     := Color("#3a7a3a")
 const COL_BORDER   := Color("#2a4a2a")
 const COL_WARNING  := Color("#ffff88")
 const COL_BG       := Color("#0a0a0a")
+const COL_BAR_BG   := Color("#1a1a1a")
 
 var _theme: Theme = null
 
