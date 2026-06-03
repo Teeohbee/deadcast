@@ -44,7 +44,7 @@ text = ""
 size_flags_vertical = 3
 
 [node name="SeparatorLabel" type="Label" parent="VBoxContainer"]
-text = "── locations ─────────────────────────────────────────────────"
+text = "┌── [ LOCATIONS ] ──────────────────────────────────────────────"
 
 [node name="LocationButtons" type="HBoxContainer" parent="VBoxContainer"]
 
@@ -68,6 +68,9 @@ text = "okeke"
 
 [node name="VendorBtn" type="Button" parent="VBoxContainer/LocationButtons"]
 text = "vendor"
+
+[node name="LocFooter" type="Label" parent="VBoxContainer"]
+text = "└────────────────────────────────────────────────────────────────"
 
 [node name="DiveRow" type="HBoxContainer" parent="VBoxContainer"]
 

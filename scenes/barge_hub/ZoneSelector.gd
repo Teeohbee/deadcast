@@ -17,6 +17,8 @@ func _ready() -> void:
 		btn.focus_mode = Control.FOCUS_ALL
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		UIStyle.apply_button(btn)
+		for st: String in ["normal", "hover", "focus", "pressed"]:
+			(btn.get_theme_stylebox(st) as StyleBoxFlat).content_margin_left = 0
 		btn.pressed.connect(func() -> void: GameState.select_zone(zone_id))
 		add_child(btn)
 		_buttons[zone_id] = btn

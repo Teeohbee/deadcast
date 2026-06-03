@@ -4,6 +4,7 @@ extends Control
 @onready var title_label: Label = $VBoxContainer/TitleLabel
 @onready var account_label: Label = $VBoxContainer/ContentRow/AccountLabel
 @onready var separator_label: Label = $VBoxContainer/SeparatorLabel
+@onready var loc_footer: Label = $VBoxContainer/LocFooter
 @onready var dive_button: Button = $VBoxContainer/DiveRow/DiveButton
 @onready var workshop_btn: Button = $VBoxContainer/LocationButtons/WorkshopBtn
 @onready var decrypt_btn: Button = $VBoxContainer/LocationButtons/DecryptBtn
@@ -41,6 +42,7 @@ func _ready() -> void:
 
 	UIStyle.apply_label(title_label, UIStyle.COL_DIM)
 	UIStyle.apply_label(separator_label, UIStyle.COL_DIM)
+	UIStyle.apply_label(loc_footer, UIStyle.COL_DIM)
 	UIStyle.apply_label(account_label, UIStyle.COL_TEXT)
 	UIStyle.apply_button(dive_button)
 	dive_button.focus_mode = Control.FOCUS_ALL
@@ -85,12 +87,12 @@ func _refresh_account(_ignored: int = 0) -> void:
 	var runs_to_pmt := 5 - GameState.runs_since_payment
 	var run_str := "in %d run%s" % [runs_to_pmt, "s" if runs_to_pmt != 1 else ""]
 	account_label.text = (
-		"┌── [ ACCOUNT STATUS ] ────────────\n"
+		"┌── [ ACCOUNT STATUS ]\n"
 		+ "│  WALLET:   %dcr\n" % GameState.credits
 		+ "│  DEBT:     %dcr\n" % GameState.debt
 		+ "│  PRESSURE: %d/5\n" % GameState.pressure_level
 		+ "│  PAYMENT:  %s\n" % run_str
-		+ "└──────────────────────────────────"
+		+ "└──────────────────────"
 	)
 	var color := UIStyle.COL_DEBT if GameState.pressure_level >= 3 else UIStyle.COL_TEXT
 	UIStyle.apply_label(account_label, color)

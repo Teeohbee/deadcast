@@ -27,6 +27,8 @@ func _rebuild() -> void:
 		btn.focus_mode = Control.FOCUS_ALL
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		UIStyle.apply_button(btn)
+		for st: String in ["normal", "hover", "focus", "pressed"]:
+			(btn.get_theme_stylebox(st) as StyleBoxFlat).content_margin_left = 0
 		btn.text = "%s%s (%s)" % [
 			"│  > " if is_equipped else "│    ",
 			lure.lure_name.to_lower(),
