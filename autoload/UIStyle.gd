@@ -47,7 +47,7 @@ func apply_button(btn: Button) -> void:
 	hover.content_margin_bottom = 4
 
 	var focus := normal.duplicate()
-	focus.border_color = COL_ACCENT
+	focus.border_color = COL_TEXT
 
 	var pressed := StyleBoxFlat.new()
 	pressed.bg_color = Color("#0a2a0a")
@@ -64,7 +64,7 @@ func apply_button(btn: Button) -> void:
 	btn.add_theme_stylebox_override("pressed", pressed)
 	btn.add_theme_color_override("font_color", COL_TEXT)
 	btn.add_theme_color_override("font_hover_color", COL_TEXT)
-	btn.add_theme_color_override("font_focus_color", COL_ACCENT)
+	btn.add_theme_color_override("font_focus_color", COL_TEXT)
 	btn.add_theme_color_override("font_pressed_color", COL_ACCENT)
 
 func apply_panel(panel: PanelContainer) -> void:

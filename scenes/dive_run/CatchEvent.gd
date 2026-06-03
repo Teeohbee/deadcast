@@ -55,6 +55,7 @@ func populate(catch_data: CatchData, slot: int = 0, total_slots: int = 0, tensio
 		var btn := Button.new()
 		btn.text = _format_option(i + 1, option, catch_data.behavior)
 		btn.focus_mode = Control.FOCUS_ALL
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		UIStyle.apply_button(btn)
 		var idx := i
 		btn.pressed.connect(func() -> void: _on_button_pressed(idx))
@@ -140,7 +141,7 @@ func _security_status(behavior: CatchData.BehaviorType) -> String:
 
 func _format_option(num: int, option: CatchOption, behavior: CatchData.BehaviorType) -> String:
 	if option.cuts_line:
-		return "[%d] ABORT_CONNECTION  ·  resets tension  ·  no reward" % num
+		return "[%d] abort_connection  ·  resets tension  ·  no reward" % num
 
 	var t_str: String
 	if option.tension_delta > 0:
@@ -150,26 +151,20 @@ func _format_option(num: int, option: CatchOption, behavior: CatchData.BehaviorT
 	else:
 		t_str = "+0T"
 
-	var cr_str := "+%dcr" % option.credit_value if option.credit_value > 0 else "+0cr"
-	var risk_str: String
+	var parts: Array[String] = [t_str]
+	if option.credit_value > 0:
+		parts.append("+%dcr" % option.credit_value)
 
 	match behavior:
 		CatchData.BehaviorType.RESISTANT:
 			if option.resist_chance > 0.0:
-				risk_str = "%d%% resist (+%dT, 0cr)" % [
-					int(option.resist_chance * 100), option.resist_tension_penalty]
-			else:
-				risk_str = "none"
+				parts.append("%d%% resist (+%dT)" % [
+					int(option.resist_chance * 100), option.resist_tension_penalty])
 		CatchData.BehaviorType.NEGOTIATING:
 			if option.roll_difficulty > 0.0:
 				var fail_cr := "+%dcr" % option.fail_credit_value if option.fail_credit_value > 0 else "+0cr"
-				risk_str = "%d%% fail (+%dT, %s)" % [
-					int(option.roll_difficulty * 100), option.fail_tension_delta, fail_cr]
-			else:
-				risk_str = "none"
-		_:
-			risk_str = "none"
+				parts.append("%d%% fail (+%dT, %s)" % [
+					int(option.roll_difficulty * 100), option.fail_tension_delta, fail_cr])
 
-	var slug := option.label.to_upper().replace(" ", "_").rpad(26)
-	return "[%d] %s  COST: %s│  REWARD: %s│  RISK: %s" % [
-		num, slug, t_str.rpad(8), cr_str.rpad(11), risk_str]
+	var label := option.label.to_lower().replace(" ", "_")
+	return "[%d] %s  ·  %s" % [num, label, "  ·  ".join(parts)]

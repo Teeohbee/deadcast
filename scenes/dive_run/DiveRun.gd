@@ -28,7 +28,6 @@ func _ready() -> void:
 		line_system.max_tension = GameState.current_rod.tension_cap
 		if GameState.rod_damaged:
 			line_system.max_tension = max(10, line_system.max_tension - ROD_DAMAGE_TENSION_PENALTY)
-	EventBus.max_tension_changed.emit(line_system.max_tension)
 
 	var zone_id = GameState.selected_zone
 	_zone_data = load("res://resources/zones/%s.tres" % zone_id)
@@ -278,6 +277,7 @@ func _on_line_snapped() -> void:
 	var dismiss := Button.new()
 	dismiss.text = ">>> [ RETREAT TO SURFACE ]"
 	dismiss.focus_mode = Control.FOCUS_ALL
+	dismiss.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	UIStyle.apply_button(dismiss)
 	root.add_child(dismiss)
 
@@ -297,4 +297,4 @@ func _end_run(snapped: bool) -> void:
 	}
 	GameState.on_run_complete(snapped, _bio_credits)
 	EventBus.run_ended.emit(GameState.last_run_result)
-	get_tree().change_scene_to_file("res://scenes/ui/PostRun.tscn")
+	UIController.navigate_to("debrief")

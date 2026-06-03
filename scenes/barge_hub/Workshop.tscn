@@ -41,6 +41,3 @@ text = "Depth Upgrade"
 
 [node name="MessageLabel" type="Label" parent="VBoxContainer"]
 text = ""
-
-[node name="BackButton" type="Button" parent="VBoxContainer"]
-text = "Return to Deck"

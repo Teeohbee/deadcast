@@ -23,6 +23,3 @@ fit_content = true
 scroll_active = false
 bbcode_enabled = false
 size_flags_vertical = 3
-
-[node name="BackButton" type="Button" parent="VBoxContainer"]
-text = "Return to Deck"

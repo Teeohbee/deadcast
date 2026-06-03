@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/Zone3Footer.gd" id="1_z3f"]
+
+[node name="Zone3Footer" type="Control"]
+script = ExtResource("1_z3f")
+custom_minimum_size = Vector2(0, 56)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="SepLabel" type="Label" parent="VBoxContainer"]
+text = "────────────────────────────────────────────────────────────────────────────────────────────────────────"
+
+[node name="TabRow" type="HBoxContainer" parent="VBoxContainer"]
+size_flags_horizontal = 3

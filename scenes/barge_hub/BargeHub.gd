@@ -1,87 +1,30 @@
 # scenes/barge_hub/BargeHub.gd
 extends Control
 
-@onready var title_label: Label = $VBoxContainer/TitleLabel
-@onready var account_label: Label = $VBoxContainer/ContentRow/AccountLabel
-@onready var separator_label: Label = $VBoxContainer/SeparatorLabel
-@onready var loc_footer: Label = $VBoxContainer/LocFooter
+@onready var account_label: Label = $VBoxContainer/ContentRow/RightColumn/AccountLabel
+@onready var freezer_label: Label = $VBoxContainer/ContentRow/RightColumn/FreezerLabel
+@onready var freezer_sell_btn: Button = $VBoxContainer/ContentRow/RightColumn/FreezerSellButton
 @onready var dive_button: Button = $VBoxContainer/DiveRow/DiveButton
-@onready var workshop_btn: Button = $VBoxContainer/LocationButtons/WorkshopBtn
-@onready var decrypt_btn: Button = $VBoxContainer/LocationButtons/DecryptBtn
-@onready var freezer_btn: Button = $VBoxContainer/LocationButtons/FreezerBtn
-@onready var bunk_btn: Button = $VBoxContainer/LocationButtons/BunkBtn
-@onready var marta_btn: Button = $VBoxContainer/LocationButtons/MartaBtn
-@onready var okeke_btn: Button = $VBoxContainer/LocationButtons/OkekeBtn
-@onready var vendor_btn: Button = $VBoxContainer/LocationButtons/VendorBtn
-
-const SCENES = {
-	"workshop": "res://scenes/barge_hub/Workshop.tscn",
-	"decrypt": "res://scenes/barge_hub/DecryptBox.tscn",
-	"freezer": "res://scenes/barge_hub/Freezer.tscn",
-	"bunk": "res://scenes/barge_hub/Bunk.tscn",
-	"marta": "res://scenes/barge_hub/MartaTerminal.tscn",
-	"okeke": "res://scenes/barge_hub/OkekeShop.tscn",
-	"vendor": "res://scenes/barge_hub/VendorShop.tscn",
-}
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
-	UIStyle.apply_background(self)
 
-	if GameState.pressure_level >= 5:
-		get_tree().change_scene_to_file("res://scenes/barge_hub/GameOver.tscn")
-		return
-
-	if GameState.pressure_level >= 4 and not GameState.debt_collector_triggered:
-		GameState.debt_collector_triggered = true
-		GameState.spend_credits(5000)
-		GameState.save()
-
-	dive_button.pressed.connect(_on_dive_pressed)
-	EventBus.credits_changed.connect(_refresh_account)
-
-	UIStyle.apply_label(title_label, UIStyle.COL_DIM)
-	UIStyle.apply_label(separator_label, UIStyle.COL_DIM)
-	UIStyle.apply_label(loc_footer, UIStyle.COL_DIM)
 	UIStyle.apply_label(account_label, UIStyle.COL_TEXT)
+	UIStyle.apply_label(freezer_label, UIStyle.COL_DIM)
 	UIStyle.apply_button(dive_button)
+	UIStyle.apply_button(freezer_sell_btn)
 	dive_button.focus_mode = Control.FOCUS_ALL
+	freezer_sell_btn.focus_mode = Control.FOCUS_ALL
 
-	for btn in [workshop_btn, decrypt_btn, freezer_btn,
-				bunk_btn, marta_btn, okeke_btn, vendor_btn]:
-		btn.focus_mode = Control.FOCUS_ALL
-		UIStyle.apply_button(btn)
+	dive_button.pressed.connect(func(): UIController.navigate_to("dive"))
+	freezer_sell_btn.pressed.connect(_on_sell_freezer)
 
-	if GameState.rod_damaged:
-		workshop_btn.text = "workshop ⚠"
-		workshop_btn.add_theme_color_override("font_color", UIStyle.COL_WARNING)
-
-	if _has_new_marta_beat():
-		marta_btn.text = "marta !"
-		marta_btn.add_theme_color_override("font_color", UIStyle.COL_DEBT)
-
-	workshop_btn.pressed.connect(func(): _go_to("workshop"))
-	decrypt_btn.pressed.connect(func(): _go_to("decrypt"))
-	freezer_btn.pressed.connect(func(): _go_to("freezer"))
-	bunk_btn.pressed.connect(func(): _go_to("bunk"))
-	marta_btn.pressed.connect(func(): _go_to("marta"))
-	okeke_btn.pressed.connect(func(): _go_to("okeke"))
-	vendor_btn.pressed.connect(func(): _go_to("vendor"))
-
+	EventBus.credits_changed.connect(_refresh_account)
 	_refresh_account()
+	_refresh_freezer()
 
 	await get_tree().process_frame
-	var focus_id := GameState.last_hub_focus
-	GameState.last_hub_focus = ""
-	match focus_id:
-		"workshop": workshop_btn.grab_focus()
-		"decrypt":  decrypt_btn.grab_focus()
-		"freezer":  freezer_btn.grab_focus()
-		"bunk":     bunk_btn.grab_focus()
-		"marta":    marta_btn.grab_focus()
-		"okeke":    okeke_btn.grab_focus()
-		"vendor":   vendor_btn.grab_focus()
-		_:          $VBoxContainer/ContentRow/LeftColumn/ZoneSelector.get_child(1).grab_focus()
+	$VBoxContainer/ContentRow/LeftColumn/ZoneSelector.get_child(1).grab_focus()
 
 func _refresh_account(_ignored: int = 0) -> void:
 	var runs_to_pmt := 5 - GameState.runs_since_payment
@@ -97,22 +40,30 @@ func _refresh_account(_ignored: int = 0) -> void:
 	var color := UIStyle.COL_DEBT if GameState.pressure_level >= 3 else UIStyle.COL_TEXT
 	UIStyle.apply_label(account_label, color)
 
-func _on_dive_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/dive_run/DiveRun.tscn")
+func _refresh_freezer() -> void:
+	if GameState.freezer_value == 0:
+		freezer_label.text = "┌── [ FREEZER ]\n│  empty\n└──────────────────────"
+		freezer_sell_btn.visible = false
+		return
 
-func _go_to(location: String) -> void:
-	GameState.last_hub_focus = location
-	get_tree().change_scene_to_file(SCENES[location])
+	var spoiled := GameState.freezer_runs >= GameState.FREEZER_SPOIL_RUNS
+	var status_line: String
+	if spoiled:
+		status_line = "│  SPOILED — %dcr (50%% loss)" % GameState.freezer_value
+	else:
+		var runs_left := GameState.FREEZER_SPOIL_RUNS - GameState.freezer_runs
+		status_line = "│  stored: %dcr  ·  spoils in %d run%s" % [
+			GameState.freezer_value, runs_left, "s" if runs_left != 1 else ""]
 
-func _has_new_marta_beat() -> bool:
-	return _beat_index(GameState.run_count) > _beat_index(GameState.marta_last_seen_run)
+	freezer_label.text = "┌── [ FREEZER ]\n%s\n└──────────────────────" % status_line
+	freezer_sell_btn.text = "│  sell all (%dcr)" % GameState.freezer_value
+	freezer_sell_btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	freezer_sell_btn.visible = true
 
-static func _beat_index(run: int) -> int:
-	if run >= 12: return 7
-	if run >= 10: return 6
-	if run >= 8:  return 5
-	if run >= 6:  return 4
-	if run >= 5:  return 3
-	if run >= 3:  return 2
-	if run >= 1:  return 1
-	return 0
+func _on_sell_freezer() -> void:
+	GameState.add_credits(GameState.freezer_value)
+	GameState.freezer_value = 0
+	GameState.freezer_runs = 0
+	GameState.save()
+	_refresh_freezer()
+	dive_button.grab_focus()

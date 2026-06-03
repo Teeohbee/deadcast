@@ -5,17 +5,11 @@ extends Control
 @onready var dialogue_label: Label = $VBoxContainer/DialogueLabel
 @onready var payment_label: Label = $VBoxContainer/PaymentLabel
 @onready var story_beat_label: Label = $VBoxContainer/StoryBeatLabel
-@onready var back_button: Button = $VBoxContainer/BackButton
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
-	UIStyle.apply_background(self)
-	back_button.focus_mode = Control.FOCUS_ALL
-	UIStyle.apply_button(back_button)
-	back_button.text = "disconnect"
-	back_button.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/barge_hub/BargeHub.tscn"))
 
-	$VBoxContainer/TitleLabel.text = "// marta voss — encrypted terminal"
+	$VBoxContainer/TitleLabel.text = "┌── [ MARTA VOSS — ENCRYPTED TERMINAL ] ──────────────────────"
 	UIStyle.apply_label($VBoxContainer/TitleLabel, UIStyle.COL_DIM)
 
 	GameState.marta_last_seen_run = GameState.run_count
@@ -43,30 +37,28 @@ func _ready() -> void:
 			runs_to_payment, "s" if runs_to_payment != 1 else ""]
 		UIStyle.apply_label(payment_label, UIStyle.COL_DIM)
 
-	back_button.grab_focus()
-
 func _marta_story_beat(run: int) -> String:
 	if run >= 12:
-		return "\"Keep working. I can make the debt go away faster.\"\n\"The price is reasonable. We'll discuss it.\"\n— Marta"
+		return "\"keep working. i can make the debt go away faster.\"\n\"the price is reasonable. we'll discuss it.\"\n— marta"
 	if run >= 10:
-		return "\"Okeke's been quiet. Probably just busy.\"\n\"Focus on your runs.\"\n— Marta"
+		return "\"okeke's been quiet. probably just busy.\"\n\"focus on your runs.\"\n— marta"
 	if run >= 8:
-		return "\"The Meridian has a transponder. It was installed before I gave you the rig.\"\n\"Axiom has been paying me for your dive coordinates since run one.\"\n\"This changes nothing between us. The debt is still real.\"\n— Marta"
+		return "\"the meridian has a transponder. it was installed before i gave you the rig.\"\n\"axiom has been paying me for your dive coordinates since run one.\"\n\"this changes nothing between us. the debt is still real.\"\n— marta"
 	if run >= 6:
-		return "\"That archive you pulled from the Axiom sub-basement — the one with the bioweapon specs.\"\n\"Good work. I've already moved it.\"\n— Marta"
+		return "\"that archive you pulled from the axiom sub-basement — the one with the bioweapon specs.\"\n\"good work. i've already moved it.\"\n— marta"
 	if run >= 5:
-		return "\"Eight runs without a snap. Consistent.\"\n\"Most people I stake don't make it this far.\"\n— Marta"
+		return "\"eight runs without a snap. consistent.\"\n\"most people i stake don't make it this far.\"\n— marta"
 	if run >= 3:
-		return "\"The shard from the Exchange sub-level — I've seen that serial number before.\"\n\"Don't worry about how.\"\n— Marta"
+		return "\"the shard from the exchange sub-level — i've seen that serial number before.\"\n\"don't worry about how.\"\n— marta"
 	if run >= 1:
-		return "\"80,000 credits. The rig, the mooring fee, and the Meridian's registration.\"\n\"10,000 every five runs. Miss a payment and the terms change.\"\n\"Questions?\"\n— Marta"
+		return "\"80,000 credits. the rig, the mooring fee, and the meridian's registration.\"\n\"10,000 every five runs. miss a payment and the terms change.\"\n\"questions?\"\n— marta"
 	return ""
 
 func _marta_dialogue(pressure: int) -> String:
 	match pressure:
-		0: return "\"You're on schedule. Keep it that way.\"\n— Marta"
-		1: return "\"One missed payment. I'm noting it.\nDon't make this a habit.\"\n— Marta"
-		2: return "\"My associate on the supply barge has been informed.\nYour costs just went up. Pay what you owe.\"\n— Marta"
-		3: return "\"Okeke has been asked not to deal with you.\nYou're running out of options.\"\n— Marta"
-		4: return "\"I sent someone to collect what I could.\nThis is your final warning.\"\n— Marta"
-		_: return "\"You had your chance.\"\n— Marta"
+		0: return "\"you're on schedule. keep it that way.\"\n— marta"
+		1: return "\"one missed payment. i'm noting it.\ndon't make this a habit.\"\n— marta"
+		2: return "\"my associate on the supply barge has been informed.\nyour costs just went up. pay what you owe.\"\n— marta"
+		3: return "\"okeke has been asked not to deal with you.\nyou're running out of options.\"\n— marta"
+		4: return "\"i sent someone to collect what i could.\nthis is your final warning.\"\n— marta"
+		_: return "\"you had your chance.\"\n— marta"
