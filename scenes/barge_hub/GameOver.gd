@@ -5,9 +5,14 @@ extends Control
 @onready var return_button: Button = $VBoxContainer/ReturnButton
 
 func _ready() -> void:
-	message_label.text = "FORCED SURRENDER\n\nMarta's people came for the Meridian.\nYou made it %d runs." % GameState.run_count
+	self.theme = UIStyle.get_theme()
+	UIStyle.apply_background(self)
+	UIStyle.apply_label(message_label, UIStyle.COL_DEBT)
 	return_button.focus_mode = Control.FOCUS_ALL
+	UIStyle.apply_button(return_button)
+	return_button.text = "return to title"
 	return_button.pressed.connect(_on_return_pressed)
+	message_label.text = "forced surrender\n\nmarta's people came for the meridian.\nyou made it %d runs." % GameState.run_count
 	return_button.grab_focus()
 
 func _on_return_pressed() -> void:

@@ -10,8 +10,13 @@ extends Control
 @onready var return_button: Button = $VBoxContainer/ReturnButton
 
 func _ready() -> void:
-	return_button.pressed.connect(_on_return_pressed)
+	self.theme = UIStyle.get_theme()
+	UIStyle.apply_background(self)
+
 	return_button.focus_mode = Control.FOCUS_ALL
+	UIStyle.apply_button(return_button)
+	return_button.text = "▶ return to deck"
+	return_button.pressed.connect(_on_return_pressed)
 	return_button.grab_focus()
 
 	var result = GameState.last_run_result
@@ -19,29 +24,38 @@ func _ready() -> void:
 	var earned = result.get("credits", 0)
 	var bio = result.get("bio_credits", 0)
 
-	result_label.text = "LINE SNAPPED" if snapped else "RUN COMPLETE"
-	run_credits_label.text = "EARNED: %d CR" % earned
-	total_credits_label.text = "TOTAL: %d CR  |  DEBT: %d CR" % [GameState.credits, GameState.debt]
+	result_label.text = "line snapped" if snapped else "run complete"
+	UIStyle.apply_label(result_label, UIStyle.COL_DEBT if snapped else UIStyle.COL_TEXT)
+
+	run_credits_label.text = "earned: %d cr" % earned
+	UIStyle.apply_label(run_credits_label, UIStyle.COL_ACCENT)
+
+	total_credits_label.text = "wallet: %d cr  ·  debt: %d cr" % [GameState.credits, GameState.debt]
+	UIStyle.apply_label(total_credits_label, UIStyle.COL_TEXT)
 
 	if GameState.victory:
-		debt_label.text = "DEBT CLEARED. THE MERIDIAN IS YOURS."
+		debt_label.text = "debt cleared. the meridian is yours."
+		UIStyle.apply_label(debt_label, UIStyle.COL_ACCENT)
 	else:
+		UIStyle.apply_label(debt_label, UIStyle.COL_DEBT)
 		var runs_to_payment = 5 - GameState.runs_since_payment
 		if GameState.pressure_level == 0:
-			payment_label.text = "Next payment: 10,000cr in %d run%s" % [runs_to_payment, "s" if runs_to_payment != 1 else ""]
+			payment_label.text = "next payment: 10,000cr in %d run%s" % [runs_to_payment, "s" if runs_to_payment != 1 else ""]
 		else:
-			payment_label.text = "PRESSURE %d — %s" % [GameState.pressure_level, _pressure_label(GameState.pressure_level)]
+			payment_label.text = "pressure %d — %s" % [GameState.pressure_level, _pressure_label(GameState.pressure_level)]
+		UIStyle.apply_label(payment_label, UIStyle.COL_DIM)
 
 	if bio > 0:
-		freezer_label.text = "BIO catches stored in Freezer: %d CR" % bio
+		freezer_label.text = "bio catches stored in freezer: %d cr" % bio
+		UIStyle.apply_label(freezer_label, UIStyle.COL_DIM)
 
 func _pressure_label(level: int) -> String:
 	match level:
-		1: return "Marta is watching."
-		2: return "Vendor prices up 20%."
-		3: return "Okeke won't deal with you."
-		4: return "Debt collector is coming."
-		5: return "FORCED SURRENDER."
+		1: return "marta is watching."
+		2: return "vendor prices up 20%."
+		3: return "okeke won't deal with you."
+		4: return "debt collector is coming."
+		5: return "forced surrender."
 		_: return ""
 
 func _on_return_pressed() -> void:

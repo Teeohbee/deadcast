@@ -3,9 +3,11 @@ extends Node2D
 
 @export var catch_event_scene: PackedScene = preload("res://scenes/dive_run/CatchEvent.tscn")
 @export var fishing_mini_scene: PackedScene = preload("res://scenes/dive_run/FishingMini.tscn")
+
+const ROD_DAMAGE_TENSION_PENALTY: int = 25
+const RESULT_BEAT_SECS: float = 1.5
 @onready var line_system: LineSystem = $LineSystem
 @onready var catch_container: Control = $CatchContainer
-@onready var hud: HUD = $HUD
 
 var _column: Array[CatchData] = []
 var _current_slot: int = 0
@@ -17,11 +19,15 @@ var _current_event: CatchEvent = null
 var _current_catch_data: CatchData = null  # augmented data shown to player (may have Shock option injected)
 
 func _ready() -> void:
+	catch_container.theme = UIStyle.get_theme()
+	UIStyle.apply_background(catch_container)
 	line_system.snapped.connect(_on_line_snapped)
 	line_system.tension_updated.connect(func(v: float) -> void: EventBus.tension_changed.emit(v))
 
 	if GameState.current_rod:
 		line_system.max_tension = GameState.current_rod.tension_cap
+		if GameState.rod_damaged:
+			line_system.max_tension = max(10, line_system.max_tension - ROD_DAMAGE_TENSION_PENALTY)
 
 	var zone_id = GameState.selected_zone
 	_zone_data = load("res://resources/zones/%s.tres" % zone_id)
@@ -78,7 +84,7 @@ func _show_catch_event(catch_data: CatchData) -> void:
 	catch_container.add_child(event_ui)
 	event_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_current_event = event_ui
-	event_ui.populate(augmented)
+	event_ui.populate(augmented, _current_slot + 1, _column.size(), int(line_system.tension), line_system.max_tension)
 	event_ui.option_selected.connect(_on_option_selected)
 
 func _inject_shock_option(catch_data: CatchData) -> CatchData:
@@ -125,7 +131,6 @@ func _on_option_selected(index: int) -> void:
 
 	if _current_event:
 		_current_event.option_selected.disconnect(_on_option_selected)
-		_current_event = null
 
 	var catch_data = _column[_current_slot]
 
@@ -157,39 +162,56 @@ func _on_option_selected(index: int) -> void:
 		_:
 			_apply_option(option, catch_data)
 
-func _resolve_resistant(option: CatchOption, catch_data: CatchData) -> void:
-	if option.resist_chance > 0.0 and randf() < option.resist_chance:
-		# Resisted — apply penalty tension, no credits
-		line_system.apply_tension(option.resist_tension_penalty)
-		line_system.add_corruption(catch_data.corruption_gain)
-	else:
-		_apply_option(option, catch_data)
-		return
-	_advance_slot()
+func _show_result_beat(text: String, color: Color) -> void:
+	if _current_event:
+		_current_event.show_result(text, color)
+	await get_tree().create_timer(RESULT_BEAT_SECS).timeout
 
-func _resolve_negotiating(option: CatchOption, catch_data: CatchData) -> void:
-	if option.roll_difficulty > 0.0 and randf() < option.roll_difficulty:
-		# Roll failed — apply fail outcomes
-		line_system.apply_tension(option.fail_tension_delta)
-		_run_credits += option.fail_credit_value
-		if catch_data.catch_type == CatchData.CatchType.BIO:
-			_bio_credits += option.fail_credit_value
-		line_system.add_corruption(catch_data.corruption_gain)
-	else:
-		_apply_option(option, catch_data)
-		return
-	_advance_slot()
-
-func _apply_option(option: CatchOption, catch_data: CatchData) -> void:
+func _apply_and_record(option: CatchOption, catch_data: CatchData) -> void:
 	line_system.apply_tension(option.tension_delta)
 	line_system.add_corruption(catch_data.corruption_gain)
 	_run_credits += option.credit_value
 	if catch_data.catch_type == CatchData.CatchType.BIO:
 		_bio_credits += option.credit_value
+
+func _apply_option(option: CatchOption, catch_data: CatchData) -> void:
+	_apply_and_record(option, catch_data)
+	_advance_slot()
+
+func _resolve_resistant(option: CatchOption, catch_data: CatchData) -> void:
+	if option.resist_chance > 0.0 and randf() < option.resist_chance:
+		line_system.apply_tension(option.resist_tension_penalty)
+		line_system.add_corruption(catch_data.corruption_gain)
+		await _show_result_beat(
+			"resisted  ·  +%dT  no reward" % option.resist_tension_penalty,
+			UIStyle.COL_DEBT)
+	else:
+		_apply_and_record(option, catch_data)
+		await _show_result_beat("+%dcr" % option.credit_value, UIStyle.COL_TEXT)
+	if _snapped:
+		return
+	_advance_slot()
+
+func _resolve_negotiating(option: CatchOption, catch_data: CatchData) -> void:
+	if option.roll_difficulty > 0.0 and randf() < option.roll_difficulty:
+		line_system.apply_tension(option.fail_tension_delta)
+		_run_credits += option.fail_credit_value
+		if catch_data.catch_type == CatchData.CatchType.BIO:
+			_bio_credits += option.fail_credit_value
+		line_system.add_corruption(catch_data.corruption_gain)
+		await _show_result_beat(
+			"negotiation failed  ·  +%dT" % option.fail_tension_delta,
+			UIStyle.COL_DEBT)
+	else:
+		_apply_and_record(option, catch_data)
+		await _show_result_beat("+%dcr" % option.credit_value, UIStyle.COL_TEXT)
+	if _snapped:
+		return
 	_advance_slot()
 
 func _advance_slot() -> void:
 	_current_catch_data = null
+	_current_event = null
 	for child in catch_container.get_children():
 		child.queue_free()
 	if _zone_data and _zone_data.passive_tension_drain > 0:
@@ -207,7 +229,7 @@ func _on_line_snapped() -> void:
 		child.queue_free()
 	var snap_label = Label.new()
 	snap_label.text = "LINE SNAPPED"
-	snap_label.add_theme_font_size_override("font_size", 48)
+	UIStyle.apply_label(snap_label, UIStyle.COL_DEBT)
 	snap_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	catch_container.add_child(snap_label)
 	await get_tree().create_timer(1.5).timeout

@@ -7,8 +7,19 @@ extends Control
 @onready var back_button: Button = $VBoxContainer/BackButton
 
 func _ready() -> void:
+	self.theme = UIStyle.get_theme()
+	UIStyle.apply_background(self)
 	for btn in [sell_button, back_button]:
 		btn.focus_mode = Control.FOCUS_ALL
+		UIStyle.apply_button(btn)
+
+	$VBoxContainer/TitleLabel.text = "// freezer"
+	UIStyle.apply_label($VBoxContainer/TitleLabel, UIStyle.COL_DIM)
+	UIStyle.apply_label(status_label, UIStyle.COL_TEXT)
+	UIStyle.apply_label(message_label, UIStyle.COL_DIM)
+
+	sell_button.text = "sell all"
+	back_button.text = "return to deck"
 	sell_button.pressed.connect(_on_sell_pressed)
 	back_button.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/barge_hub/BargeHub.tscn"))
 	_refresh()
@@ -16,19 +27,19 @@ func _ready() -> void:
 
 func _refresh() -> void:
 	if GameState.freezer_value == 0:
-		status_label.text = "Freezer is empty.\nBiological catches are stored here automatically."
+		status_label.text = "freezer is empty.\nbiological catches are stored here automatically."
 		sell_button.disabled = true
 		return
 
 	var spoiled = GameState.freezer_runs >= GameState.FREEZER_SPOIL_RUNS
 	if spoiled:
-		status_label.text = "SPOILED — Value: %dcr (50%% loss)\nSell quickly." % GameState.freezer_value
+		status_label.text = "spoiled — value: %dcr (50%% loss)\nsell quickly." % GameState.freezer_value
 	else:
 		var runs_until_spoil = GameState.FREEZER_SPOIL_RUNS - GameState.freezer_runs
-		status_label.text = "Stored: %dcr\nSpoils in %d run%s." % [
+		status_label.text = "stored: %dcr\nspoils in %d run%s." % [
 			GameState.freezer_value, runs_until_spoil, "s" if runs_until_spoil != 1 else ""]
 
-	sell_button.text = "Sell All (%dcr)" % GameState.freezer_value
+	sell_button.text = "sell all (%dcr)" % GameState.freezer_value
 	sell_button.disabled = false
 
 func _on_sell_pressed() -> void:
@@ -37,5 +48,5 @@ func _on_sell_pressed() -> void:
 	GameState.freezer_value = 0
 	GameState.freezer_runs = 0
 	GameState.save()
-	message_label.text = "Sold for %dcr." % value
+	message_label.text = "sold for %dcr." % value
 	_refresh()

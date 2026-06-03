@@ -23,6 +23,7 @@ config/features=PackedStringArray("4.6", "GL Compatibility")
 EventBus="*res://autoload/EventBus.gd"
 GameState="*res://autoload/GameState.gd"
 CatchPool="*res://autoload/CatchPool.gd"
+UIStyle="*res://autoload/UIStyle.gd"
 
 [display]
 
@@ -57,3 +58,4 @@ action_dive={
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+environment/default_clear_color=Color(0.039216, 0.039216, 0.039216, 1)

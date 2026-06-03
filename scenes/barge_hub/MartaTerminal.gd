@@ -8,8 +8,15 @@ extends Control
 @onready var back_button: Button = $VBoxContainer/BackButton
 
 func _ready() -> void:
+	self.theme = UIStyle.get_theme()
+	UIStyle.apply_background(self)
 	back_button.focus_mode = Control.FOCUS_ALL
+	UIStyle.apply_button(back_button)
+	back_button.text = "disconnect"
 	back_button.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/barge_hub/BargeHub.tscn"))
+
+	$VBoxContainer/TitleLabel.text = "// marta voss — encrypted terminal"
+	UIStyle.apply_label($VBoxContainer/TitleLabel, UIStyle.COL_DIM)
 
 	GameState.marta_last_seen_run = GameState.run_count
 	GameState.save()
@@ -17,18 +24,24 @@ func _ready() -> void:
 	var beat = _marta_story_beat(GameState.run_count)
 	story_beat_label.text = beat
 	story_beat_label.visible = beat != ""
+	UIStyle.apply_label(story_beat_label, UIStyle.COL_ACCENT)
 
 	if GameState.victory:
-		debt_status_label.text = "DEBT: CLEARED"
-		dialogue_label.text = "\"Meridian is yours. Don't make me regret it.\"\n— Marta"
+		debt_status_label.text = "debt: cleared"
+		UIStyle.apply_label(debt_status_label, UIStyle.COL_ACCENT)
+		dialogue_label.text = "\"meridian is yours. don't make me regret it.\"\n— marta"
+		UIStyle.apply_label(dialogue_label, UIStyle.COL_TEXT)
 		payment_label.text = ""
 	else:
 		var runs_to_payment = 5 - GameState.runs_since_payment
-		debt_status_label.text = "OUTSTANDING DEBT: %d CR  |  PRESSURE: %d/5" % [
+		debt_status_label.text = "outstanding debt: %d cr  ·  pressure %d/5" % [
 			GameState.debt, GameState.pressure_level]
+		UIStyle.apply_label(debt_status_label, UIStyle.COL_DEBT)
 		dialogue_label.text = _marta_dialogue(GameState.pressure_level)
-		payment_label.text = "Next payment: 10,000cr due in %d run%s." % [
+		UIStyle.apply_label(dialogue_label, UIStyle.COL_TEXT)
+		payment_label.text = "next payment: 10,000cr due in %d run%s." % [
 			runs_to_payment, "s" if runs_to_payment != 1 else ""]
+		UIStyle.apply_label(payment_label, UIStyle.COL_DIM)
 
 	back_button.grab_focus()
 

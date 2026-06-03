@@ -2,6 +2,10 @@
 extends Node
 
 const SAVE_PATH = "user://save.cfg"
+const INFINITE_STOCK: int = -1
+
+# Transient UI state — not saved
+var last_hub_focus: String = ""
 
 # Core economy
 var credits: int = 0
@@ -17,11 +21,7 @@ var max_depth_bonus: int = 0
 var selected_zone: String = "district7"
 
 var lure_inventory: Dictionary = {
-	"basic_hook": 99,
-	"shock_lure": 3,
-	"decoy_swarm": 2,
-	"deep_pulse": 2,
-	"ghost_bait": 2,
+	"basic_hook": INFINITE_STOCK,
 }
 
 # Progression
@@ -143,12 +143,15 @@ func get_lure_id(lure: LureData) -> String:
 	return lure.resource_path.get_file().get_basename()
 
 func has_lure_stock(lure: LureData) -> bool:
-	return lure_inventory.get(get_lure_id(lure), 0) > 0
+	var qty = lure_inventory.get(get_lure_id(lure), 0)
+	return qty == INFINITE_STOCK or qty > 0
 
 func consume_lure_use() -> void:
 	if current_lure == null:
 		return
 	var lure_id = get_lure_id(current_lure)
+	if lure_inventory.get(lure_id, 0) == INFINITE_STOCK:
+		return
 	if lure_inventory.has(lure_id):
 		lure_inventory[lure_id] = max(0, lure_inventory[lure_id] - 1)
 
@@ -232,7 +235,7 @@ func new_game() -> void:
 	debt_collector_triggered = false
 	rod_damaged = false
 	max_depth_bonus = 0
-	lure_inventory = { "basic_hook": 99, "shock_lure": 3, "decoy_swarm": 2, "deep_pulse": 2, "ghost_bait": 2 }
+	lure_inventory = { "basic_hook": INFINITE_STOCK }
 	decrypt_box_queue = 0
 	decrypt_box_runs = 0
 	freezer_value = 0

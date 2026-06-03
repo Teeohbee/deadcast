@@ -1,8 +1,12 @@
 # scenes/barge_hub/BargeHub.gd
 extends Control
 
-@onready var debt_label: Label = $VBoxContainer/DebtLabel
-@onready var credits_label: Label = $VBoxContainer/CreditsLabel
+@onready var debt_label: Label = $VBoxContainer/EconomyRow/DebtPanel/DebtLabel
+@onready var credits_label: Label = $VBoxContainer/EconomyRow/CreditsPanel/CreditsLabel
+@onready var debt_panel: PanelContainer = $VBoxContainer/EconomyRow/DebtPanel
+@onready var credits_panel: PanelContainer = $VBoxContainer/EconomyRow/CreditsPanel
+@onready var title_label: Label = $VBoxContainer/TitleLabel
+@onready var separator_label: Label = $VBoxContainer/SeparatorLabel
 @onready var dive_button: Button = $VBoxContainer/DiveButton
 @onready var workshop_btn: Button = $VBoxContainer/LocationButtons/WorkshopBtn
 @onready var decrypt_btn: Button = $VBoxContainer/LocationButtons/DecryptBtn
@@ -23,6 +27,9 @@ const SCENES = {
 }
 
 func _ready() -> void:
+	self.theme = UIStyle.get_theme()
+	UIStyle.apply_background(self)
+
 	if GameState.pressure_level >= 5:
 		get_tree().change_scene_to_file("res://scenes/barge_hub/GameOver.tscn")
 		return
@@ -36,11 +43,26 @@ func _ready() -> void:
 	dive_button.pressed.connect(_on_dive_pressed)
 	EventBus.credits_changed.connect(_refresh_labels)
 	_refresh_labels(GameState.credits)
-	debt_label.text = "DEBT: %d CR  |  PRESSURE: %d" % [GameState.debt, GameState.pressure_level]
 
-	for btn in [dive_button, workshop_btn, decrypt_btn, freezer_btn,
+	UIStyle.apply_label(title_label, UIStyle.COL_DIM)
+	UIStyle.apply_label(separator_label, UIStyle.COL_SEP)
+	UIStyle.apply_panel(debt_panel)
+	UIStyle.apply_panel(credits_panel)
+	UIStyle.apply_button(dive_button)
+	dive_button.focus_mode = Control.FOCUS_ALL
+
+	for btn in [workshop_btn, decrypt_btn, freezer_btn,
 				bunk_btn, marta_btn, okeke_btn, vendor_btn]:
 		btn.focus_mode = Control.FOCUS_ALL
+		UIStyle.apply_button(btn)
+
+	if GameState.rod_damaged:
+		workshop_btn.text = "workshop ⚠"
+		workshop_btn.add_theme_color_override("font_color", UIStyle.COL_WARNING)
+
+	if _has_new_marta_beat():
+		marta_btn.text = "marta !"
+		marta_btn.add_theme_color_override("font_color", UIStyle.COL_DEBT)
 
 	workshop_btn.pressed.connect(func(): _go_to("workshop"))
 	decrypt_btn.pressed.connect(func(): _go_to("decrypt"))
@@ -50,24 +72,34 @@ func _ready() -> void:
 	okeke_btn.pressed.connect(func(): _go_to("okeke"))
 	vendor_btn.pressed.connect(func(): _go_to("vendor"))
 
-	# Show rod damage warning
-	if GameState.rod_damaged:
-		workshop_btn.text = "Workshop ⚠"
-
-	if _has_new_marta_beat():
-		marta_btn.text = "Marta !"
-
 	await get_tree().process_frame
-	$VBoxContainer/ZoneSelector/District7Button.grab_focus()
+	var focus_id := GameState.last_hub_focus
+	GameState.last_hub_focus = ""
+	match focus_id:
+		"workshop": workshop_btn.grab_focus()
+		"decrypt":  decrypt_btn.grab_focus()
+		"freezer":  freezer_btn.grab_focus()
+		"bunk":     bunk_btn.grab_focus()
+		"marta":    marta_btn.grab_focus()
+		"okeke":    okeke_btn.grab_focus()
+		"vendor":   vendor_btn.grab_focus()
+		_:          $VBoxContainer/ZoneSelector.get_child(1).grab_focus()
 
 func _refresh_labels(_ignored: int = 0) -> void:
-	credits_label.text = "CREDITS: %d CR" % GameState.credits
-	debt_label.text = "DEBT: %d CR  |  PRESSURE: %d" % [GameState.debt, GameState.pressure_level]
+	var runs_to_pmt = 5 - GameState.runs_since_payment
+	debt_label.text = "debt  %d cr\npressure %d/5  ·  payment in %d run%s" % [
+		GameState.debt, GameState.pressure_level,
+		runs_to_pmt, "s" if runs_to_pmt != 1 else ""]
+	UIStyle.apply_label(debt_label, UIStyle.COL_DEBT)
+
+	credits_label.text = "wallet\n%d cr" % GameState.credits
+	UIStyle.apply_label(credits_label, UIStyle.COL_TEXT)
 
 func _on_dive_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/dive_run/DiveRun.tscn")
 
 func _go_to(location: String) -> void:
+	GameState.last_hub_focus = location
 	get_tree().change_scene_to_file(SCENES[location])
 
 func _has_new_marta_beat() -> bool:
@@ -82,4 +114,3 @@ static func _beat_index(run: int) -> int:
 	if run >= 3:  return 2
 	if run >= 1:  return 1
 	return 0
-
