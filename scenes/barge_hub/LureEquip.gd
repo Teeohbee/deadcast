@@ -19,7 +19,7 @@ func _rebuild() -> void:
 	var focus_btn: Button = null
 	for lure_id in LURE_IDS:
 		var lure: LureData = load("res://resources/lures/%s.tres" % lure_id)
-		var qty := GameState.lure_inventory.get(lure_id, 0)
+		var qty: int = GameState.lure_inventory.get(lure_id, 0)
 		var is_equipped := GameState.current_lure != null and GameState.get_lure_id(GameState.current_lure) == lure_id
 		var btn := Button.new()
 		btn.focus_mode = Control.FOCUS_ALL
