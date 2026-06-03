@@ -18,8 +18,10 @@ func _rebuild() -> void:
 
 	var focus_btn: Button = null
 	for lure_id in LURE_IDS:
-		var lure: LureData = load("res://resources/lures/%s.tres" % lure_id)
 		var qty: int = GameState.lure_inventory.get(lure_id, 0)
+		if qty == 0:
+			continue
+		var lure: LureData = load("res://resources/lures/%s.tres" % lure_id)
 		var is_equipped := GameState.current_lure != null and GameState.get_lure_id(GameState.current_lure) == lure_id
 		var btn := Button.new()
 		btn.focus_mode = Control.FOCUS_ALL
@@ -28,7 +30,6 @@ func _rebuild() -> void:
 			"│  > " if is_equipped else "│    ",
 			lure.lure_name.to_lower(),
 			_stock_display(qty)]
-		btn.disabled = not GameState.INFINITE_STOCK == qty and qty == 0
 		btn.pressed.connect(func() -> void: _on_lure_selected(lure))
 		add_child(btn)
 		if lure.description != "":
