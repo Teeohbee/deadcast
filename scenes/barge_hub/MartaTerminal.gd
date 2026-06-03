@@ -5,17 +5,11 @@ extends Control
 @onready var dialogue_label: Label = $VBoxContainer/DialogueLabel
 @onready var payment_label: Label = $VBoxContainer/PaymentLabel
 @onready var story_beat_label: Label = $VBoxContainer/StoryBeatLabel
-@onready var back_button: Button = $VBoxContainer/BackButton
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
-	UIStyle.apply_background(self)
-	back_button.focus_mode = Control.FOCUS_ALL
-	UIStyle.apply_button(back_button)
-	back_button.text = "disconnect"
-	back_button.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/barge_hub/BargeHub.tscn"))
 
-	$VBoxContainer/TitleLabel.text = "// marta voss — encrypted terminal"
+	$VBoxContainer/TitleLabel.text = "┌── [ MARTA VOSS — ENCRYPTED TERMINAL ] ──────────────────────"
 	UIStyle.apply_label($VBoxContainer/TitleLabel, UIStyle.COL_DIM)
 
 	GameState.marta_last_seen_run = GameState.run_count
@@ -42,8 +36,6 @@ func _ready() -> void:
 		payment_label.text = "next payment: 10,000cr due in %d run%s." % [
 			runs_to_payment, "s" if runs_to_payment != 1 else ""]
 		UIStyle.apply_label(payment_label, UIStyle.COL_DIM)
-
-	back_button.grab_focus()
 
 func _marta_story_beat(run: int) -> String:
 	if run >= 12:

@@ -6,25 +6,21 @@ const LOAD_AMOUNT: int = 1000
 @onready var status_label: Label = $VBoxContainer/StatusLabel
 @onready var load_button: Button = $VBoxContainer/LoadButton
 @onready var message_label: Label = $VBoxContainer/MessageLabel
-@onready var back_button: Button = $VBoxContainer/BackButton
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
-	UIStyle.apply_background(self)
-	for btn in [load_button, back_button]:
+	for btn in [load_button]:
 		btn.focus_mode = Control.FOCUS_ALL
 		UIStyle.apply_button(btn)
 
-	$VBoxContainer/TitleLabel.text = "// decrypt box"
+	$VBoxContainer/TitleLabel.text = "┌── [ DECRYPT BOX ] ───────────────────────────────────────────"
 	UIStyle.apply_label($VBoxContainer/TitleLabel, UIStyle.COL_DIM)
 	UIStyle.apply_label(status_label, UIStyle.COL_TEXT)
 	UIStyle.apply_label(message_label, UIStyle.COL_DIM)
 
-	back_button.text = "return to deck"
 	load_button.pressed.connect(_on_load_pressed)
-	back_button.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/barge_hub/BargeHub.tscn"))
 	_refresh()
-	back_button.grab_focus()
+	load_button.grab_focus()
 
 func _refresh() -> void:
 	var decrypting = GameState.decrypt_box_runs > 0

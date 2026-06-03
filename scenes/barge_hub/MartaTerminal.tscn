@@ -30,6 +30,3 @@ text = ""
 
 [node name="PaymentLabel" type="Label" parent="VBoxContainer"]
 text = ""
-
-[node name="BackButton" type="Button" parent="VBoxContainer"]
-text = "Disconnect"

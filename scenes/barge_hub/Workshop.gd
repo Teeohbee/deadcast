@@ -8,29 +8,26 @@ const DEPTH_UPGRADE_AMOUNT: int = 50
 @onready var repair_button: Button = $VBoxContainer/RepairButton
 @onready var depth_upgrade_button: Button = $VBoxContainer/DepthUpgradeButton
 @onready var message_label: Label = $VBoxContainer/MessageLabel
-@onready var back_button: Button = $VBoxContainer/BackButton
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
-	for btn in [repair_button, depth_upgrade_button, back_button]:
+	for btn in [repair_button, depth_upgrade_button]:
 		btn.focus_mode = Control.FOCUS_ALL
 		UIStyle.apply_button(btn)
 
-	$VBoxContainer/TitleLabel.text = "// workshop"
+	$VBoxContainer/TitleLabel.text = "┌── [ WORKSHOP ] ──────────────────────────────────────────────"
 	UIStyle.apply_label($VBoxContainer/TitleLabel, UIStyle.COL_DIM)
 	UIStyle.apply_label(rod_label, UIStyle.COL_TEXT)
 	UIStyle.apply_label(message_label, UIStyle.COL_DIM)
 
 	repair_button.text = "repair rod"
 	depth_upgrade_button.text = "depth upgrade"
-	back_button.text = "return to deck"
 
 	repair_button.pressed.connect(_on_repair_pressed)
 	depth_upgrade_button.pressed.connect(_on_depth_upgrade_pressed)
-	back_button.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/barge_hub/BargeHub.tscn"))
 
 	_refresh()
-	back_button.grab_focus()
+	repair_button.grab_focus()
 
 func _refresh() -> void:
 	var rod = GameState.current_rod

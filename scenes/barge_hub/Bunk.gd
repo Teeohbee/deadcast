@@ -2,18 +2,11 @@
 extends Control
 
 @onready var journal_label: RichTextLabel = $VBoxContainer/JournalLabel
-@onready var back_button: Button = $VBoxContainer/BackButton
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
-	UIStyle.apply_background(self)
-	back_button.focus_mode = Control.FOCUS_ALL
-	UIStyle.apply_button(back_button)
-	back_button.text = "return to deck"
-	back_button.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/barge_hub/BargeHub.tscn"))
-	back_button.grab_focus()
 
-	$VBoxContainer/TitleLabel.text = "// the bunk"
+	$VBoxContainer/TitleLabel.text = "┌── [ THE BUNK ] ──────────────────────────────────────────────"
 	UIStyle.apply_label($VBoxContainer/TitleLabel, UIStyle.COL_DIM)
 
 	if GameState.journal_entries.is_empty():
