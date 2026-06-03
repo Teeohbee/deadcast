@@ -9,23 +9,16 @@ script = ExtResource("1_HUD")
 layout_mode = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -210.0
+offset_left = -260.0
 offset_top = 10.0
 offset_right = -10.0
-offset_bottom = 145.0
+offset_bottom = 120.0
 
 [node name="CreditsLabel" type="Label" parent="VBoxContainer"]
 text = "CR: 0"
 
 [node name="TensionLabel" type="Label" parent="VBoxContainer"]
-text = "Tension: 0 / 80"
-
-[node name="TensionBar" type="ProgressBar" parent="VBoxContainer"]
-min_value = 0.0
-max_value = 100.0
-value = 0.0
-custom_minimum_size = Vector2(200, 20)
-show_percentage = false
+text = "T [░░░░░░░░░░░░] 0/80"
 
 [node name="SlotLabel" type="Label" parent="VBoxContainer"]
 text = ""
