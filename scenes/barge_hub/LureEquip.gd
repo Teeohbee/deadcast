@@ -25,6 +25,7 @@ func _rebuild() -> void:
 		var is_equipped := GameState.current_lure != null and GameState.get_lure_id(GameState.current_lure) == lure_id
 		var btn := Button.new()
 		btn.focus_mode = Control.FOCUS_ALL
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		UIStyle.apply_button(btn)
 		btn.text = "%s%s (%s)" % [
 			"│  > " if is_equipped else "│    ",

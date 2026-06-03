@@ -15,6 +15,7 @@ func _ready() -> void:
 
 		var btn := Button.new()
 		btn.focus_mode = Control.FOCUS_ALL
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		UIStyle.apply_button(btn)
 		btn.pressed.connect(func() -> void: GameState.select_zone(zone_id))
 		add_child(btn)

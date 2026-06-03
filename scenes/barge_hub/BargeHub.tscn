@@ -25,7 +25,6 @@ offset_bottom = -20.0
 text = "// the meridian — surface deck"
 
 [node name="ContentRow" type="HBoxContainer" parent="VBoxContainer"]
-size_flags_vertical = 3
 
 [node name="LeftColumn" type="VBoxContainer" parent="VBoxContainer/ContentRow"]
 size_flags_horizontal = 3
@@ -40,6 +39,9 @@ size_flags_horizontal = 4
 vertical_alignment = 0
 autowrap_mode = 0
 text = ""
+
+[node name="Spacer" type="Control" parent="VBoxContainer"]
+size_flags_vertical = 3
 
 [node name="SeparatorLabel" type="Label" parent="VBoxContainer"]
 text = "── locations ─────────────────────────────────────────────────"
