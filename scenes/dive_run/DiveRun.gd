@@ -19,6 +19,8 @@ var _current_event: CatchEvent = null
 var _current_catch_data: CatchData = null  # augmented data shown to player (may have Shock option injected)
 
 func _ready() -> void:
+	catch_container.theme = UIStyle.get_theme()
+	UIStyle.apply_background(catch_container)
 	line_system.snapped.connect(_on_line_snapped)
 	line_system.tension_updated.connect(func(v: float) -> void: EventBus.tension_changed.emit(v))
 
@@ -227,7 +229,7 @@ func _on_line_snapped() -> void:
 		child.queue_free()
 	var snap_label = Label.new()
 	snap_label.text = "LINE SNAPPED"
-	snap_label.add_theme_font_size_override("font_size", 48)
+	UIStyle.apply_label(snap_label, UIStyle.COL_DEBT)
 	snap_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	catch_container.add_child(snap_label)
 	await get_tree().create_timer(1.5).timeout
