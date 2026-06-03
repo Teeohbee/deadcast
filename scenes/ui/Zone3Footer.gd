@@ -40,9 +40,10 @@ func _ready() -> void:
 	tab_row.add_child(_action_hint)
 
 	UIController.screen_changed.connect(_on_screen_changed)
-	UIController.dive_state_changed.connect(_on_dive_state_changed)
 
 func _on_screen_changed(id: String) -> void:
+	visible = _TABS.any(func(t: Dictionary) -> bool: return t["id"] == id)
+
 	for i in _tab_buttons.size():
 		var btn: Button = _tab_buttons[i]
 		var tab_id: String = _TABS[i]["id"]
@@ -59,6 +60,3 @@ func _on_screen_changed(id: String) -> void:
 			btn.add_theme_color_override("font_color", UIStyle.COL_DIM)
 
 	_action_hint.text = "[ENTER] DIVE" if id == "deck" else ""
-
-func _on_dive_state_changed(active: bool) -> void:
-	visible = not active
