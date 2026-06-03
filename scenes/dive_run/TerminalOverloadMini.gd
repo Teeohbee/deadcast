@@ -137,14 +137,14 @@ func _execute_command(cmd: Dictionary) -> void:
     if cmd.id == "OVERLOAD_CORE":
         GameState.consume_lure_use()
 
-    var succeeded := cmd.success_rate >= 1.0 or randf() < cmd.success_rate
+    var succeeded: bool = float(cmd.success_rate) >= 1.0 or randf() < float(cmd.success_rate)
     if succeeded:
-        _current_tension = clampi(_current_tension + cmd.t_cost, 0, max_tension)
-        _anchor_current = maxi(0, _anchor_current + cmd.anchor_hit)
+        _current_tension = clampi(_current_tension + int(cmd.t_cost), 0, max_tension)
+        _anchor_current = maxi(0, _anchor_current + int(cmd.anchor_hit))
         _update_status_ui()
         _show_result_text(cmd.id + " — EXECUTED", UIStyle.COL_TEXT)
     else:
-        var total_penalty := cmd.t_cost + cmd.fail_t
+        var total_penalty: int = int(cmd.t_cost) + int(cmd.fail_t)
         _current_tension = clampi(_current_tension + total_penalty, 0, max_tension)
         _update_status_ui()
         _show_result_text("%s — FAILED  +%dT backlash" % [cmd.id, cmd.fail_t], UIStyle.COL_DEBT)
