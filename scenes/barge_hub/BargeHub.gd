@@ -66,3 +66,4 @@ func _on_sell_freezer() -> void:
 	GameState.freezer_runs = 0
 	GameState.save()
 	_refresh_freezer()
+	dive_button.grab_focus()
