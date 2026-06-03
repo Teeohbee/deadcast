@@ -22,17 +22,17 @@ const _TAB_ORDER: Array[String] = [
 
 var current_screen: String = ""
 var _zone2: Control = null
-var _zone3: Control = null
 
-func initialize(zone2: Control, zone3: Control) -> void:
+func initialize(zone2: Control) -> void:
     _zone2 = zone2
-    _zone3 = zone3
 
 func navigate_to(id: String) -> void:
     assert(_zone2 != null, "UIController.initialize() must be called before navigate_to()")
 
     if id == "deck" and GameState.pressure_level >= 5:
         id = "gameover"
+
+    assert(id in _REGISTRY, "UIController: unknown screen id '%s'" % id)
 
     for child in _zone2.get_children():
         child.queue_free()
