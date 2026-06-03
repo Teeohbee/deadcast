@@ -15,3 +15,4 @@ zone_weights = {"district7": 0, "exchange": 1, "axiom": 5}
 flavor_text = "Still active. Still armed. Locked onto your line."
 layer = 0
 stamina = 80
+anchor_strength = 4

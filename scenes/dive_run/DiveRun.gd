@@ -2,7 +2,7 @@
 extends Node2D
 
 @export var catch_event_scene: PackedScene = preload("res://scenes/dive_run/CatchEvent.tscn")
-@export var fishing_mini_scene: PackedScene = preload("res://scenes/dive_run/FishingMini.tscn")
+@export var terminal_overload_scene: PackedScene = preload("res://scenes/dive_run/TerminalOverloadMini.tscn")
 
 const ROD_DAMAGE_TENSION_PENALTY: int = 25
 const RESULT_BEAT_SECS: float = 1.5
@@ -55,7 +55,7 @@ func _show_next_catch() -> void:
 	EventBus.slot_changed.emit(_current_slot + 1, _column.size())
 
 	if catch_data.behavior == CatchData.BehaviorType.AGGRESSIVE:
-		_show_fishing_mini(catch_data)
+		_show_terminal_overload(catch_data)
 		return
 
 	if GameState.current_lure and GameState.current_lure.effect == LureData.LureEffect.DEEP_PULSE:
@@ -101,27 +101,41 @@ func _inject_shock_option(catch_data: CatchData) -> CatchData:
 	augmented.options = new_options
 	return augmented
 
-func _show_fishing_mini(catch_data: CatchData) -> void:
-	var mini: FishingMini = fishing_mini_scene.instantiate()
+func _show_terminal_overload(catch_data: CatchData) -> void:
+	var mini: TerminalOverloadMini = terminal_overload_scene.instantiate()
 	mini.max_tension = line_system.max_tension
-	mini.catch_stamina = catch_data.stamina
+	mini.anchor_strength = catch_data.anchor_strength
+	mini.starting_tension = int(line_system.tension)
+	mini.corruption = line_system.corruption
+	mini.catch_name_str = catch_data.catch_name
+	mini.catch_type = catch_data.catch_type
+	mini.slot = _current_slot + 1
+	mini.total_slots = _column.size()
+	mini.shock_lure_equipped = (GameState.current_lure != null and
+		GameState.current_lure.effect == LureData.LureEffect.SHOCK)
 	catch_container.add_child(mini)
-	mini.position = Vector2.ZERO
-	mini.size = get_viewport().get_visible_rect().size
-	mini.start(catch_data.catch_name)
-	mini.caught.connect(func(_t: int) -> void: _on_minigame_caught(catch_data))
+	mini.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	mini.caught.connect(func(final_tension: int) -> void: _on_terminal_caught(catch_data, final_tension))
+	mini.aborted.connect(func(restore_tension: int) -> void: _on_terminal_aborted(restore_tension))
 	mini.snapped.connect(_on_line_snapped)
+	mini.start()
 
-func _on_minigame_caught(catch_data: CatchData) -> void:
+func _on_terminal_caught(catch_data: CatchData, final_tension: int) -> void:
 	for child in catch_container.get_children():
 		child.queue_free()
+	line_system.sync_tension(final_tension)
 	var reward_option: CatchOption = catch_data.options[0]
 	_run_credits += reward_option.credit_value
 	if catch_data.catch_type == CatchData.CatchType.BIO:
 		_bio_credits += reward_option.credit_value
 	line_system.add_corruption(catch_data.corruption_gain)
-	# Intentionally bypasses _advance_slot: FishingMini manages tension internally,
-	# so we skip the zone passive_tension_drain for AGGRESSIVE catches.
+	_current_slot += 1
+	_show_next_catch()
+
+func _on_terminal_aborted(restore_tension: int) -> void:
+	for child in catch_container.get_children():
+		child.queue_free()
+	line_system.sync_tension(restore_tension)
 	_current_slot += 1
 	_show_next_catch()
 

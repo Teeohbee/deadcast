@@ -23,6 +23,10 @@ func apply_tension(delta: int) -> void:
 func add_corruption(delta: int) -> void:
     corruption = clampf(corruption + delta, 0.0, MAX_CORRUPTION)
 
+func sync_tension(value: int) -> void:
+    tension = clampf(float(value), 0.0, float(max_tension))
+    tension_updated.emit(tension)
+
 func reset() -> void:
     tension = 0.0
     corruption = 0.0
