@@ -13,6 +13,7 @@ var depth: float = 0.0  # tracked but not yet used for gating (Phase 2)
 
 signal snapped
 signal tension_updated(value: float)
+signal corruption_updated(value: float)
 
 func apply_tension(delta: int) -> void:
     tension = clampf(tension + delta, 0.0, float(max_tension))
@@ -22,6 +23,7 @@ func apply_tension(delta: int) -> void:
 
 func add_corruption(delta: int) -> void:
     corruption = clampf(corruption + delta, 0.0, MAX_CORRUPTION)
+    corruption_updated.emit(corruption)
 
 func sync_tension(value: int) -> void:
     tension = clampf(float(value), 0.0, float(max_tension))
@@ -31,3 +33,4 @@ func reset() -> void:
     tension = 0.0
     corruption = 0.0
     tension_updated.emit(tension)
+    corruption_updated.emit(corruption)

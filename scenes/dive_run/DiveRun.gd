@@ -5,7 +5,6 @@ extends Node2D
 @export var terminal_overload_scene: PackedScene = preload("res://scenes/dive_run/TerminalOverloadMini.tscn")
 
 const ROD_DAMAGE_TENSION_PENALTY: int = 25
-const RESULT_BEAT_SECS: float = 1.5
 @onready var line_system: LineSystem = $LineSystem
 @onready var catch_container: Control = $CatchContainer
 
@@ -23,11 +22,13 @@ func _ready() -> void:
 	UIStyle.apply_background(catch_container)
 	line_system.snapped.connect(_on_line_snapped)
 	line_system.tension_updated.connect(func(v: float) -> void: EventBus.tension_changed.emit(v))
+	line_system.corruption_updated.connect(func(v: float) -> void: EventBus.corruption_changed.emit(v))
 
 	if GameState.current_rod:
 		line_system.max_tension = GameState.current_rod.tension_cap
 		if GameState.rod_damaged:
 			line_system.max_tension = max(10, line_system.max_tension - ROD_DAMAGE_TENSION_PENALTY)
+	EventBus.max_tension_changed.emit(line_system.max_tension)
 
 	var zone_id = GameState.selected_zone
 	_zone_data = load("res://resources/zones/%s.tres" % zone_id)
@@ -35,7 +36,7 @@ func _ready() -> void:
 	var max_depth = GameState.current_rod.max_depth if GameState.current_rod else 100
 	var lure_effect = GameState.current_lure.effect if GameState.current_lure else LureData.LureEffect.NONE
 	_column = CatchPool.generate_column(zone_id, line_system.corruption, max_depth, lure_effect)
-if GameState.current_lure and GameState.current_lure.effect == LureData.LureEffect.GHOST_BAIT:
+	if GameState.current_lure and GameState.current_lure.effect == LureData.LureEffect.GHOST_BAIT:
 		for i in _column.size():
 			var c = _column[i]
 			if c.catch_type == CatchData.CatchType.ENTITY and c.behavior == CatchData.BehaviorType.AGGRESSIVE:
@@ -177,9 +178,9 @@ func _on_option_selected(index: int) -> void:
 			_apply_option(option, catch_data)
 
 func _show_result_beat(text: String, color: Color) -> void:
-	if _current_event:
+	if _current_event and not _snapped:
 		_current_event.show_result(text, color)
-	await get_tree().create_timer(RESULT_BEAT_SECS).timeout
+		await _current_event.result_dismissed
 
 func _apply_and_record(option: CatchOption, catch_data: CatchData) -> void:
 	line_system.apply_tension(option.tension_delta)
@@ -241,12 +242,50 @@ func _on_line_snapped() -> void:
 	_bio_credits = 0
 	for child in catch_container.get_children():
 		child.queue_free()
-	var snap_label = Label.new()
-	snap_label.text = "LINE SNAPPED"
-	UIStyle.apply_label(snap_label, UIStyle.COL_DEBT)
-	snap_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	catch_container.add_child(snap_label)
-	await get_tree().create_timer(1.5).timeout
+
+	# Build corrupted terminal screen that mirrors CatchEvent's layout
+	var root := VBoxContainer.new()
+	root.theme = UIStyle.get_theme()
+	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	root.offset_left = 20.0
+	root.offset_top = 20.0
+	root.offset_right = -20.0
+	root.offset_bottom = -20.0
+	catch_container.add_child(root)
+
+	var _row := func(text: String, color: Color) -> void:
+		var lbl := Label.new()
+		lbl.text = text
+		UIStyle.apply_label(lbl, color)
+		root.add_child(lbl)
+
+	var sep  := "────────────────────────────────────────────────────────────────"
+	var sep_s := "────────────────────────────────────────────────"
+
+	_row.call("SLOT: %d/%d  │  ZONE: %s  │  TENSION: [OVERFLOW]" % [
+		_current_slot + 1, _column.size(),
+		GameState.selected_zone.to_upper().replace("_", " ")],
+		UIStyle.COL_DIM)
+
+	_row.call(
+		"%s\n[!!! SIGNAL LOST !!!]\nNAME:     ░░░░░░░░░░░░░░░░░░░░░░░░\nSTATUS:   [CRITICAL FAILURE]\n%s" % [sep, sep],
+		UIStyle.COL_DEBT)
+
+	_row.call(
+		"┌── TELEMETRY_READOUT %s\n│  [ !!! CONNECTION TERMINATED !!! ]\n│  CRITICAL: LINE TENSION EXCEEDED / SIGNAL LOST\n└%s" % [sep_s, sep_s],
+		UIStyle.COL_DEBT)
+
+	var dismiss := Button.new()
+	dismiss.text = ">>> [ RETREAT TO SURFACE ]"
+	dismiss.focus_mode = Control.FOCUS_ALL
+	UIStyle.apply_button(dismiss)
+	root.add_child(dismiss)
+
+	await get_tree().create_timer(0.5).timeout
+	if is_instance_valid(dismiss):
+		dismiss.grab_focus()
+		await dismiss.pressed
+
 	_end_run(true)
 
 func _end_run(snapped: bool) -> void:

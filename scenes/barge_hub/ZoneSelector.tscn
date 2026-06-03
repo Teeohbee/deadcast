@@ -6,4 +6,4 @@
 script = ExtResource("1_zsel")
 
 [node name="ZoneLabel" type="Label" parent="."]
-text = "── zone ────────────────────────────────"
+text = "┌── [ AVAILABLE ZONES ] ─────────────────────────────────────"
