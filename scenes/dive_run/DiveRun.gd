@@ -23,6 +23,7 @@ func _ready() -> void:
 	UIStyle.apply_background(catch_container)
 	line_system.snapped.connect(_on_line_snapped)
 	line_system.tension_updated.connect(func(v: float) -> void: EventBus.tension_changed.emit(v))
+	line_system.corruption_updated.connect(func(v: float) -> void: EventBus.corruption_changed.emit(v))
 
 	if GameState.current_rod:
 		line_system.max_tension = GameState.current_rod.tension_cap
@@ -241,12 +242,21 @@ func _on_line_snapped() -> void:
 	_bio_credits = 0
 	for child in catch_container.get_children():
 		child.queue_free()
-	var snap_label = Label.new()
-	snap_label.text = "LINE SNAPPED"
-	UIStyle.apply_label(snap_label, UIStyle.COL_DEBT)
-	snap_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	catch_container.add_child(snap_label)
-	await get_tree().create_timer(1.5).timeout
+	var snap_block := VBoxContainer.new()
+	snap_block.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	snap_block.alignment = BoxContainer.ALIGNMENT_CENTER
+	catch_container.add_child(snap_block)
+	var _add_snap_line := func(text: String, color: Color) -> void:
+		var lbl := Label.new()
+		lbl.text = text
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		UIStyle.apply_label(lbl, color)
+		snap_block.add_child(lbl)
+	_add_snap_line.call("━━━━━━━━━━━━━━━━━━━━━━━━━━━━", UIStyle.COL_DEBT)
+	_add_snap_line.call("[ CONNECTION TERMINATED ]", UIStyle.COL_DEBT)
+	_add_snap_line.call("signal lost  /  line failure", UIStyle.COL_DIM)
+	_add_snap_line.call("━━━━━━━━━━━━━━━━━━━━━━━━━━━━", UIStyle.COL_DEBT)
+	await get_tree().create_timer(2.0).timeout
 	_end_run(true)
 
 func _end_run(snapped: bool) -> void:
