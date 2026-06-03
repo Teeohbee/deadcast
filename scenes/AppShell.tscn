@@ -1,0 +1,33 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/AppShell.gd" id="1_shell"]
+[ext_resource type="PackedScene" path="res://scenes/ui/Zone1Header.tscn" id="2_z1"]
+[ext_resource type="PackedScene" path="res://scenes/ui/Zone3Footer.tscn" id="3_z3"]
+
+[node name="AppShell" type="Control"]
+script = ExtResource("1_shell")
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.0392, 0.0392, 0.0392, 1)
+mouse_filter = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Zone1Header" parent="VBoxContainer" instance=ExtResource("2_z1")]
+
+[node name="Zone2Container" type="Control" parent="VBoxContainer"]
+size_flags_vertical = 3
+
+[node name="Zone3Footer" parent="VBoxContainer" instance=ExtResource("3_z3")]
