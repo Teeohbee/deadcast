@@ -1,0 +1,27 @@
+# deadcast
+
+A terminal-style deep-sea data fishing game.
+
+You operate a signal rig from a decaying barge — the Meridian Deck — casting lines into submerged network infrastructure to extract data, encounter entities, and pay off a mounting debt to Marta Voss before she sends someone to collect.
+
+## premise
+
+The Sump is a drowned city. Its servers still run. Someone has to fish them.
+
+DEADCAST_OS presents itself as a diegetic operating system running on failing barge hardware. Everything you interact with — the vendors, the debt clock, the dive terminal — is mediated through this interface.
+
+## mechanics
+
+- **Dive runs** — cast into one of several zones, work through a column of catches: data containers, bio specimens, mechanical systems, entities
+- **Tension** — your line has a cap; exceed it and it snaps, ending the run early
+- **Corruption** — builds over a run, affects catch behaviour and hostile encounter difficulty
+- **Debt clock** — 10,000cr due every five runs; miss payments and pressure escalates
+- **Vendors** — Okeke sells lures at a discount; the vendor sells rods and restocks; both have opinions about you
+
+## built with
+
+[Godot 4.6](https://godotengine.org/)
+
+## running
+
+Open the project in Godot 4.6 and run from the editor. No external dependencies.
