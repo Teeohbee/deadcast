@@ -63,7 +63,7 @@ func _show_next_catch() -> void:
 	_show_catch_event(catch_data)
 
 func _show_deep_pulse_reveal(catch_data: CatchData) -> void:
-	var type_str := CatchData.CatchType.keys()[catch_data.catch_type].to_lower()
+	var type_str: String = str(CatchData.CatchType.keys()[catch_data.catch_type]).to_lower()
 	var label := Label.new()
 	label.theme = UIStyle.get_theme()
 	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
