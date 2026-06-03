@@ -22,8 +22,9 @@ func get_theme() -> Theme:
 	_theme = Theme.new()
 	_theme.set_font("font", "Label", font)
 	_theme.set_font("font", "Button", font)
-	_theme.set_font("font", "RichTextLabel", font)
+	_theme.set_font("normal_font", "RichTextLabel", font)
 	_theme.set_color("font_color", "Label", COL_TEXT)
+	_theme.set_color("default_color", "RichTextLabel", COL_TEXT)
 	return _theme
 
 func apply_button(btn: Button) -> void:

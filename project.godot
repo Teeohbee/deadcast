@@ -56,6 +56,6 @@ action_dive={
 
 [rendering]
 
-environment/default_clear_color=Color(0.039216, 0.039216, 0.039216, 1)
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+environment/default_clear_color=Color(0.039216, 0.039216, 0.039216, 1)

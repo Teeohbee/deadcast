@@ -8,12 +8,16 @@ extends CanvasLayer
 @onready var slot_label: Label = $VBoxContainer/SlotLabel
 
 func _ready() -> void:
+	$VBoxContainer.theme = UIStyle.get_theme()
 	EventBus.credits_changed.connect(_on_credits_changed)
 	EventBus.tension_changed.connect(_on_tension_changed)
 	EventBus.slot_changed.connect(_on_slot_changed)
 	credits_label.text = "CR: %d" % GameState.credits
 	tension_bar.value = 0.0
 	_update_tension_label(0.0)
+	UIStyle.apply_label(credits_label, UIStyle.COL_TEXT)
+	UIStyle.apply_label(tension_label, UIStyle.COL_TEXT)
+	UIStyle.apply_label(slot_label, UIStyle.COL_TEXT)
 
 func _on_credits_changed(value: int) -> void:
 	credits_label.text = "CR: %d" % value

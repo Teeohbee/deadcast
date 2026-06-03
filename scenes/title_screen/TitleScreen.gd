@@ -15,7 +15,7 @@ func _ready() -> void:
 	continue_button.visible = save_exists
 	confirm_panel.visible = false
 
-	title_label.text = "┌ deadcast ──────────────────────┐\n└────────────────────────────────┘"
+	title_label.text = "┌ deadcast ──────────┐\n└────────────────────┘"
 	UIStyle.apply_label(title_label, UIStyle.COL_TEXT)
 	UIStyle.apply_label(confirm_label, UIStyle.COL_WARNING)
 

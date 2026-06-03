@@ -23,6 +23,8 @@ var _reel_held: bool = false
 @onready var tension_bar: ProgressBar = $VBoxContainer/TensionBar
 
 func _ready() -> void:
+    self.theme = UIStyle.get_theme()
+    UIStyle.apply_background(self)
     set_process(false)
 
 func start(catch_name: String) -> void:
@@ -31,8 +33,10 @@ func start(catch_name: String) -> void:
     state = State.ENGAGED
     if catch_label:
         catch_label.text = catch_name
+        UIStyle.apply_label(catch_label, UIStyle.COL_TEXT)
     if instruction_label:
         instruction_label.text = "REEL [SPACE/A]   SLACK [J/B]"
+        UIStyle.apply_label(instruction_label, UIStyle.COL_DIM)
     if tension_bar:
         tension_bar.max_value = max_tension
         tension_bar.value = 0.0
