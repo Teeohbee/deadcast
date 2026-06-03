@@ -131,6 +131,7 @@ func _build_vendor_stock() -> void:
 func _make_stock_btn(text: String, disabled: bool) -> Button:
 	var btn := Button.new()
 	btn.focus_mode = Control.FOCUS_ALL
+	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	btn.text = text
 	btn.disabled = disabled
 	UIStyle.apply_button(btn)

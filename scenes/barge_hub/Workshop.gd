@@ -13,6 +13,7 @@ func _ready() -> void:
 	self.theme = UIStyle.get_theme()
 	for btn in [repair_button, depth_upgrade_button]:
 		btn.focus_mode = Control.FOCUS_ALL
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		UIStyle.apply_button(btn)
 
 	$VBoxContainer/TitleLabel.text = "┌── [ WORKSHOP ] ──────────────────────────────────────────────"

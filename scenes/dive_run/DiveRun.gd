@@ -277,6 +277,7 @@ func _on_line_snapped() -> void:
 	var dismiss := Button.new()
 	dismiss.text = ">>> [ RETREAT TO SURFACE ]"
 	dismiss.focus_mode = Control.FOCUS_ALL
+	dismiss.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	UIStyle.apply_button(dismiss)
 	root.add_child(dismiss)
 

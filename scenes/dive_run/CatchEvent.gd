@@ -55,6 +55,7 @@ func populate(catch_data: CatchData, slot: int = 0, total_slots: int = 0, tensio
 		var btn := Button.new()
 		btn.text = _format_option(i + 1, option, catch_data.behavior)
 		btn.focus_mode = Control.FOCUS_ALL
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		UIStyle.apply_button(btn)
 		var idx := i
 		btn.pressed.connect(func() -> void: _on_button_pressed(idx))
