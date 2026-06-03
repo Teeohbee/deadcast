@@ -4,20 +4,11 @@ extends Control
 @onready var account_label: Label = $VBoxContainer/ContentRow/RightColumn/AccountLabel
 @onready var freezer_label: Label = $VBoxContainer/ContentRow/RightColumn/FreezerLabel
 @onready var freezer_sell_btn: Button = $VBoxContainer/ContentRow/RightColumn/FreezerSellButton
-@onready var loc_header: Label = $VBoxContainer/LocHeader
-@onready var loc_footer: Label = $VBoxContainer/LocFooter
 @onready var dive_button: Button = $VBoxContainer/DiveRow/DiveButton
-@onready var workshop_btn: Button = $VBoxContainer/LocationButtons/WorkshopBtn
-@onready var decrypt_btn: Button = $VBoxContainer/LocationButtons/DecryptBtn
-@onready var bunk_btn: Button = $VBoxContainer/LocationButtons/BunkBtn
-@onready var marta_btn: Button = $VBoxContainer/LocationButtons/MartaBtn
-@onready var vendors_btn: Button = $VBoxContainer/LocationButtons/VendorsBtn
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
 
-	UIStyle.apply_label(loc_header, UIStyle.COL_DIM)
-	UIStyle.apply_label(loc_footer, UIStyle.COL_DIM)
 	UIStyle.apply_label(account_label, UIStyle.COL_TEXT)
 	UIStyle.apply_label(freezer_label, UIStyle.COL_DIM)
 	UIStyle.apply_button(dive_button)
@@ -25,23 +16,6 @@ func _ready() -> void:
 	dive_button.focus_mode = Control.FOCUS_ALL
 	freezer_sell_btn.focus_mode = Control.FOCUS_ALL
 
-	for btn in [workshop_btn, decrypt_btn, bunk_btn, marta_btn, vendors_btn]:
-		btn.focus_mode = Control.FOCUS_ALL
-		UIStyle.apply_button(btn)
-
-	if GameState.rod_damaged:
-		workshop_btn.text = "workshop ⚠"
-		workshop_btn.add_theme_color_override("font_color", UIStyle.COL_WARNING)
-
-	if GameState.has_new_marta_beat():
-		marta_btn.text = "marta !"
-		marta_btn.add_theme_color_override("font_color", UIStyle.COL_DEBT)
-
-	workshop_btn.pressed.connect(func(): UIController.navigate_to("workshop"))
-	decrypt_btn.pressed.connect(func(): UIController.navigate_to("decrypt"))
-	bunk_btn.pressed.connect(func(): UIController.navigate_to("bunk"))
-	marta_btn.pressed.connect(func(): UIController.navigate_to("marta"))
-	vendors_btn.pressed.connect(func(): UIController.navigate_to("vendors"))
 	dive_button.pressed.connect(func(): UIController.navigate_to("dive"))
 	freezer_sell_btn.pressed.connect(_on_sell_freezer)
 

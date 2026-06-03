@@ -49,29 +49,6 @@ visible = false
 [node name="Spacer" type="Control" parent="VBoxContainer"]
 size_flags_vertical = 3
 
-[node name="LocHeader" type="Label" parent="VBoxContainer"]
-text = "┌── [ LOCATIONS ] ──────────────────────────────────────────────"
-
-[node name="LocationButtons" type="HBoxContainer" parent="VBoxContainer"]
-
-[node name="WorkshopBtn" type="Button" parent="VBoxContainer/LocationButtons"]
-text = "workshop"
-
-[node name="DecryptBtn" type="Button" parent="VBoxContainer/LocationButtons"]
-text = "decrypt box"
-
-[node name="BunkBtn" type="Button" parent="VBoxContainer/LocationButtons"]
-text = "bunk"
-
-[node name="MartaBtn" type="Button" parent="VBoxContainer/LocationButtons"]
-text = "marta"
-
-[node name="VendorsBtn" type="Button" parent="VBoxContainer/LocationButtons"]
-text = "vendors"
-
-[node name="LocFooter" type="Label" parent="VBoxContainer"]
-text = "└────────────────────────────────────────────────────────────────"
-
 [node name="DiveRow" type="HBoxContainer" parent="VBoxContainer"]
 
 [node name="DiveSpacer" type="Label" parent="VBoxContainer/DiveRow"]
