@@ -12,7 +12,7 @@ anchor_right = 1.0
 offset_left = -210.0
 offset_top = 10.0
 offset_right = -10.0
-offset_bottom = 120.0
+offset_bottom = 145.0
 
 [node name="CreditsLabel" type="Label" parent="VBoxContainer"]
 text = "CR: 0"
@@ -29,3 +29,6 @@ show_percentage = false
 
 [node name="SlotLabel" type="Label" parent="VBoxContainer"]
 text = ""
+
+[node name="CorruptionLabel" type="Label" parent="VBoxContainer"]
+text = "NOISE:  0%"
