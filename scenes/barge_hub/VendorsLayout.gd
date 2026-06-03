@@ -8,7 +8,6 @@ const ROD_PATHS: Array[String] = [
 	"res://resources/rods/ghost_line.tres",
 ]
 const LURE_PATHS: Array[String] = [
-	"res://resources/lures/basic_hook.tres",
 	"res://resources/lures/shock_lure.tres",
 	"res://resources/lures/decoy_swarm.tres",
 	"res://resources/lures/deep_pulse.tres",
@@ -76,6 +75,8 @@ func _build_okeke_stock() -> void:
 		stock_container.add_child(msg)
 		return
 
+	_add_dim_label("\"better prices than whoever else you're buying from.\ndon't ask where i get them.\"\n— okeke")
+
 	for path in OKEKE_LURE_PATHS:
 		var lure: LureData = load(path)
 		var price := int(lure.purchase_cost * OKEKE_DISCOUNT)
@@ -88,6 +89,8 @@ func _build_okeke_stock() -> void:
 		stock_container.add_child(btn)
 
 func _build_vendor_stock() -> void:
+	_add_dim_label("\"i don't ask where it came from. you shouldn't ask either.\"\n— the vendor")
+
 	var multiplier := GameState.get_vendor_price_multiplier()
 	if multiplier > 1.0:
 		var warn := Label.new()
