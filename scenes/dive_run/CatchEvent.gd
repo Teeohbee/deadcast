@@ -3,6 +3,7 @@ class_name CatchEvent
 extends Control
 
 signal option_selected(index: int)
+signal result_dismissed
 
 @onready var hud_label: Label = $VBoxContainer/HUDLabel
 @onready var name_label: Label = $VBoxContainer/NameLabel
@@ -112,6 +113,14 @@ func _animate_result(text: String, color: Color) -> void:
 
 	label.text = ">>> " + text
 	UIStyle.apply_label(label, color)
+
+	var btn := Button.new()
+	btn.text = "[CONTINUE →]"
+	btn.focus_mode = Control.FOCUS_ALL
+	UIStyle.apply_button(btn)
+	btn.pressed.connect(result_dismissed.emit)
+	options_container.add_child(btn)
+	btn.grab_focus()
 
 func _type_tag(catch_type: CatchData.CatchType) -> String:
 	match catch_type:

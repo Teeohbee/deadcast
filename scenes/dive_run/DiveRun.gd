@@ -5,7 +5,6 @@ extends Node2D
 @export var terminal_overload_scene: PackedScene = preload("res://scenes/dive_run/TerminalOverloadMini.tscn")
 
 const ROD_DAMAGE_TENSION_PENALTY: int = 25
-const RESULT_BEAT_SECS: float = 1.5
 @onready var line_system: LineSystem = $LineSystem
 @onready var catch_container: Control = $CatchContainer
 
@@ -178,9 +177,9 @@ func _on_option_selected(index: int) -> void:
 			_apply_option(option, catch_data)
 
 func _show_result_beat(text: String, color: Color) -> void:
-	if _current_event:
+	if _current_event and not _snapped:
 		_current_event.show_result(text, color)
-	await get_tree().create_timer(RESULT_BEAT_SECS).timeout
+		await _current_event.result_dismissed
 
 func _apply_and_record(option: CatchOption, catch_data: CatchData) -> void:
 	line_system.apply_tension(option.tension_delta)
