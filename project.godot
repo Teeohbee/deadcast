@@ -24,6 +24,7 @@ EventBus="*res://autoload/EventBus.gd"
 GameState="*res://autoload/GameState.gd"
 CatchPool="*res://autoload/CatchPool.gd"
 UIStyle="*res://autoload/UIStyle.gd"
+UIController="*res://autoload/UIController.gd"
 
 [display]
 
