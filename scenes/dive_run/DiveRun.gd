@@ -186,6 +186,8 @@ func _resolve_resistant(option: CatchOption, catch_data: CatchData) -> void:
 	else:
 		_apply_and_record(option, catch_data)
 		await _show_result_beat("+%dcr" % option.credit_value, UIStyle.COL_TEXT)
+	if _snapped:
+		return
 	_advance_slot()
 
 func _resolve_negotiating(option: CatchOption, catch_data: CatchData) -> void:
@@ -201,6 +203,8 @@ func _resolve_negotiating(option: CatchOption, catch_data: CatchData) -> void:
 	else:
 		_apply_and_record(option, catch_data)
 		await _show_result_beat("+%dcr" % option.credit_value, UIStyle.COL_TEXT)
+	if _snapped:
+		return
 	_advance_slot()
 
 func _advance_slot() -> void:
