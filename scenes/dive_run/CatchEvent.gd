@@ -100,14 +100,14 @@ func _animate_result(text: String, color: Color) -> void:
 
 	label.text = ">>> [PROCESSING...]"
 	UIStyle.apply_label(label, UIStyle.COL_DIM)
-	await get_tree().create_timer(0.35).timeout
+	await get_tree().create_timer(0.9).timeout
 	if not is_instance_valid(self):
 		return
 
 	if color == UIStyle.COL_DEBT:
 		label.text = ">>> [!!! COUNTERMEASURE TRIGGERED !!!]"
 		UIStyle.apply_label(label, UIStyle.COL_WARNING)
-		await get_tree().create_timer(0.25).timeout
+		await get_tree().create_timer(0.6).timeout
 		if not is_instance_valid(self):
 			return
 
