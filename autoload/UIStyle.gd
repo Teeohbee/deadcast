@@ -17,8 +17,8 @@ var _theme: Theme = null
 func get_theme() -> Theme:
 	if _theme:
 		return _theme
-	var font := SystemFont.new()
-	font.font_names = PackedStringArray(["Courier New", "Courier", "monospace"])
+	var font := FontFile.new()
+	font.load_dynamic_font("res://fonts/AnonymousPro-Regular.ttf")
 	_theme = Theme.new()
 	_theme.set_font("font", "Label", font)
 	_theme.set_font("font", "Button", font)
