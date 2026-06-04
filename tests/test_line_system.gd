@@ -51,9 +51,9 @@ func test_corruption_clamps_at_100() -> void:
     ls.add_corruption(200)
     assert_eq(ls.corruption, 100.0)
 
-func test_reset_clears_tension_and_corruption() -> void:
+func test_reset_tension_clears_tension_but_keeps_corruption() -> void:
     ls.apply_tension(50)
     ls.add_corruption(30)
-    ls.reset()
+    ls.reset_tension()
     assert_eq(ls.tension, 0.0)
-    assert_eq(ls.corruption, 0.0)
+    assert_eq(ls.corruption, 30.0)
