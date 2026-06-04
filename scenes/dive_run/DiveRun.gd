@@ -212,7 +212,7 @@ func _resolve_resistant(option: CatchOption, catch_data: CatchData) -> void:
 	_advance_slot()
 
 func _resolve_negotiating(option: CatchOption, catch_data: CatchData) -> void:
-	if option.roll_difficulty > 0.0 and randf() < option.roll_difficulty:
+	if option.fail_chance > 0.0 and randf() < option.fail_chance:
 		line_system.apply_tension(option.fail_tension_delta)
 		_run_credits += option.fail_credit_value
 		if catch_data.catch_type == CatchData.CatchType.BIO:

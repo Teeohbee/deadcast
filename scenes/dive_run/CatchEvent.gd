@@ -161,10 +161,10 @@ func _format_option(num: int, option: CatchOption, behavior: CatchData.BehaviorT
 				parts.append("%d%% resist (+%dT)" % [
 					int(option.resist_chance * 100), option.resist_tension_penalty])
 		CatchData.BehaviorType.NEGOTIATING:
-			if option.roll_difficulty > 0.0:
+			if option.fail_chance > 0.0:
 				var fail_cr := "+%dcr" % option.fail_credit_value if option.fail_credit_value > 0 else "+0cr"
 				parts.append("%d%% fail (+%dT, %s)" % [
-					int(option.roll_difficulty * 100), option.fail_tension_delta, fail_cr])
+					int(option.fail_chance * 100), option.fail_tension_delta, fail_cr])
 
 	var label := option.label.to_lower().replace(" ", "_")
 	return "[%d] %s  ·  %s" % [num, label, "  ·  ".join(parts)]
