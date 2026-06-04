@@ -18,6 +18,8 @@ var current_rod: RodData = null
 var current_lure: LureData = null
 var rod_damaged: bool = false
 var max_depth_bonus: int = 0
+var depth_upgrade_count: int = 0
+const MAX_DEPTH_UPGRADES: int = 3
 var selected_zone: String = "district7"
 
 var lure_inventory: Dictionary = {
@@ -177,6 +179,7 @@ func _save_to(path: String) -> void:
 	cfg.set_value("player", "debt_collector_triggered", debt_collector_triggered)
 	cfg.set_value("gear", "rod_damaged", rod_damaged)
 	cfg.set_value("gear", "max_depth_bonus", max_depth_bonus)
+	cfg.set_value("gear", "depth_upgrade_count", depth_upgrade_count)
 	cfg.set_value("gear", "selected_zone", selected_zone)
 	cfg.set_value("gear", "current_rod_path", current_rod.resource_path if current_rod else "")
 	cfg.set_value("gear", "current_lure_path", current_lure.resource_path if current_lure else "")
@@ -202,6 +205,7 @@ func _load_from(path: String) -> void:
 	debt_collector_triggered = cfg.get_value("player", "debt_collector_triggered", false)
 	rod_damaged = cfg.get_value("gear", "rod_damaged", false)
 	max_depth_bonus = cfg.get_value("gear", "max_depth_bonus", 0)
+	depth_upgrade_count = cfg.get_value("gear", "depth_upgrade_count", 0)
 	selected_zone = cfg.get_value("gear", "selected_zone", "district7")
 	var rod_path = cfg.get_value("gear", "current_rod_path", "")
 	if rod_path != "":
@@ -237,6 +241,7 @@ func new_game() -> void:
 	debt_collector_triggered = false
 	rod_damaged = false
 	max_depth_bonus = 0
+	depth_upgrade_count = 0
 	lure_inventory = { "basic_hook": INFINITE_STOCK }
 	decrypt_box_queue = 0
 	decrypt_box_runs = 0
