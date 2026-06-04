@@ -177,6 +177,7 @@ func _save_to(path: String) -> void:
 	cfg.set_value("player", "debt_collector_triggered", debt_collector_triggered)
 	cfg.set_value("gear", "rod_damaged", rod_damaged)
 	cfg.set_value("gear", "max_depth_bonus", max_depth_bonus)
+	cfg.set_value("gear", "selected_zone", selected_zone)
 	cfg.set_value("gear", "current_rod_path", current_rod.resource_path if current_rod else "")
 	cfg.set_value("gear", "current_lure_path", current_lure.resource_path if current_lure else "")
 	cfg.set_value("gear", "lure_inventory", lure_inventory)
@@ -201,6 +202,7 @@ func _load_from(path: String) -> void:
 	debt_collector_triggered = cfg.get_value("player", "debt_collector_triggered", false)
 	rod_damaged = cfg.get_value("gear", "rod_damaged", false)
 	max_depth_bonus = cfg.get_value("gear", "max_depth_bonus", 0)
+	selected_zone = cfg.get_value("gear", "selected_zone", "district7")
 	var rod_path = cfg.get_value("gear", "current_rod_path", "")
 	if rod_path != "":
 		var base_rod = load(rod_path)
@@ -240,6 +242,7 @@ func new_game() -> void:
 	decrypt_box_runs = 0
 	freezer_value = 0
 	freezer_runs = 0
+	selected_zone = "district7"
 	marta_last_seen_run = -1
 	journal_entries = []
 	current_rod = load("res://resources/rods/scrap_rod.tres")
