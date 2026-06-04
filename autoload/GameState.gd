@@ -74,12 +74,12 @@ func on_run_complete(snapped: bool, bio_credits: int) -> void:
 			decrypt_box_queue = 0
 			decrypt_box_runs = 0
 
-	# Freezer spoil check
+	# Freezer spoil check — recurring: halves every FREEZER_SPOIL_RUNS
 	if freezer_value > 0 and not snapped:
 		freezer_runs += 1
-		if freezer_runs == FREEZER_SPOIL_RUNS:
+		if freezer_runs >= FREEZER_SPOIL_RUNS:
 			freezer_value = freezer_value / 2
-			freezer_runs = FREEZER_SPOIL_RUNS  # cap so it keeps showing as spoiled
+			freezer_runs = 0
 
 	# Debt payment every 5 runs
 	if runs_since_payment >= 5:

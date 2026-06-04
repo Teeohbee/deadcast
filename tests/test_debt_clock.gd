@@ -60,3 +60,22 @@ func test_freezer_spoils_after_3_runs() -> void:
 	for i in 3:
 		GameState.on_run_complete(false, 0)
 	assert_eq(GameState.freezer_value, 1000, "Freezer spoils to 50% after 3 runs")
+
+func test_freezer_spoils_again_after_another_3_runs() -> void:
+	GameState.freezer_value = 2000
+	GameState.freezer_runs = 0
+	for i in 6:
+		GameState.on_run_complete(false, 0)
+	assert_eq(GameState.freezer_value, 500, "Freezer spoils twice: 2000 -> 1000 -> 500")
+
+func test_freezer_added_after_spoil_still_degrades() -> void:
+	GameState.freezer_value = 1000
+	GameState.freezer_runs = 0
+	for i in 3:
+		GameState.on_run_complete(false, 0)
+	assert_eq(GameState.freezer_value, 500, "First spoil")
+	GameState.on_run_complete(false, 800)
+	assert_eq(GameState.freezer_value, 1300, "Added 800 bio credits")
+	for i in 2:
+		GameState.on_run_complete(false, 0)
+	assert_eq(GameState.freezer_value, 650, "Second spoil after new bio added")
