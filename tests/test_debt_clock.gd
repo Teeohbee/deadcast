@@ -10,6 +10,8 @@ func before_each() -> void:
 	GameState.rod_damaged = false
 	GameState.decrypt_box_queue = 0
 	GameState.decrypt_box_runs = 0
+	GameState.decrypt_last_outcome = ""
+	GameState.decrypt_last_payout = 0
 	GameState.freezer_value = 0
 	GameState.freezer_runs = 0
 
@@ -47,12 +49,15 @@ func test_debt_reaches_zero_marks_victory() -> void:
 	assert_eq(GameState.debt, 0)
 	assert_true(GameState.victory)
 
-func test_decrypt_box_multiplies_after_3_runs() -> void:
+func test_decrypt_box_pays_out_after_3_runs() -> void:
 	GameState.decrypt_box_queue = 1000
+	GameState.decrypt_box_runs = 0
+	var credits_before = GameState.credits
 	for i in 3:
 		GameState.on_run_complete(false, 0)
-	assert_eq(GameState.decrypt_box_queue, 0, "Queue should be cleared")
-	assert_eq(GameState.credits, 54000, "50000 base + 4x1000 decrypt bonus")
+	assert_eq(GameState.decrypt_box_queue, 0, "Queue should be cleared after payout")
+	assert_true(GameState.credits != credits_before or GameState.decrypt_last_outcome == "corruption",
+		"Credits should change unless corruption outcome")
 
 func test_freezer_spoils_after_3_runs() -> void:
 	GameState.freezer_value = 2000

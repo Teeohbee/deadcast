@@ -34,8 +34,15 @@ var pressure_level: int = 0
 # Decrypt Box
 var decrypt_box_queue: int = 0
 var decrypt_box_runs: int = 0
+var decrypt_last_outcome: String = ""
+var decrypt_last_payout: int = 0
 const DECRYPT_THRESHOLD: int = 3
-const DECRYPT_MULTIPLIER: int = 4
+var DECRYPT_OUTCOMES: Array = [
+	{"id": "corruption", "label": "[CORRUPTION_DETECTED]", "multiplier": 0.0,  "weight": 0.20},
+	{"id": "partial",    "label": "[PARTIAL_DECRYPT]",     "multiplier": 1.5,  "weight": 0.35},
+	{"id": "clean",      "label": "[DECRYPT_COMPLETE]",    "multiplier": 4.0,  "weight": 0.35},
+	{"id": "anomaly",    "label": "[ANOMALY_DETECTED]",    "multiplier": 6.0,  "weight": 0.10},
+]
 
 # Freezer
 var freezer_value: int = 0
@@ -71,7 +78,10 @@ func on_run_complete(snapped: bool, bio_credits: int) -> void:
 	if decrypt_box_queue > 0:
 		decrypt_box_runs += 1
 		if decrypt_box_runs >= DECRYPT_THRESHOLD:
-			add_credits(decrypt_box_queue * DECRYPT_MULTIPLIER)
+			var outcome = _roll_decrypt_outcome(randf())
+			decrypt_last_payout = int(decrypt_box_queue * outcome.multiplier)
+			decrypt_last_outcome = outcome.id
+			add_credits(decrypt_last_payout)
 			decrypt_box_queue = 0
 			decrypt_box_runs = 0
 
@@ -157,6 +167,14 @@ func consume_lure_use() -> void:
 	if lure_inventory.has(lure_id):
 		lure_inventory[lure_id] = max(0, lure_inventory[lure_id] - 1)
 
+func _roll_decrypt_outcome(roll: float) -> Dictionary:
+	var cumulative: float = 0.0
+	for outcome in DECRYPT_OUTCOMES:
+		cumulative += outcome.weight
+		if roll < cumulative:
+			return outcome
+	return DECRYPT_OUTCOMES[-1]
+
 func get_vendor_price_multiplier() -> float:
 	return 1.2 if pressure_level >= 2 else 1.0
 
@@ -185,6 +203,8 @@ func _save_to(path: String) -> void:
 	cfg.set_value("gear", "lure_inventory", lure_inventory)
 	cfg.set_value("decrypt", "box_queue", decrypt_box_queue)
 	cfg.set_value("decrypt", "box_runs", decrypt_box_runs)
+	cfg.set_value("decrypt", "last_outcome", decrypt_last_outcome)
+	cfg.set_value("decrypt", "last_payout", decrypt_last_payout)
 	cfg.set_value("freezer", "value", freezer_value)
 	cfg.set_value("freezer", "runs", freezer_runs)
 	cfg.set_value("narrative", "marta_last_seen_run", marta_last_seen_run)
@@ -226,10 +246,12 @@ func _load_from(path: String) -> void:
 		lure_inventory[key] = saved_inventory[key]
 	decrypt_box_queue = cfg.get_value("decrypt", "box_queue", 0)
 	decrypt_box_runs = cfg.get_value("decrypt", "box_runs", 0)
+	decrypt_last_outcome = cfg.get_value("decrypt", "last_outcome", "")
+	decrypt_last_payout = cfg.get_value("decrypt", "last_payout", 0)
 	freezer_value = cfg.get_value("freezer", "value", 0)
 	freezer_runs = cfg.get_value("freezer", "runs", 0)
 	marta_last_seen_run = cfg.get_value("narrative", "marta_last_seen_run", -1)
-	journal_entries = cfg.get_value("narrative", "journal_entries", [])
+	journal_entries = cfg.get_value("narrative", "journal_entries", [] as Array[String])
 	EventBus.credits_changed.emit(credits)
 
 func new_game() -> void:
@@ -245,6 +267,8 @@ func new_game() -> void:
 	lure_inventory = { "basic_hook": INFINITE_STOCK }
 	decrypt_box_queue = 0
 	decrypt_box_runs = 0
+	decrypt_last_outcome = ""
+	decrypt_last_payout = 0
 	freezer_value = 0
 	freezer_runs = 0
 	selected_zone = "district7"
