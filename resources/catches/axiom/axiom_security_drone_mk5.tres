@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CatchData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/catch_data.gd" id="1_data"]
+[ext_resource type="Resource" path="res://resources/catches/axiom/opt_axiommkv_reward.tres" id="2_opt1"]
+
+[resource]
+script = ExtResource("1_data")
+catch_name = "Axiom Security Drone — Mark V"
+catch_type = 2
+behavior = 2
+corruption_gain = 30
+options = [ExtResource("2_opt1")]
+flavor_text = "upgraded from the mk iv, significantly more dangerous, shock lures still work."
+layer = 2
+anchor_strength = 4
