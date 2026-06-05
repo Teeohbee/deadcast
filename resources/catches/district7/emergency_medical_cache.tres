@@ -12,5 +12,5 @@ catch_type = 1
 behavior = 0
 corruption_gain = 0
 options = [ExtResource("2_opt1"), ExtResource("3_opt2"), ExtResource("4_opt3")]
-flavor_text = "Sealed clinic supplies. Antibiotics, painkillers, bandages. Meant for the living."
+flavor_text = "sealed clinic supplies, meant for people who didn't make it out."
 layer = 0

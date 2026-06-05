@@ -12,5 +12,5 @@ catch_type = 0
 behavior = 0
 corruption_gain = 5
 options = [ExtResource("2_opt1"), ExtResource("3_opt2"), ExtResource("4_opt3")]
-flavor_text = "Someone's complete digital footprint. A lifetime of mundane choices turned to data."
+flavor_text = "someone's complete digital footprint, a lifetime of mundane choices made data."
 layer = 0
