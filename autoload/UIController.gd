@@ -47,6 +47,9 @@ func navigate_to(id: String) -> void:
     screen_changed.emit(id)
     dive_state_changed.emit(id == "dive")
 
+func navigate_to_title() -> void:
+    get_tree().change_scene_to_file("res://scenes/title_screen/TitleScreen.tscn")
+
 func _unhandled_input(event: InputEvent) -> void:
     if current_screen == "dive":
         return
