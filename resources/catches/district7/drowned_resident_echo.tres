@@ -12,5 +12,5 @@ catch_type = 3
 behavior = 3
 corruption_gain = 15
 options = [ExtResource("2_opt1"), ExtResource("3_opt2"), ExtResource("4_opt3")]
-flavor_text = "Someone calling for help that stopped coming years ago. Still calling."
+flavor_text = "someone calling for help that stopped coming years ago, still calling."
 layer = 1

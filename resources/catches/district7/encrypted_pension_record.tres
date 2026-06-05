@@ -12,5 +12,5 @@ catch_type = 0
 behavior = 1
 corruption_gain = 5
 options = [ExtResource("2_opt1"), ExtResource("3_opt2"), ExtResource("4_opt3")]
-flavor_text = "Locked accounts. Frozen payments. Insurance against people who couldn't fight back."
+flavor_text = "locked accounts and frozen payments, benefits that never got paid out."
 layer = 1

@@ -12,5 +12,5 @@ catch_type = 0
 behavior = 3
 corruption_gain = 5
 options = [ExtResource("2_opt1"), ExtResource("3_opt2"), ExtResource("4_opt3")]
-flavor_text = "Recorded testimony. Names still attached. They trusted someone with this."
+flavor_text = "recorded testimony with names still attached, belonging to people who trusted the wrong person."
 layer = 1
