@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CatchData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/catch_data.gd" id="1_data"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/opt_tradeengine_reward.tres" id="2_opt1"]
+
+[resource]
+script = ExtResource("1_data")
+catch_name = "Rogue Trade Engine"
+catch_type = 2
+behavior = 2
+corruption_gain = 15
+options = [ExtResource("2_opt1")]
+flavor_text = "a defunct auction ai that never accepted the gavel. still thinks there's an open bid."
+layer = 2
+anchor_strength = 2

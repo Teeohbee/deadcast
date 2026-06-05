@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CatchData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/catch_data.gd" id="1_data"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/opt_enforcerghost_reward.tres" id="2_opt1"]
+
+[resource]
+script = ExtResource("1_data")
+catch_name = "Exchange Enforcer Ghost"
+catch_type = 3
+behavior = 2
+corruption_gain = 20
+options = [ExtResource("2_opt1")]
+flavor_text = "a mercenary still protecting their client's stash, long after the contract expired."
+layer = 2
+anchor_strength = 2
