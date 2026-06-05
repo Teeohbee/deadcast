@@ -4,11 +4,11 @@ Prioritised backlog from a full code/design review (2026-06-04). Three tiers: fi
 
 ---
 
-## Tier 1: Bugs and Balance Fixes
+## Tier 1: Bugs and Balance Fixes ✓
 
 Small, independent commits. Fix these first - some affect balance enough to change how you think about features later.
 
-### 1.1 Freezer spoil logic bug
+### ~~1.1 Freezer spoil logic bug~~
 
 **File:** `autoload/GameState.gd:79-81`
 
@@ -16,13 +16,13 @@ The `if freezer_runs == FREEZER_SPOIL_RUNS` check fires exactly once. After spoi
 
 **Fix:** Either use `>=` and reset `freezer_runs` after each spoil, or implement recurring degradation (e.g. halve every N runs). Recurring spoilage is more interesting - it makes the freezer a ticking clock, not a one-time tax.
 
-### 1.2 Persist selected_zone
+### ~~1.2 Persist selected_zone~~
 
 **File:** `autoload/GameState.gd` - `_save_to` / `_load_from`
 
 `selected_zone` isn't saved. Resets to `"district7"` every session. Add it to the `gear` section of the config file.
 
-### 1.3 Cap depth upgrades
+### ~~1.3 Cap depth upgrades~~
 
 **File:** `scenes/barge_hub/Workshop.gd:60-68`
 
@@ -30,7 +30,7 @@ No limit on depth upgrades. After 2-3 purchases, depth-gating (shallows/mid/deep
 
 **Fix:** Cap at 2-3 upgrades, or use exponential pricing (2000, 4000, 8000). Exponential pricing is better - it makes each upgrade a real economic decision and naturally limits via the debt clock.
 
-### 1.4 Rename roll_difficulty to fail_chance
+### ~~1.4 Rename roll_difficulty to fail_chance~~
 
 **Files:** `resources/catch_option.gd`, all `.tres` files using `roll_difficulty`, `scenes/dive_run/DiveRun.gd:215`
 
@@ -38,7 +38,7 @@ No limit on depth upgrades. After 2-3 purchases, depth-gating (shallows/mid/deep
 
 **Fix:** Rename to `fail_chance` everywhere. The logic stays the same, just the name changes.
 
-### 1.5 Add decrypt box risk
+### ~~1.5 Add decrypt box risk~~
 
 **File:** `autoload/GameState.gd:69-75`, `scenes/barge_hub/DecryptBox.gd`
 
@@ -51,26 +51,26 @@ Currently a no-brainer: 1000cr in, 4000cr out, no risk. There's never a reason n
 
 Marta seizure is the most narratively interesting - it means the decrypt box becomes unsafe exactly when you need it most.
 
-### 1.6 Remove dead code
+### ~~1.6 Remove dead code~~
 
 - `debt_collector_triggered` on GameState: persisted but never read. Either remove it or wire it into something (see Tier 3 pressure mechanics).
 - `zone_weights` on CatchData: unused since zone filtering became structural via ZoneData.catches. Remove the field and the comment in CatchPool, or implement shared cross-zone pools (see 2.1).
 - `OKEKE_LURE_PATHS` in VendorsLayout.gd is identical to `LURE_PATHS`. Either differentiate Okeke's stock or use one constant.
 - `stamina` field on CatchData: marked legacy, unused by TerminalOverload. Remove if no plans to use it.
 
-### 1.7 Fix corruption reset on line cut
+### ~~1.7 Fix corruption reset on line cut~~
 
 **File:** `scenes/dive_run/DiveRun.gd:172` calls `line_system.reset()` which zeros both tension and corruption.
 
 Cutting a line shouldn't undo signal disturbance you've already caused. Either reset tension only, or reduce corruption by a fraction (e.g. halve it). Keeps corruption as a run-long accumulator with real consequences.
 
-### 1.8 Show lure stock during dives
+### ~~1.8 Show lure stock during dives~~
 
 **File:** `scenes/dive_run/CatchEvent.gd:33`
 
 The HUD strip shows slot/zone/tension but not lure uses remaining. `consume_lure_use()` fires silently. Add remaining uses to the HUD label so the player can make informed decisions.
 
-### 1.9 GameOver scene navigation inconsistency
+### ~~1.9 GameOver scene navigation inconsistency~~
 
 **File:** `scenes/barge_hub/GameOver.gd:18`
 
