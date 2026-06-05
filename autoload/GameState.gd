@@ -34,8 +34,16 @@ var pressure_level: int = 0
 # Decrypt Box
 var decrypt_box_queue: int = 0
 var decrypt_box_runs: int = 0
+var decrypt_last_outcome: String = ""
+var decrypt_last_payout: int = 0
 const DECRYPT_THRESHOLD: int = 3
 const DECRYPT_MULTIPLIER: int = 4
+var DECRYPT_OUTCOMES: Array = [
+	{"id": "corruption", "label": "[CORRUPTION_DETECTED]", "multiplier": 0.0,  "weight": 0.20},
+	{"id": "partial",    "label": "[PARTIAL_DECRYPT]",     "multiplier": 1.5,  "weight": 0.35},
+	{"id": "clean",      "label": "[DECRYPT_COMPLETE]",    "multiplier": 4.0,  "weight": 0.35},
+	{"id": "anomaly",    "label": "[ANOMALY_DETECTED]",    "multiplier": 6.0,  "weight": 0.10},
+]
 
 # Freezer
 var freezer_value: int = 0
@@ -156,6 +164,14 @@ func consume_lure_use() -> void:
 		return
 	if lure_inventory.has(lure_id):
 		lure_inventory[lure_id] = max(0, lure_inventory[lure_id] - 1)
+
+func _roll_decrypt_outcome(roll: float) -> Dictionary:
+	var cumulative: float = 0.0
+	for outcome in DECRYPT_OUTCOMES:
+		cumulative += outcome.weight
+		if roll < cumulative:
+			return outcome
+	return DECRYPT_OUTCOMES[-1]
 
 func get_vendor_price_multiplier() -> float:
 	return 1.2 if pressure_level >= 2 else 1.0
