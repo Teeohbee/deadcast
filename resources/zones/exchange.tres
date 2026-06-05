@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ZoneData" load_steps=7 format=3]
+[gd_resource type="Resource" script_class="ZoneData" load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://resources/zone_data.gd" id="1_zone"]
 [ext_resource type="Resource" path="res://resources/catches/exchange/black_market_shard.tres" id="2_catch"]
@@ -6,6 +6,16 @@
 [ext_resource type="Resource" path="res://resources/catches/exchange/fixer_network_node.tres" id="4_catch"]
 [ext_resource type="Resource" path="res://resources/catches/exchange/illegal_bioware.tres" id="5_catch"]
 [ext_resource type="Resource" path="res://resources/catches/exchange/rival_fisher_line.tres" id="6_catch"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/unclaimed_cargo_manifest.tres" id="7_catch"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/factory_sealed_bioware.tres" id="8_catch"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/classified_shipment_log.tres" id="9_catch"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/black_market_surgeons_archive.tres" id="10_catch"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/stolen_corporate_prototype.tres" id="11_catch"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/rival_fishers_hidden_cache.tres" id="12_catch"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/black_market_organ_bank.tres" id="13_catch"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/exchange_enforcer_ghost.tres" id="14_catch"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/exchange_security_drone_mk2.tres" id="15_catch"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/rogue_trade_engine.tres" id="16_catch"]
 
 [resource]
 script = ExtResource("1_zone")
@@ -13,4 +23,4 @@ zone_id = "exchange"
 display_name = "The Voss Exchange"
 passive_tension_drain = 0
 description = "Sunken black market. Rival fishers active."
-catches = [ExtResource("2_catch"), ExtResource("3_catch"), ExtResource("4_catch"), ExtResource("5_catch"), ExtResource("6_catch")]
+catches = [ExtResource("2_catch"), ExtResource("3_catch"), ExtResource("4_catch"), ExtResource("5_catch"), ExtResource("6_catch"), ExtResource("7_catch"), ExtResource("8_catch"), ExtResource("9_catch"), ExtResource("10_catch"), ExtResource("11_catch"), ExtResource("12_catch"), ExtResource("13_catch"), ExtResource("14_catch"), ExtResource("15_catch"), ExtResource("16_catch")]

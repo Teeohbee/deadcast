@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ZoneData" load_steps=7 format=3]
+[gd_resource type="Resource" script_class="ZoneData" load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://resources/zone_data.gd" id="1_zone"]
 [ext_resource type="Resource" path="res://resources/catches/district7/civilian_ghost_mariana.tres" id="2_catch"]
@@ -6,6 +6,16 @@
 [ext_resource type="Resource" path="res://resources/catches/district7/personal_blackmail.tres" id="4_catch"]
 [ext_resource type="Resource" path="res://resources/catches/district7/salvage_drone.tres" id="5_catch"]
 [ext_resource type="Resource" path="res://resources/catches/district7/tenant_echo.tres" id="6_catch"]
+[ext_resource type="Resource" path="res://resources/catches/district7/residential_data_cluster.tres" id="7_catch"]
+[ext_resource type="Resource" path="res://resources/catches/district7/emergency_medical_cache.tres" id="8_catch"]
+[ext_resource type="Resource" path="res://resources/catches/district7/ghost_loop.tres" id="9_catch"]
+[ext_resource type="Resource" path="res://resources/catches/district7/witness_archive.tres" id="10_catch"]
+[ext_resource type="Resource" path="res://resources/catches/district7/drowned_resident_echo.tres" id="11_catch"]
+[ext_resource type="Resource" path="res://resources/catches/district7/encrypted_pension_record.tres" id="12_catch"]
+[ext_resource type="Resource" path="res://resources/catches/district7/contraband_bio_stash.tres" id="13_catch"]
+[ext_resource type="Resource" path="res://resources/catches/district7/buried_blacksite_fragment.tres" id="14_catch"]
+[ext_resource type="Resource" path="res://resources/catches/district7/feral_building_ai.tres" id="15_catch"]
+[ext_resource type="Resource" path="res://resources/catches/district7/ghost_swarm.tres" id="16_catch"]
 
 [resource]
 script = ExtResource("1_zone")
@@ -13,4 +23,4 @@ zone_id = "district7"
 display_name = "District 7 Ruins"
 passive_tension_drain = 0
 description = "Residential slums. Civilian ghost encounters, personal data."
-catches = [ExtResource("2_catch"), ExtResource("3_catch"), ExtResource("4_catch"), ExtResource("5_catch"), ExtResource("6_catch")]
+catches = [ExtResource("2_catch"), ExtResource("3_catch"), ExtResource("4_catch"), ExtResource("5_catch"), ExtResource("6_catch"), ExtResource("7_catch"), ExtResource("8_catch"), ExtResource("9_catch"), ExtResource("10_catch"), ExtResource("11_catch"), ExtResource("12_catch"), ExtResource("13_catch"), ExtResource("14_catch"), ExtResource("15_catch"), ExtResource("16_catch")]
