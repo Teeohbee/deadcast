@@ -13,13 +13,6 @@ const LURE_PATHS: Array[String] = [
 	"res://resources/lures/deep_pulse.tres",
 	"res://resources/lures/ghost_bait.tres",
 ]
-const OKEKE_LURE_PATHS: Array[String] = [
-	"res://resources/lures/shock_lure.tres",
-	"res://resources/lures/decoy_swarm.tres",
-	"res://resources/lures/deep_pulse.tres",
-	"res://resources/lures/ghost_bait.tres",
-]
-
 @onready var header_label: Label = $VBoxContainer/HeaderLabel
 @onready var okeke_btn: Button = $VBoxContainer/VendorButtons/OkekeBtn
 @onready var vendor_btn: Button = $VBoxContainer/VendorButtons/VendorBtn
@@ -77,7 +70,7 @@ func _build_okeke_stock() -> void:
 
 	_add_dim_label("\"better prices than whoever else you're buying from.\ndon't ask where i get them.\"\n— okeke")
 
-	for path in OKEKE_LURE_PATHS:
+	for path in LURE_PATHS:
 		var lure: LureData = load(path)
 		var price := int(lure.purchase_cost * OKEKE_DISCOUNT)
 		var qty: int = GameState.lure_inventory.get(GameState.get_lure_id(lure), 0)

@@ -11,8 +11,6 @@ enum Layer { SHALLOWS, MID, DEEP }
 @export var behavior: BehaviorType = BehaviorType.PASSIVE
 @export var corruption_gain: int = 0
 @export var options: Array[CatchOption] = []
-@export var zone_weights: Dictionary = {}
 @export var flavor_text: String = ""
 @export var layer: Layer = Layer.SHALLOWS
-@export var stamina: int = 100  # Legacy — kept for .tres compatibility; unused by TerminalOverload
 @export var anchor_strength: int = 3  # Used by AGGRESSIVE behavior: turns needed to reel in

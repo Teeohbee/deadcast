@@ -30,7 +30,6 @@ var lure_inventory: Dictionary = {
 var run_count: int = 0
 var runs_since_payment: int = 0
 var pressure_level: int = 0
-var debt_collector_triggered: bool = false
 
 # Decrypt Box
 var decrypt_box_queue: int = 0
@@ -177,7 +176,6 @@ func _save_to(path: String) -> void:
 	cfg.set_value("player", "pressure_level", pressure_level)
 	cfg.set_value("player", "run_count", run_count)
 	cfg.set_value("player", "runs_since_payment", runs_since_payment)
-	cfg.set_value("player", "debt_collector_triggered", debt_collector_triggered)
 	cfg.set_value("gear", "rod_damaged", rod_damaged)
 	cfg.set_value("gear", "max_depth_bonus", max_depth_bonus)
 	cfg.set_value("gear", "depth_upgrade_count", depth_upgrade_count)
@@ -203,7 +201,6 @@ func _load_from(path: String) -> void:
 	pressure_level = cfg.get_value("player", "pressure_level", 0)
 	run_count = cfg.get_value("player", "run_count", 0)
 	runs_since_payment = cfg.get_value("player", "runs_since_payment", 0)
-	debt_collector_triggered = cfg.get_value("player", "debt_collector_triggered", false)
 	rod_damaged = cfg.get_value("gear", "rod_damaged", false)
 	max_depth_bonus = cfg.get_value("gear", "max_depth_bonus", 0)
 	if cfg.has_section_key("gear", "depth_upgrade_count"):
@@ -242,7 +239,6 @@ func new_game() -> void:
 	pressure_level = 0
 	run_count = 0
 	runs_since_payment = 0
-	debt_collector_triggered = false
 	rod_damaged = false
 	max_depth_bonus = 0
 	depth_upgrade_count = 0
