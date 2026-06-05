@@ -27,13 +27,15 @@ func _ready() -> void:
 	continue_button.text = "[CONTINUE →]"
 	continue_button.pressed.connect(_on_continue_pressed)
 
-func populate(catch_data: CatchData, slot: int = 0, total_slots: int = 0, tension: int = 0, max_tension: int = 0) -> void:
+func populate(catch_data: CatchData, slot: int = 0, total_slots: int = 0, tension: int = 0, max_tension: int = 0, lure_uses: int = GameState.INFINITE_STOCK) -> void:
 	_catch_data = catch_data
 
-	hud_label.text = "SLOT: %d/%d  │  ZONE: %s  │  TENSION: %d/%d" % [
+	var lure_str := "∞" if lure_uses == GameState.INFINITE_STOCK else "x%d" % lure_uses
+	hud_label.text = "SLOT: %d/%d  │  ZONE: %s  │  TENSION: %d/%d  │  LURE: %s" % [
 		slot, total_slots,
 		GameState.selected_zone.to_upper().replace("_", " "),
-		tension, max_tension]
+		tension, max_tension,
+		lure_str]
 	UIStyle.apply_label(hud_label, UIStyle.COL_DIM)
 
 	var type_tag := _type_tag(catch_data.catch_type)
