@@ -82,7 +82,7 @@ Uses `change_scene_to_file` instead of UIController, breaking the shell pattern.
 
 The single highest-impact area. The authoring pipeline (.tres resources, ZoneData references) is already built for scale. Rich content on simple mechanics feels complete; features on thin content feel thin.
 
-### 2.1 More catches per zone
+### ~~2.1 More catches per zone~~
 
 **Current state:** 5 catches per zone, runs are 3-8 slots. Repetition within 3-4 runs.
 
