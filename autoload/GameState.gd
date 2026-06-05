@@ -251,7 +251,7 @@ func _load_from(path: String) -> void:
 	freezer_value = cfg.get_value("freezer", "value", 0)
 	freezer_runs = cfg.get_value("freezer", "runs", 0)
 	marta_last_seen_run = cfg.get_value("narrative", "marta_last_seen_run", -1)
-	journal_entries = cfg.get_value("narrative", "journal_entries", [])
+	journal_entries = cfg.get_value("narrative", "journal_entries", [] as Array[String])
 	EventBus.credits_changed.emit(credits)
 
 func new_game() -> void:
