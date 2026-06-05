@@ -12,7 +12,5 @@ catch_type = 1
 behavior = 0
 corruption_gain = 0
 options = [ExtResource("2_opt1"), ExtResource("3_opt2"), ExtResource("4_opt3")]
-zone_weights = {"district7": 1, "exchange": 4, "axiom": 1}
 flavor_text = "factory sterile wetware in a waterproof case, still viable."
 layer = 0
-stamina = 100
