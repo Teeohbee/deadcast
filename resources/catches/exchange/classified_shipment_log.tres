@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CatchData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://resources/catch_data.gd" id="1_data"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/opt_shiplog_intercept.tres" id="2_opt1"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/opt_shiplog_partial.tres" id="3_opt2"]
+[ext_resource type="Resource" path="res://resources/catches/exchange/opt_shiplog_leave.tres" id="4_opt3"]
+
+[resource]
+script = ExtResource("1_data")
+catch_name = "Classified Shipment Log"
+catch_type = 0
+behavior = 3
+corruption_gain = 10
+options = [ExtResource("2_opt1"), ExtResource("3_opt2"), ExtResource("4_opt3")]
+flavor_text = "sealed records of Exchange traffic before the flood—multiple parties want it destroyed."
+layer = 1
