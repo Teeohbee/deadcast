@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CatchData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://resources/catch_data.gd" id="1_data"]
+[ext_resource type="Resource" path="res://resources/catches/district7/opt_ghostswarm_reward.tres" id="2_opt1"]
+
+[resource]
+script = ExtResource("1_data")
+catch_name = "Ghost Swarm"
+catch_type = 3
+behavior = 2
+corruption_gain = 25
+options = [ExtResource("2_opt1")]
+flavor_text = "multiple fragments merged together. it's not individual anymore."
+layer = 2
+anchor_strength = 2

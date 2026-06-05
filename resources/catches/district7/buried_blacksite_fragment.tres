@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CatchData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://resources/catch_data.gd" id="1_data"]
+[ext_resource type="Resource" path="res://resources/catches/district7/opt_blacksite_haul.tres" id="2_opt1"]
+[ext_resource type="Resource" path="res://resources/catches/district7/opt_blacksite_careful.tres" id="3_opt2"]
+[ext_resource type="Resource" path="res://resources/catches/district7/opt_blacksite_release.tres" id="4_opt3"]
+
+[resource]
+script = ExtResource("1_data")
+catch_name = "Buried Blacksite Fragment"
+catch_type = 1
+behavior = 1
+corruption_gain = 20
+options = [ExtResource("2_opt1"), ExtResource("3_opt2"), ExtResource("4_opt3")]
+flavor_text = "something corporate-era still alive in the mud. it doesn't remember being buried."
+layer = 2
