@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CatchData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://resources/catch_data.gd" id="1_data"]
+[ext_resource type="Resource" path="res://resources/catches/district7/opt_ghostloop_record.tres" id="2_opt1"]
+[ext_resource type="Resource" path="res://resources/catches/district7/opt_ghostloop_pass.tres" id="3_opt2"]
+
+[resource]
+script = ExtResource("1_data")
+catch_name = "Ghost Loop"
+catch_type = 3
+behavior = 0
+corruption_gain = 10
+options = [ExtResource("2_opt1"), ExtResource("3_opt2")]
+flavor_text = "A voice repeating the same four words. In someone's voice."
+layer = 1

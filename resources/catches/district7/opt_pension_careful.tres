@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CatchOption" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/catch_option.gd" id="1_opt"]
+
+[resource]
+script = ExtResource("1_opt")
+label = "Careful Crack"
+tension_delta = 5
+credit_value = 200
+cuts_line = false
+flavor_text = "trace the patterns. find the seams."
+resist_chance = 0.2
+resist_tension_penalty = 15

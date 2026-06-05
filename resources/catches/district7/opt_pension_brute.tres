@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CatchOption" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/catch_option.gd" id="1_opt"]
+
+[resource]
+script = ExtResource("1_opt")
+label = "Brute Decrypt"
+tension_delta = 15
+credit_value = 550
+cuts_line = false
+flavor_text = "smash through the locks."
+resist_chance = 0.45
+resist_tension_penalty = 35
