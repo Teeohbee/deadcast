@@ -89,7 +89,10 @@ func _show_catch_event(catch_data: CatchData) -> void:
 	catch_container.add_child(event_ui)
 	event_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_current_event = event_ui
-	event_ui.populate(augmented, _current_slot + 1, _column.size(), int(line_system.tension), line_system.max_tension)
+	var lure_qty: int = GameState.INFINITE_STOCK
+	if GameState.current_lure:
+		lure_qty = GameState.lure_inventory.get(GameState.get_lure_id(GameState.current_lure), 0)
+	event_ui.populate(augmented, _current_slot + 1, _column.size(), int(line_system.tension), line_system.max_tension, lure_qty)
 	event_ui.option_selected.connect(_on_option_selected)
 
 func _inject_shock_option(catch_data: CatchData) -> CatchData:
