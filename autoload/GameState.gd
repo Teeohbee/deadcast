@@ -127,6 +127,7 @@ func spend_credits(amount: int) -> bool:
 func select_zone(zone_id: String) -> void:
 	selected_zone = zone_id
 	EventBus.zone_changed.emit(zone_id)
+	save()
 
 func equip_lure(lure: LureData) -> void:
 	current_lure = lure
@@ -205,7 +206,10 @@ func _load_from(path: String) -> void:
 	debt_collector_triggered = cfg.get_value("player", "debt_collector_triggered", false)
 	rod_damaged = cfg.get_value("gear", "rod_damaged", false)
 	max_depth_bonus = cfg.get_value("gear", "max_depth_bonus", 0)
-	depth_upgrade_count = cfg.get_value("gear", "depth_upgrade_count", 0)
+	if cfg.has_section_key("gear", "depth_upgrade_count"):
+		depth_upgrade_count = cfg.get_value("gear", "depth_upgrade_count", 0)
+	else:
+		depth_upgrade_count = max_depth_bonus / 50
 	selected_zone = cfg.get_value("gear", "selected_zone", "district7")
 	var rod_path = cfg.get_value("gear", "current_rod_path", "")
 	if rod_path != "":
