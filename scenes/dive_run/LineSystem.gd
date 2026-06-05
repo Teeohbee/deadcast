@@ -29,8 +29,6 @@ func sync_tension(value: int) -> void:
     tension = clampf(float(value), 0.0, float(max_tension))
     tension_updated.emit(tension)
 
-func reset() -> void:
+func reset_tension() -> void:
     tension = 0.0
-    corruption = 0.0
     tension_updated.emit(tension)
-    corruption_updated.emit(corruption)

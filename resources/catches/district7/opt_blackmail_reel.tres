@@ -9,6 +9,6 @@ tension_delta = 15
 credit_value = 1200
 cuts_line = false
 flavor_text = "High risk. Someone alive still wants this buried."
-roll_difficulty = 0.5
+fail_chance = 0.5
 fail_tension_delta = 30
 fail_credit_value = 0

@@ -14,8 +14,8 @@ extends Resource
 @export var resist_chance: float = 0.0
 @export var resist_tension_penalty: int = 0
 
-# NEGOTIATING behavior: if roll_difficulty > 0, roll randf() against it.
+# NEGOTIATING behavior: if fail_chance > 0, roll randf() against it.
 # On fail: apply fail_tension_delta and fail_credit_value instead of the normal fields.
-@export var roll_difficulty: float = 0.0
+@export var fail_chance: float = 0.0
 @export var fail_tension_delta: int = 0
 @export var fail_credit_value: int = 0

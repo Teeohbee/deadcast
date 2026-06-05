@@ -9,6 +9,6 @@ tension_delta = 10
 credit_value = 2000
 cuts_line = false
 flavor_text = "Someone very dangerous uses this node."
-roll_difficulty = 0.6
+fail_chance = 0.6
 fail_tension_delta = 40
 fail_credit_value = 0

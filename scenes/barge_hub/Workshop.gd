@@ -1,7 +1,7 @@
 # scenes/barge_hub/Workshop.gd
 extends Control
 
-const DEPTH_UPGRADE_COST: int = 2000
+const DEPTH_UPGRADE_BASE_COST: int = 2000
 const DEPTH_UPGRADE_AMOUNT: int = 50
 
 @onready var rod_label: Label = $VBoxContainer/RodLabel
@@ -44,8 +44,14 @@ func _refresh() -> void:
 	repair_button.text = "repair %s (%dcr)" % [rod.rod_name.to_lower(), rod.repair_cost]
 	repair_button.disabled = not GameState.rod_damaged or GameState.credits < rod.repair_cost
 
-	depth_upgrade_button.text = "depth upgrade +%dft (%dcr)" % [DEPTH_UPGRADE_AMOUNT, DEPTH_UPGRADE_COST]
-	depth_upgrade_button.disabled = GameState.credits < DEPTH_UPGRADE_COST
+	var maxed := GameState.depth_upgrade_count >= GameState.MAX_DEPTH_UPGRADES
+	var cost := _depth_upgrade_cost()
+	if maxed:
+		depth_upgrade_button.text = "depth upgrade — max reached"
+		depth_upgrade_button.disabled = true
+	else:
+		depth_upgrade_button.text = "depth upgrade +%dft (%dcr)" % [DEPTH_UPGRADE_AMOUNT, cost]
+		depth_upgrade_button.disabled = GameState.credits < cost
 
 func _on_repair_pressed() -> void:
 	var rod = GameState.current_rod
@@ -58,8 +64,10 @@ func _on_repair_pressed() -> void:
 		message_label.text = "not enough credits."
 
 func _on_depth_upgrade_pressed() -> void:
-	if GameState.spend_credits(DEPTH_UPGRADE_COST):
+	var cost := _depth_upgrade_cost()
+	if GameState.spend_credits(cost):
 		GameState.max_depth_bonus += DEPTH_UPGRADE_AMOUNT
+		GameState.depth_upgrade_count += 1
 		var rod = GameState.current_rod.duplicate()
 		rod.max_depth += DEPTH_UPGRADE_AMOUNT
 		GameState.current_rod = rod
@@ -68,3 +76,6 @@ func _on_depth_upgrade_pressed() -> void:
 		_refresh()
 	else:
 		message_label.text = "not enough credits."
+
+func _depth_upgrade_cost() -> int:
+	return DEPTH_UPGRADE_BASE_COST * (1 << GameState.depth_upgrade_count)

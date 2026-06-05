@@ -79,3 +79,26 @@ func test_consume_lure_does_not_decrement_infinite() -> void:
 	GameState.lure_inventory["basic_hook"] = GameState.INFINITE_STOCK
 	GameState.consume_lure_use()
 	assert_eq(GameState.lure_inventory.get("basic_hook"), GameState.INFINITE_STOCK)
+
+func test_save_and_load_selected_zone() -> void:
+	GameState.selected_zone = "axiom"
+	GameState._save_to("user://save_test.cfg")
+	GameState.selected_zone = "district7"
+	GameState._load_from("user://save_test.cfg")
+	assert_eq(GameState.selected_zone, "axiom")
+
+func test_save_and_load_depth_upgrade_count() -> void:
+	GameState.depth_upgrade_count = 2
+	GameState._save_to("user://save_test.cfg")
+	GameState.depth_upgrade_count = 0
+	GameState._load_from("user://save_test.cfg")
+	assert_eq(GameState.depth_upgrade_count, 2)
+
+func test_depth_upgrade_count_inferred_from_old_save() -> void:
+	GameState.max_depth_bonus = 100
+	GameState.depth_upgrade_count = 0
+	var cfg = ConfigFile.new()
+	cfg.set_value("gear", "max_depth_bonus", 100)
+	cfg.save("user://save_test.cfg")
+	GameState._load_from("user://save_test.cfg")
+	assert_eq(GameState.depth_upgrade_count, 2, "100 bonus / 50 per upgrade = 2")

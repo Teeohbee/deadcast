@@ -18,6 +18,8 @@ var current_rod: RodData = null
 var current_lure: LureData = null
 var rod_damaged: bool = false
 var max_depth_bonus: int = 0
+var depth_upgrade_count: int = 0
+const MAX_DEPTH_UPGRADES: int = 3
 var selected_zone: String = "district7"
 
 var lure_inventory: Dictionary = {
@@ -74,12 +76,12 @@ func on_run_complete(snapped: bool, bio_credits: int) -> void:
 			decrypt_box_queue = 0
 			decrypt_box_runs = 0
 
-	# Freezer spoil check
+	# Freezer spoil check — recurring: halves every FREEZER_SPOIL_RUNS
 	if freezer_value > 0 and not snapped:
 		freezer_runs += 1
-		if freezer_runs == FREEZER_SPOIL_RUNS:
+		if freezer_runs >= FREEZER_SPOIL_RUNS:
 			freezer_value = freezer_value / 2
-			freezer_runs = FREEZER_SPOIL_RUNS  # cap so it keeps showing as spoiled
+			freezer_runs = 0
 
 	# Debt payment every 5 runs
 	if runs_since_payment >= 5:
@@ -125,6 +127,7 @@ func spend_credits(amount: int) -> bool:
 func select_zone(zone_id: String) -> void:
 	selected_zone = zone_id
 	EventBus.zone_changed.emit(zone_id)
+	save()
 
 func equip_lure(lure: LureData) -> void:
 	current_lure = lure
@@ -177,6 +180,8 @@ func _save_to(path: String) -> void:
 	cfg.set_value("player", "debt_collector_triggered", debt_collector_triggered)
 	cfg.set_value("gear", "rod_damaged", rod_damaged)
 	cfg.set_value("gear", "max_depth_bonus", max_depth_bonus)
+	cfg.set_value("gear", "depth_upgrade_count", depth_upgrade_count)
+	cfg.set_value("gear", "selected_zone", selected_zone)
 	cfg.set_value("gear", "current_rod_path", current_rod.resource_path if current_rod else "")
 	cfg.set_value("gear", "current_lure_path", current_lure.resource_path if current_lure else "")
 	cfg.set_value("gear", "lure_inventory", lure_inventory)
@@ -201,6 +206,11 @@ func _load_from(path: String) -> void:
 	debt_collector_triggered = cfg.get_value("player", "debt_collector_triggered", false)
 	rod_damaged = cfg.get_value("gear", "rod_damaged", false)
 	max_depth_bonus = cfg.get_value("gear", "max_depth_bonus", 0)
+	if cfg.has_section_key("gear", "depth_upgrade_count"):
+		depth_upgrade_count = cfg.get_value("gear", "depth_upgrade_count", 0)
+	else:
+		depth_upgrade_count = max_depth_bonus / 50
+	selected_zone = cfg.get_value("gear", "selected_zone", "district7")
 	var rod_path = cfg.get_value("gear", "current_rod_path", "")
 	if rod_path != "":
 		var base_rod = load(rod_path)
@@ -235,11 +245,13 @@ func new_game() -> void:
 	debt_collector_triggered = false
 	rod_damaged = false
 	max_depth_bonus = 0
+	depth_upgrade_count = 0
 	lure_inventory = { "basic_hook": INFINITE_STOCK }
 	decrypt_box_queue = 0
 	decrypt_box_runs = 0
 	freezer_value = 0
 	freezer_runs = 0
+	selected_zone = "district7"
 	marta_last_seen_run = -1
 	journal_entries = []
 	current_rod = load("res://resources/rods/scrap_rod.tres")
