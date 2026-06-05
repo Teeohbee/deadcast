@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CatchData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://resources/catch_data.gd" id="1_data"]
+[ext_resource type="Resource" path="res://resources/catches/axiom/opt_survlog_download.tres" id="2_opt1"]
+[ext_resource type="Resource" path="res://resources/catches/axiom/opt_survlog_selective.tres" id="3_opt2"]
+[ext_resource type="Resource" path="res://resources/catches/axiom/opt_survlog_leave.tres" id="4_opt3"]
+
+[resource]
+script = ExtResource("1_data")
+catch_name = "Decommissioned Surveillance Log"
+catch_type = 0
+behavior = 0
+corruption_gain = 5
+options = [ExtResource("2_opt1"), ExtResource("3_opt2"), ExtResource("4_opt3")]
+flavor_text = "years of ambient surveillance, useless to axiom now, gold to anyone who was being watched."
+layer = 0
