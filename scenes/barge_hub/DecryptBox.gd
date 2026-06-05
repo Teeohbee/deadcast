@@ -27,14 +27,22 @@ func _refresh() -> void:
 	var decrypting = GameState.decrypt_box_runs > 0
 
 	if GameState.decrypt_box_queue == 0:
-		status_label.text = "box is empty.\nload credits to decrypt at 4x after %d runs." % GameState.DECRYPT_THRESHOLD
+		var last := ""
+		if GameState.decrypt_last_outcome != "":
+			var outcome_label := GameState.decrypt_last_outcome
+			for o in GameState.DECRYPT_OUTCOMES:
+				if o.id == GameState.decrypt_last_outcome:
+					outcome_label = o.label
+					break
+			last = "\nlast result: %s → %dcr" % [outcome_label, GameState.decrypt_last_payout]
+		status_label.text = "box is empty.%s\ndata integrity not guaranteed.\nload credits to decrypt after %d runs." % [
+			last, GameState.DECRYPT_THRESHOLD]
 	else:
 		var runs_left = GameState.DECRYPT_THRESHOLD - GameState.decrypt_box_runs
-		status_label.text = "queued: %dcr\ndecrypts in %d run%s → %dcr" % [
+		status_label.text = "queued: %dcr\ndecrypts in %d run%s → ?" % [
 			GameState.decrypt_box_queue,
 			runs_left,
 			"s" if runs_left != 1 else "",
-			GameState.decrypt_box_queue * GameState.DECRYPT_MULTIPLIER
 		]
 
 	if decrypting:
