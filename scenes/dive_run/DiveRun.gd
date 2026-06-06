@@ -171,6 +171,9 @@ func _on_option_selected(index: int) -> void:
 	var effective_index = index - 1 if using_shock else index
 	var option: CatchOption = catch_data.options[effective_index]
 
+	if option.sets_entity_flag and catch_data.entity_id != "":
+		GameState.set_entity_encountered(catch_data.entity_id)
+
 	if option.cuts_line:
 		line_system.reset_tension()
 		_advance_slot()
