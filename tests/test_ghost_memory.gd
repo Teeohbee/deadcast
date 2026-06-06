@@ -34,3 +34,49 @@ func test_new_game_clears_encountered_entities() -> void:
 	GameState.encountered_entities = {"solace7": 3, "mariana": 1}
 	GameState.new_game()
 	assert_eq(GameState.encountered_entities.size(), 0)
+
+# --- CatchPool entity substitution ---
+
+func test_generate_column_returns_base_catch_when_no_encounter() -> void:
+	# Build a minimal CatchPool scenario using real zone data
+	# When entity not encountered, base catch should be returned
+	GameState.encountered_entities = {}
+	var pool = CatchPool
+	# Verify the substitution helper directly
+	var base_catch: CatchData = CatchData.new()
+	base_catch.entity_id = "solace7"
+	var returning: CatchData = CatchData.new()
+	returning.entity_id = "solace7"
+	returning.returning_variants = []
+	base_catch.returning_variants = [returning]
+	var result = pool._apply_entity_substitution(base_catch)
+	assert_eq(result, base_catch, "No encounter → base catch returned")
+
+func test_apply_entity_substitution_returns_variant_on_first_encounter() -> void:
+	GameState.encountered_entities = {"solace7": 1}
+	var base_catch: CatchData = CatchData.new()
+	base_catch.entity_id = "solace7"
+	var returning: CatchData = CatchData.new()
+	returning.entity_id = "solace7"
+	returning.returning_variants = []
+	base_catch.returning_variants = [returning]
+	var result = CatchPool._apply_entity_substitution(base_catch)
+	assert_eq(result, returning, "count=1 → returning_variants[0]")
+
+func test_apply_entity_substitution_clamps_to_last_variant() -> void:
+	GameState.encountered_entities = {"solace7": 99}
+	var base_catch: CatchData = CatchData.new()
+	base_catch.entity_id = "solace7"
+	var returning: CatchData = CatchData.new()
+	returning.entity_id = "solace7"
+	returning.returning_variants = []
+	base_catch.returning_variants = [returning]
+	var result = CatchPool._apply_entity_substitution(base_catch)
+	assert_eq(result, returning, "count exceeds variants → last variant")
+
+func test_apply_entity_substitution_ignores_catch_with_no_entity_id() -> void:
+	GameState.encountered_entities = {"solace7": 5}
+	var base_catch: CatchData = CatchData.new()
+	base_catch.entity_id = ""
+	var result = CatchPool._apply_entity_substitution(base_catch)
+	assert_eq(result, base_catch, "empty entity_id → pass through unchanged")

@@ -22,6 +22,7 @@ func generate_column(zone: String, corruption: float = 0.0, max_depth: int = 100
 	for i in 3:
 		var catch = _draw_catch(CatchData.Layer.SHALLOWS, corruption, seen_types, lure_effect)
 		if catch:
+			catch = _apply_entity_substitution(catch)
 			column.append(catch)
 			seen_types.append(catch.catch_type)
 
@@ -30,6 +31,7 @@ func generate_column(zone: String, corruption: float = 0.0, max_depth: int = 100
 		for i in 3:
 			var catch = _draw_catch(CatchData.Layer.MID, corruption, seen_types, lure_effect)
 			if catch:
+				catch = _apply_entity_substitution(catch)
 				column.append(catch)
 				seen_types.append(catch.catch_type)
 
@@ -38,6 +40,7 @@ func generate_column(zone: String, corruption: float = 0.0, max_depth: int = 100
 		for i in 2:
 			var catch = _draw_catch(CatchData.Layer.DEEP, corruption, seen_types, lure_effect)
 			if catch:
+				catch = _apply_entity_substitution(catch)
 				column.append(catch)
 				seen_types.append(catch.catch_type)
 
@@ -70,6 +73,14 @@ func _calculate_weight(catch: CatchData, corruption: float, seen_types: Array, l
 				weight *= 1.5
 
 	return max(weight, 0.0)
+
+func _apply_entity_substitution(catch: CatchData) -> CatchData:
+	if catch.entity_id == "" or catch.returning_variants.is_empty():
+		return catch
+	var count: int = GameState.encountered_entities.get(catch.entity_id, 0)
+	if count == 0:
+		return catch
+	return catch.returning_variants[min(count - 1, catch.returning_variants.size() - 1)]
 
 func _weighted_random(items: Array, weights: Array) -> Variant:
 	var total: float = 0.0
