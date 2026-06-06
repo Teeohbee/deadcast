@@ -9,3 +9,4 @@ tension_delta = 0
 credit_value = 0
 cuts_line = false
 flavor_text = "She thinks the evacuation is still happening."
+sets_entity_flag = true

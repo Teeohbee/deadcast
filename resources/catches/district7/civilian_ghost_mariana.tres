@@ -1,9 +1,10 @@
-[gd_resource type="Resource" script_class="CatchData" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="CatchData" load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://resources/catch_data.gd" id="1_data"]
 [ext_resource type="Resource" path="res://resources/catches/district7/opt_mariana_escort.tres" id="2_opt1"]
 [ext_resource type="Resource" path="res://resources/catches/district7/opt_mariana_harvest.tres" id="3_opt2"]
 [ext_resource type="Resource" path="res://resources/catches/district7/opt_mariana_ghost.tres" id="4_opt3"]
+[ext_resource type="Resource" path="res://resources/catches/district7/civilian_ghost_mariana_returning.tres" id="5_ret"]
 
 [resource]
 script = ExtResource("1_data")
@@ -16,3 +17,5 @@ zone_weights = {"district7": 4, "exchange": 1, "axiom": 0}
 flavor_text = "A ghost that thinks the flood just happened. She's asking for help evacuating."
 layer = 1
 stamina = 100
+entity_id = "mariana"
+returning_variants = [ExtResource("5_ret")]
