@@ -43,3 +43,17 @@ func test_node_added_ignores_non_button() -> void:
 	# verifies no crash and no connection attempt
 	assert_false(label.has_signal("pressed"))
 	label.free()
+
+func test_play_click_activates_click_playing() -> void:
+	Audio._click_active = false
+	Audio.play_click()
+	assert_true(Audio._click_active)
+
+func test_play_click_fills_buffer() -> void:
+	Audio.play_click()
+	assert_gt(Audio._click_buffer.size(), 0)
+
+func test_play_click_resets_position() -> void:
+	Audio._click_pos = 999
+	Audio.play_click()
+	assert_eq(Audio._click_pos, 0)

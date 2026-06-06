@@ -83,8 +83,8 @@ func _fill_hum(delta: float) -> void:
 	if _crackle_remaining > 0.0:
 		_crackle_remaining -= delta
 
-	var base_freq := lerp(60.0, 40.0, _hum_blend)
-	var h3_amp := lerp(0.2, 0.0, _hum_blend)
+	var base_freq: float = lerp(60.0, 40.0, _hum_blend)
+	var h3_amp: float = lerp(0.2, 0.0, _hum_blend)
 
 	for _i in frames:
 		var t := float(_sample_pos) / MIX_RATE
@@ -103,10 +103,28 @@ func _fill_click() -> void:
 		return
 	var frames := _click_playback.get_frames_available()
 	for _i in frames:
-		_click_playback.push_frame(Vector2.ZERO)
+		if not _click_active or _click_pos >= _click_buffer.size():
+			_click_playback.push_frame(Vector2.ZERO)
+		else:
+			var s := _click_buffer[_click_pos]
+			_click_playback.push_frame(Vector2(s, s))
+			_click_pos += 1
+			if _click_pos >= _click_buffer.size():
+				_click_active = false
 
 func play_click() -> void:
-	pass  # implemented in Task 5
+	var pitch := 1.0 + randf_range(-0.08, 0.08)
+	var samples := int(MIX_RATE * 0.04)  # 40ms
+	_click_buffer.resize(samples)
+	for i in samples:
+		var t := float(i) / MIX_RATE
+		var noise_env := exp(-8.0 * t / 0.04)
+		var noise := randf_range(-1.0, 1.0) * noise_env
+		var sine_env := exp(-40.0 * t / 0.04)
+		var sine := sin(TAU * 200.0 * pitch * t) * sine_env * 0.5
+		_click_buffer[i] = clamp(noise + sine, -0.8, 0.8)
+	_click_pos = 0
+	_click_active = true
 
 func stop_hum() -> void:
 	_hum_active = false
