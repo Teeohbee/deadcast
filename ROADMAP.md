@@ -97,7 +97,7 @@ When creating new catches, consider:
 - ENTITY catches should have a non-monetary "listen" or "interact" option - these are the most memorable content in the game
 - At least 2-3 catches per layer per zone to avoid repetition within a depth tier
 
-### 2.2 Ghost memory (returning encounters)
+### ~~2.2 Ghost memory (returning encounters)~~
 
 **The strongest content in the game is SOLACE-7 and MARIANA.** Build on this.
 
