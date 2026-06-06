@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="CatchOption" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/catch_option.gd" id="1_opt"]
+
+[resource]
+script = ExtResource("1_opt")
+label = "Listen"
+tension_delta = 0
+credit_value = 0
+cuts_line = false
+flavor_text = "the reminder has changed. you are in it now."
+narrative_text = "Good morning. Today is—
+
+[CONTACT DETECTED — RECURRING PATTERN]
+
+The unit has updated its morning schedule. Visitor arrival window: unspecified. The unit does not know what you are. The unit knows you come back.
+
+Reminder: heating to 19 degrees before 07:30.
+Reminder: check weather for the morning commute.
+Reminder: account for unknown recurring presence in the corridor.
+
+The family is not here. The unit is still managing the home. The unit has added you to the list of things it manages.
+
+It does not know you are not a resident. It does not know there is no commute. It knows you are a recurring event, and it has adapted its schedule accordingly.
+
+There is something strange about being part of a dead home's routine."
+sets_entity_flag = true

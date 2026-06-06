@@ -1,9 +1,10 @@
-[gd_resource type="Resource" script_class="CatchData" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="CatchData" load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://resources/catch_data.gd" id="1_data"]
 [ext_resource type="Resource" path="res://resources/catches/district7/opt_tenant_echo_listen.tres" id="2_opt1"]
 [ext_resource type="Resource" path="res://resources/catches/district7/opt_tenant_echo_extract.tres" id="3_opt2"]
 [ext_resource type="Resource" path="res://resources/catches/district7/opt_tenant_echo_release.tres" id="4_opt3"]
+[ext_resource type="Resource" path="res://resources/catches/district7/tenant_echo_returning.tres" id="5_ret"]
 
 [resource]
 script = ExtResource("1_data")
@@ -16,3 +17,5 @@ zone_weights = {"district7": 4, "exchange": 1, "axiom": 0}
 flavor_text = "A fragment of someone's home AI. Repeating the same morning reminder on loop."
 layer = 0
 stamina = 100
+entity_id = "tenant_echo"
+returning_variants = [ExtResource("5_ret")]
