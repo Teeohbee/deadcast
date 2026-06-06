@@ -11,3 +11,4 @@ cuts_line = false
 fail_chance = 0.4
 fail_tension_delta = 30
 fail_credit_value = 0
+narrative_text = "He talks fast.\n\nThree NDAs. An exemption waiver he wasn't allowed to read.\nSub-basement access, badge level 4 and above.\nHe was badge level 3.\n\n\"Whatever's down there isn't what they said it was.\nYou don't refrigerate servers.\"\n\nHe checks over his shoulder. Old habit.\n\n\"Someone's been running coordinates on this grid for a while.\nWhoever your rig belongs to — they know about it.\nThey've always known.\"\n\nHe doesn't ask you to do anything with that.\nHe just needed it to be outside his head\nfor a moment."

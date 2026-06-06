@@ -12,3 +12,4 @@ flavor_text = "they still remember kindness."
 fail_chance = 0.4
 fail_tension_delta = 20
 fail_credit_value = 0
+narrative_text = "She stops when she hears you.\n\n\"I kept calling. I thought if I kept calling—\"\n\nShe doesn't finish.\n\n\"Is it over?\"\n\nYou don't answer right away.\nShe looks at the distance where the surface used to be.\n\n\"Right,\" she says. \"Right.\"\n\nSomething settles in her. Not peace exactly.\nMore like the end of effort.\n\nShe lets you take what you came for."

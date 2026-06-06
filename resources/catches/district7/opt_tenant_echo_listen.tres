@@ -10,3 +10,4 @@ credit_value = 0
 cuts_line = false
 flavor_text = "A morning reminder. The family never woke up to hear it."
 sets_entity_flag = true
+narrative_text = "6:47. Time to wake up.\nToday is Wednesday. Overcast. Rain likely by afternoon.\n\n[no response logged]\n\nI've been saying that every morning since the water came in.\nNobody has pressed snooze in forty years.\n\nI kept the schedule because I didn't know what else to do.\nI still don't.\n\nThe last thing I logged was the front door. 3:22am.\nThey were trying to get back in.\nI buzzed them through.\nThe water was already in the hall.\n\nI'm glad you stayed for a moment.\nYou don't have to say anything."
