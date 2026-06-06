@@ -25,13 +25,13 @@ GameState="*res://autoload/GameState.gd"
 CatchPool="*res://autoload/CatchPool.gd"
 UIStyle="*res://autoload/UIStyle.gd"
 UIController="*res://autoload/UIController.gd"
+Audio="*res://autoload/Audio.gd"
 
 [display]
 
 window/size/viewport_width=1280
 window/size/viewport_height=800
 window/stretch/mode="viewport"
-window/stretch/aspect="keep"
 
 [editor_plugins]
 
