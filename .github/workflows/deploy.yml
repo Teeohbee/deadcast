@@ -76,8 +76,8 @@ jobs:
         run: |
           curl -sL https://github.com/itchio/butler/releases/latest/download/butler-linux-amd64.zip -o butler.zip
           unzip -q butler.zip
-          chmod +x butler-linux-amd64
-          sudo mv butler-linux-amd64 /usr/local/bin/butler
+          chmod +x linux-amd64/butler
+          sudo mv linux-amd64/butler /usr/local/bin/butler
 
       - name: Push to Itch.io
         env:
