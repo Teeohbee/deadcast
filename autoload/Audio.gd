@@ -74,6 +74,15 @@ func _fill_hum(delta: float) -> void:
 		return
 
 	_hum_blend = move_toward(_hum_blend, _target_blend, delta / CROSSFADE_DURATION)
+
+	_crackle_timer += delta
+	if _crackle_remaining <= 0.0 and _crackle_timer >= _next_crackle_in:
+		_crackle_remaining = 0.02
+		_crackle_timer = 0.0
+		_next_crackle_in = _rand_crackle_interval()
+	if _crackle_remaining > 0.0:
+		_crackle_remaining -= delta
+
 	var base_freq := lerp(60.0, 40.0, _hum_blend)
 	var h3_amp := lerp(0.2, 0.0, _hum_blend)
 
@@ -84,6 +93,8 @@ func _fill_hum(delta: float) -> void:
 		sample += sin(TAU * base_freq * 2.0 * t) * 0.4
 		sample += sin(TAU * base_freq * 3.0 * t) * h3_amp
 		sample *= lfo * 0.3
+		if _crackle_remaining > 0.0:
+			sample += randf_range(-0.25, 0.25)
 		_hum_playback.push_frame(Vector2(sample, sample))
 		_sample_pos += 1
 
