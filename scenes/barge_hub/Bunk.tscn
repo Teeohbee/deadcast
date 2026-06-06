@@ -24,6 +24,7 @@ horizontal_scroll_mode = 0
 vertical_scroll_mode = 3
 
 [node name="JournalLabel" type="RichTextLabel" parent="VBoxContainer/ScrollContainer"]
+size_flags_horizontal = 3
 fit_content = true
 scroll_active = false
 bbcode_enabled = false
