@@ -6,7 +6,7 @@ const HUM_VOLUME_DB := -16.0
 const CLICK_VOLUME_DB := -6.0
 const CROSSFADE_DURATION := 1.5
 const FOCUS_VOLUME_DB := -18.0
-const FOCUS_DURATION := 0.06
+const FOCUS_DURATION := 0.01
 const FOCUS_COOLDOWN := 0.08
 
 # Hum state
@@ -143,9 +143,9 @@ func play_focus() -> void:
 	_focus_buffer.resize(samples)
 	for i in samples:
 		var t := float(i) / MIX_RATE
-		var env := exp(-10.0 * t / FOCUS_DURATION)
-		var noise := randf_range(-0.2, 0.2) * env
-		_focus_buffer[i] = sin(TAU * 1000.0 * t) * env * 0.6 + noise
+		var env := exp(-6.0 * t / FOCUS_DURATION)
+		var noise := randf_range(-0.15, 0.15) * env
+		_focus_buffer[i] = sin(TAU * 2000.0 * t) * env * 0.4 + noise
 	_focus_pos = 0
 	_focus_active = true
 	_focus_cooldown = FOCUS_COOLDOWN
@@ -167,15 +167,15 @@ func _fill_focus(delta: float) -> void:
 
 func play_click() -> void:
 	var pitch := 1.0 + randf_range(-0.08, 0.08)
-	var samples := int(MIX_RATE * 0.04)  # 40ms
+	var samples := int(MIX_RATE * 0.015)  # 15ms
 	_click_buffer.resize(samples)
 	for i in samples:
 		var t := float(i) / MIX_RATE
-		var noise_env := exp(-8.0 * t / 0.04)
-		var noise := randf_range(-0.2, 0.2) * noise_env
-		var sine_env := exp(-40.0 * t / 0.04)
-		var sine := sin(TAU * 300.0 * pitch * t) * sine_env * 0.7
-		_click_buffer[i] = noise + sine
+		var noise_env := exp(-8.0 * t / 0.015)
+		var noise := randf_range(-1.0, 1.0) * noise_env * 0.6
+		var thunk_env := exp(-5.0 * t / 0.015)
+		var thunk := sin(TAU * 150.0 * pitch * t) * thunk_env * 0.8
+		_click_buffer[i] = clamp(noise + thunk, -0.9, 0.9)
 	_click_pos = 0
 	_click_active = true
 
