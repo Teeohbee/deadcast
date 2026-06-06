@@ -83,5 +83,5 @@ jobs:
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
         run: |
-          butler push builds/web/ teeohbee/deadcast:html5 \
+          butler push builds/web/ teeohbee/dead-cast:html5 \
             --userversion ${{ steps.version.outputs.new_version }}
