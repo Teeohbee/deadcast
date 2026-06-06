@@ -144,7 +144,8 @@ func play_focus() -> void:
 	for i in samples:
 		var t := float(i) / MIX_RATE
 		var env := exp(-10.0 * t / FOCUS_DURATION)
-		_focus_buffer[i] = sin(TAU * 800.0 * t) * env * 0.6
+		var noise := randf_range(-0.2, 0.2) * env
+		_focus_buffer[i] = sin(TAU * 800.0 * t) * env * 0.6 + noise
 	_focus_pos = 0
 	_focus_active = true
 	_focus_cooldown = FOCUS_COOLDOWN
@@ -171,10 +172,10 @@ func play_click() -> void:
 	for i in samples:
 		var t := float(i) / MIX_RATE
 		var noise_env := exp(-8.0 * t / 0.04)
-		var noise := randf_range(-0.5, 0.5) * noise_env
+		var noise := randf_range(-0.2, 0.2) * noise_env
 		var sine_env := exp(-40.0 * t / 0.04)
-		var sine := sin(TAU * 200.0 * pitch * t) * sine_env * 0.5
-		_click_buffer[i] = clamp(noise + sine, -0.6, 0.6)
+		var sine := sin(TAU * 200.0 * pitch * t) * sine_env * 0.7
+		_click_buffer[i] = noise + sine
 	_click_pos = 0
 	_click_active = true
 
