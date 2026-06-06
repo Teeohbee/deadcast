@@ -5,6 +5,9 @@ const MIX_RATE := 44100.0
 const HUM_VOLUME_DB := -16.0
 const CLICK_VOLUME_DB := -6.0
 const CROSSFADE_DURATION := 1.5
+const FOCUS_VOLUME_DB := -18.0
+const FOCUS_DURATION := 0.06
+const FOCUS_COOLDOWN := 0.08
 
 # Hum state
 var _hum_active := false
@@ -22,6 +25,12 @@ var _click_buffer: PackedFloat32Array
 var _click_pos := 0
 var _click_active := false
 
+# Focus state
+var _focus_buffer: PackedFloat32Array
+var _focus_pos := 0
+var _focus_active := false
+var _focus_cooldown := 0.0
+
 # Audio nodes
 var _hum_player: AudioStreamPlayer
 var _hum_gen: AudioStreamGenerator
@@ -30,6 +39,10 @@ var _hum_playback: AudioStreamGeneratorPlayback
 var _click_player: AudioStreamPlayer
 var _click_gen: AudioStreamGenerator
 var _click_playback: AudioStreamGeneratorPlayback
+
+var _focus_player: AudioStreamPlayer
+var _focus_gen: AudioStreamGenerator
+var _focus_playback: AudioStreamGeneratorPlayback
 
 func _ready() -> void:
 	_hum_gen = AudioStreamGenerator.new()
@@ -53,6 +66,16 @@ func _ready() -> void:
 	_click_player.play()
 	_click_playback = _click_player.get_stream_playback() as AudioStreamGeneratorPlayback
 
+	_focus_gen = AudioStreamGenerator.new()
+	_focus_gen.mix_rate = MIX_RATE
+	_focus_gen.buffer_length = 0.1
+	_focus_player = AudioStreamPlayer.new()
+	_focus_player.stream = _focus_gen
+	_focus_player.volume_db = FOCUS_VOLUME_DB
+	add_child(_focus_player)
+	_focus_player.play()
+	_focus_playback = _focus_player.get_stream_playback() as AudioStreamGeneratorPlayback
+
 	_next_crackle_in = _rand_crackle_interval()
 
 	UIController.screen_changed.connect(_on_screen_changed)
@@ -62,6 +85,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_fill_hum(delta)
 	_fill_click()
+	_fill_focus(delta)
 
 func _fill_hum(delta: float) -> void:
 	if _hum_playback == null:
@@ -112,6 +136,34 @@ func _fill_click() -> void:
 			if _click_pos >= _click_buffer.size():
 				_click_active = false
 
+func play_focus() -> void:
+	if _focus_cooldown > 0.0:
+		return
+	var samples := int(MIX_RATE * FOCUS_DURATION)
+	_focus_buffer.resize(samples)
+	for i in samples:
+		var t := float(i) / MIX_RATE
+		var env := exp(-10.0 * t / FOCUS_DURATION)
+		_focus_buffer[i] = sin(TAU * 800.0 * t) * env * 0.6
+	_focus_pos = 0
+	_focus_active = true
+	_focus_cooldown = FOCUS_COOLDOWN
+
+func _fill_focus(delta: float) -> void:
+	_focus_cooldown = maxf(_focus_cooldown - delta, 0.0)
+	if _focus_playback == null:
+		return
+	var frames := _focus_playback.get_frames_available()
+	for _i in frames:
+		if not _focus_active or _focus_pos >= _focus_buffer.size():
+			_focus_playback.push_frame(Vector2.ZERO)
+		else:
+			var s := _focus_buffer[_focus_pos]
+			_focus_playback.push_frame(Vector2(s, s))
+			_focus_pos += 1
+			if _focus_pos >= _focus_buffer.size():
+				_focus_active = false
+
 func play_click() -> void:
 	var pitch := 1.0 + randf_range(-0.08, 0.08)
 	var samples := int(MIX_RATE * 0.04)  # 40ms
@@ -138,6 +190,7 @@ func _on_dive_state_changed(is_dive: bool) -> void:
 func _on_node_added(node: Node) -> void:
 	if node is Button:
 		node.pressed.connect(play_click)
+		node.focus_entered.connect(play_focus)
 
 func _rand_crackle_interval() -> float:
 	return randf_range(5.0, 15.0)
