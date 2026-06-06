@@ -67,8 +67,25 @@ func _fill_hum(delta: float) -> void:
 	if _hum_playback == null:
 		return
 	var frames := _hum_playback.get_frames_available()
+
+	if not _hum_active:
+		for _i in frames:
+			_hum_playback.push_frame(Vector2.ZERO)
+		return
+
+	_hum_blend = move_toward(_hum_blend, _target_blend, delta / CROSSFADE_DURATION)
+	var base_freq := lerp(60.0, 40.0, _hum_blend)
+	var h3_amp := lerp(0.2, 0.0, _hum_blend)
+
 	for _i in frames:
-		_hum_playback.push_frame(Vector2.ZERO)
+		var t := float(_sample_pos) / MIX_RATE
+		var lfo := 1.0 + 0.06 * sin(TAU * 0.1 * t)
+		var sample := sin(TAU * base_freq * t)
+		sample += sin(TAU * base_freq * 2.0 * t) * 0.4
+		sample += sin(TAU * base_freq * 3.0 * t) * h3_amp
+		sample *= lfo * 0.3
+		_hum_playback.push_frame(Vector2(sample, sample))
+		_sample_pos += 1
 
 func _fill_click() -> void:
 	if _click_playback == null:
