@@ -52,6 +52,7 @@ const FREEZER_SPOIL_RUNS: int = 3
 # Narrative
 var marta_last_seen_run: int = -1
 var journal_entries: Array[String] = []
+var encountered_entities: Dictionary = {}
 
 func _ready() -> void:
 	call_deferred("_load_defaults")
@@ -117,6 +118,9 @@ func _maybe_append_journal_entry() -> void:
 			journal_entries.append("Run 8.\n\nThe transponder. She told me to my face.\n\nEvery dive. Every coordinate. Axiom Corp has a map of everywhere the Meridian has anchored since day one. They know what I've been pulling up.\n\nShe said it changes nothing. She's right. The debt is still real. The rig still works.\n\nI keep thinking about what's in the Deep Archive that Axiom wants so badly they'd pay for this.")
 		12:
 			journal_entries.append("Run 12.\n\nOkeke left a lure on my line. Basic hook, nothing special. No note.\n\nHe hasn't spoken to me in three runs. Either Marta got to him or he figured something out on his own.\n\nShe's offering to accelerate the debt. Won't say what for.\n\nI haven't said yes.")
+
+func set_entity_encountered(entity_id: String) -> void:
+	encountered_entities[entity_id] = encountered_entities.get(entity_id, 0) + 1
 
 # --- Credits ---
 
@@ -209,6 +213,7 @@ func _save_to(path: String) -> void:
 	cfg.set_value("freezer", "runs", freezer_runs)
 	cfg.set_value("narrative", "marta_last_seen_run", marta_last_seen_run)
 	cfg.set_value("narrative", "journal_entries", journal_entries)
+	cfg.set_value("narrative", "encountered_entities", encountered_entities)
 	cfg.save(path)
 
 func _load_from(path: String) -> void:
@@ -252,6 +257,7 @@ func _load_from(path: String) -> void:
 	freezer_runs = cfg.get_value("freezer", "runs", 0)
 	marta_last_seen_run = cfg.get_value("narrative", "marta_last_seen_run", -1)
 	journal_entries = cfg.get_value("narrative", "journal_entries", [] as Array[String])
+	encountered_entities = cfg.get_value("narrative", "encountered_entities", {})
 	EventBus.credits_changed.emit(credits)
 
 func new_game() -> void:
@@ -273,6 +279,7 @@ func new_game() -> void:
 	freezer_runs = 0
 	selected_zone = "district7"
 	marta_last_seen_run = -1
+	encountered_entities = {}
 	journal_entries = []
 	current_rod = load("res://resources/rods/scrap_rod.tres")
 	current_lure = load("res://resources/lures/basic_hook.tres")
