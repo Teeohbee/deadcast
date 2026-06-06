@@ -112,7 +112,7 @@ If the player chose "Listen" on a previous encounter, subsequent encounters with
 
 This is mostly writing work with a small system change. High emotional impact.
 
-### 2.3 Journal entry expansion
+### ~~2.3 Journal entry expansion~~
 
 **Current state:** 4 hardcoded journal entries at runs 1, 5, 8, 12.
 
