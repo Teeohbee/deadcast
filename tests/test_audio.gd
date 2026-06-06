@@ -57,3 +57,20 @@ func test_play_click_resets_position() -> void:
 	Audio._click_pos = 999
 	Audio.play_click()
 	assert_eq(Audio._click_pos, 0)
+
+func test_start_override_hum_sets_target() -> void:
+	Audio._target_override_blend = 0.0
+	Audio.start_override_hum()
+	assert_eq(Audio._target_override_blend, 1.0)
+
+func test_stop_override_hum_clears_target() -> void:
+	Audio._target_override_blend = 1.0
+	Audio.stop_override_hum()
+	assert_eq(Audio._target_override_blend, 0.0)
+
+func test_stop_override_hum_immediate_cuts_blend() -> void:
+	Audio._override_blend = 1.0
+	Audio._target_override_blend = 1.0
+	Audio.stop_override_hum(true)
+	assert_eq(Audio._override_blend, 0.0)
+	assert_eq(Audio._target_override_blend, 0.0)

@@ -20,6 +20,10 @@ var _crackle_timer := 0.0
 var _crackle_remaining := 0.0
 var _next_crackle_in := 0.0
 
+# Override state
+var _override_blend := 0.0
+var _target_override_blend := 0.0
+
 # Click state
 var _click_buffer: PackedFloat32Array
 var _click_pos := 0
@@ -98,6 +102,7 @@ func _fill_hum(delta: float) -> void:
 		return
 
 	_hum_blend = move_toward(_hum_blend, _target_blend, delta / CROSSFADE_DURATION)
+	_override_blend = move_toward(_override_blend, _target_override_blend, delta / CROSSFADE_DURATION)
 
 	_crackle_timer += delta
 	if _crackle_remaining <= 0.0 and _crackle_timer >= _next_crackle_in:
@@ -112,6 +117,7 @@ func _fill_hum(delta: float) -> void:
 
 	for _i in frames:
 		var t := float(_sample_pos) / MIX_RATE
+
 		var lfo := 1.0 + 0.06 * sin(TAU * 0.1 * t)
 		var sample := sin(TAU * base_freq * t)
 		sample += sin(TAU * base_freq * 2.0 * t) * 0.4
@@ -119,7 +125,15 @@ func _fill_hum(delta: float) -> void:
 		sample *= lfo * 0.3
 		if _crackle_remaining > 0.0:
 			sample += randf_range(-0.25, 0.25)
-		_hum_playback.push_frame(Vector2(sample, sample))
+
+		var o_lfo := 1.0 + 0.12 * sin(TAU * 0.4 * t)
+		var o_tremolo := 1.0 + 0.10 * sin(TAU * 3.0 * t)
+		var o_sample := sin(TAU * 30.0 * t)
+		o_sample += sin(TAU * 42.43 * t) * 0.4
+		o_sample += sin(TAU * 60.0 * t) * 0.3
+		o_sample *= o_lfo * o_tremolo * 0.3
+
+		_hum_playback.push_frame(Vector2(lerp(sample, o_sample, _override_blend), lerp(sample, o_sample, _override_blend)))
 		_sample_pos += 1
 
 func _fill_click() -> void:
@@ -182,6 +196,14 @@ func play_click() -> void:
 func stop_hum() -> void:
 	_hum_active = false
 
+func start_override_hum() -> void:
+	_target_override_blend = 1.0
+
+func stop_override_hum(immediate: bool = false) -> void:
+	_target_override_blend = 0.0
+	if immediate:
+		_override_blend = 0.0
+
 func _on_screen_changed(_id: String) -> void:
 	_hum_active = true
 
@@ -192,6 +214,11 @@ func _on_node_added(node: Node) -> void:
 	if node is Button:
 		node.pressed.connect(play_click)
 		node.focus_entered.connect(play_focus)
+	if node is TerminalOverloadMini:
+		start_override_hum()
+		node.caught.connect(func(_t: int) -> void: stop_override_hum())
+		node.aborted.connect(func(_t: int) -> void: stop_override_hum())
+		node.snapped.connect(func() -> void: stop_override_hum(true))
 
 func _rand_crackle_interval() -> float:
 	return randf_range(5.0, 15.0)
