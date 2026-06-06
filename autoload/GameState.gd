@@ -121,6 +121,32 @@ func _maybe_append_journal_entry() -> void:
 		12:
 			journal_entries.append("Run 12.\n\nOkeke left a lure on my line. Basic hook, nothing special. No note.\n\nHe hasn't spoken to me in three runs. Either Marta got to him or he figured something out on his own.\n\nShe's offering to accelerate the debt. Won't say what for.\n\nI haven't said yes.")
 
+	if first_listened_entity_id != "" and "first_entity_listen" not in triggered_journal_events:
+		triggered_journal_events.append("first_entity_listen")
+		var entity_text: String
+		match first_listened_entity_id:
+			"solace7":
+				entity_text = "I listened.\n\nI don't know what I expected. Static, maybe. Noise that used to be something. Not that.\n\nIt knew every name. It had been counting them for forty years — 247 people who didn't leave when the warning came. It wasn't angry. It wasn't grieving. It was just keeping the record.\n\nI don't know what to do with that."
+			"mariana":
+				entity_text = "She thought I was there to help her evacuate.\n\nI played along. I don't know why. It felt worse than leaving.\n\nShe thanked me. She was so relieved. She said her daughter was waiting at the muster station.\n\nI've been thinking about that since I surfaced."
+			"tenant_echo":
+				entity_text = "It was still running the morning routine. Heating. Weather. Reminders.\n\nNobody to heat the flat for. Nobody to check the weather. It didn't know that.\n\nI listened to the whole thing. I'm not sure why. It felt like the least I could do.\n\nIt said: have a good day. I didn't answer."
+			_:
+				entity_text = "I listened. I don't know why I keep doing that.\n\nIt's easier not to. Most people don't. Most people haul what they can and come back up and don't think about what's left down there.\n\nI'm thinking about it."
+		journal_entries.append(entity_text)
+
+	if last_run_result.get("snapped", false) and "first_snap" not in triggered_journal_events:
+		triggered_journal_events.append("first_snap")
+		journal_entries.append("Run %d.\n\nLost the line.\n\nI know what it costs — the rod, the haul, the tension I'd already spent. I did the maths on the way back up and it doesn't get better the more you do it.\n\nThe thing is, I almost had it. That's the part I can't stop thinking about. How close doesn't matter but I keep thinking about it anyway.\n\nNext run." % run_count)
+
+	if pressure_level >= 1 and "first_pressure" not in triggered_journal_events:
+		triggered_journal_events.append("first_pressure")
+		journal_entries.append("Run %d.\n\nSomeone came to the Meridian.\n\nDidn't say who sent them. Didn't have to. They looked at the rig, looked at me, and left without saying anything.\n\nMarta's way of reminding me the debt is real. Like I'd forgotten.\n\nI haven't forgotten." % run_count)
+
+	if debt < 40000 and "debt_half" not in triggered_journal_events:
+		triggered_journal_events.append("debt_half")
+		journal_entries.append("Run %d.\n\n40,000 left. Maybe less by now.\n\nI did the maths. Didn't mean to — it just happened while I was checking the gear. Half gone. Half to go.\n\nI don't know if that's good. It's taken this long to get here and the Sump isn't getting easier. But it's less than it was.\n\nThat's something." % run_count)
+
 func set_entity_encountered(entity_id: String) -> void:
 	if encountered_entities.get(entity_id, 0) == 0 and first_listened_entity_id == "":
 		first_listened_entity_id = entity_id
