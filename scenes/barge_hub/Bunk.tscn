@@ -18,8 +18,20 @@ anchor_bottom = 1.0
 [node name="TitleLabel" type="Label" parent="VBoxContainer"]
 text = "THE BUNK"
 
-[node name="JournalLabel" type="RichTextLabel" parent="VBoxContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
+
+[node name="JournalLabel" type="RichTextLabel" parent="VBoxContainer/ScrollContainer"]
 fit_content = true
 scroll_active = false
 bbcode_enabled = false
-size_flags_vertical = 3
+
+[node name="PageButtons" type="HBoxContainer" parent="VBoxContainer"]
+
+[node name="PageUpButton" type="Button" parent="VBoxContainer/PageButtons"]
+text = "[PAGE UP]"
+
+[node name="PageDownButton" type="Button" parent="VBoxContainer/PageButtons"]
+text = "[PAGE DOWN]"
