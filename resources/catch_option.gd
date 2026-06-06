@@ -19,3 +19,5 @@ extends Resource
 @export var fail_chance: float = 0.0
 @export var fail_tension_delta: int = 0
 @export var fail_credit_value: int = 0
+
+@export var sets_entity_flag: bool = false

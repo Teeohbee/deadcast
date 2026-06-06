@@ -14,3 +14,5 @@ enum Layer { SHALLOWS, MID, DEEP }
 @export var flavor_text: String = ""
 @export var layer: Layer = Layer.SHALLOWS
 @export var anchor_strength: int = 3  # Used by AGGRESSIVE behavior: turns needed to reel in
+@export var entity_id: String = ""
+@export var returning_variants: Array[CatchData] = []
