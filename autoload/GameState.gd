@@ -53,6 +53,8 @@ const FREEZER_SPOIL_RUNS: int = 3
 var marta_last_seen_run: int = -1
 var journal_entries: Array[String] = []
 var encountered_entities: Dictionary = {}
+var triggered_journal_events: Array[String] = []
+var first_listened_entity_id: String = ""
 
 func _ready() -> void:
 	call_deferred("_load_defaults")
@@ -120,6 +122,8 @@ func _maybe_append_journal_entry() -> void:
 			journal_entries.append("Run 12.\n\nOkeke left a lure on my line. Basic hook, nothing special. No note.\n\nHe hasn't spoken to me in three runs. Either Marta got to him or he figured something out on his own.\n\nShe's offering to accelerate the debt. Won't say what for.\n\nI haven't said yes.")
 
 func set_entity_encountered(entity_id: String) -> void:
+	if encountered_entities.get(entity_id, 0) == 0 and first_listened_entity_id == "":
+		first_listened_entity_id = entity_id
 	encountered_entities[entity_id] = encountered_entities.get(entity_id, 0) + 1
 
 # --- Credits ---
@@ -214,6 +218,8 @@ func _save_to(path: String) -> void:
 	cfg.set_value("narrative", "marta_last_seen_run", marta_last_seen_run)
 	cfg.set_value("narrative", "journal_entries", journal_entries)
 	cfg.set_value("narrative", "encountered_entities", encountered_entities)
+	cfg.set_value("narrative", "triggered_journal_events", triggered_journal_events)
+	cfg.set_value("narrative", "first_listened_entity_id", first_listened_entity_id)
 	cfg.save(path)
 
 func _load_from(path: String) -> void:
@@ -258,6 +264,8 @@ func _load_from(path: String) -> void:
 	marta_last_seen_run = cfg.get_value("narrative", "marta_last_seen_run", -1)
 	journal_entries = cfg.get_value("narrative", "journal_entries", [] as Array[String])
 	encountered_entities = cfg.get_value("narrative", "encountered_entities", {})
+	triggered_journal_events = cfg.get_value("narrative", "triggered_journal_events", [] as Array[String])
+	first_listened_entity_id = cfg.get_value("narrative", "first_listened_entity_id", "")
 	EventBus.credits_changed.emit(credits)
 
 func new_game() -> void:
@@ -280,6 +288,8 @@ func new_game() -> void:
 	selected_zone = "district7"
 	marta_last_seen_run = -1
 	encountered_entities = {}
+	triggered_journal_events = []
+	first_listened_entity_id = ""
 	journal_entries = []
 	current_rod = load("res://resources/rods/scrap_rod.tres")
 	current_lure = load("res://resources/lures/basic_hook.tres")
