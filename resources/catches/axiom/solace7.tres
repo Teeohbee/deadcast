@@ -1,9 +1,10 @@
-[gd_resource type="Resource" script_class="CatchData" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="CatchData" load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://resources/catch_data.gd" id="1_data"]
 [ext_resource type="Resource" path="res://resources/catches/axiom/opt_solace_listen.tres" id="2_opt1"]
 [ext_resource type="Resource" path="res://resources/catches/axiom/opt_solace_harvest.tres" id="3_opt2"]
 [ext_resource type="Resource" path="res://resources/catches/axiom/opt_solace_release.tres" id="4_opt3"]
+[ext_resource type="Resource" path="res://resources/catches/axiom/solace7_returning.tres" id="5_ret"]
 
 [resource]
 script = ExtResource("1_data")
@@ -16,3 +17,5 @@ zone_weights = {"district7": 1, "exchange": 1, "axiom": 4}
 flavor_text = "A residential AI that never evacuated. It has been down here 40 years. It wants to talk."
 layer = 1
 stamina = 100
+entity_id = "solace7"
+returning_variants = [ExtResource("5_ret")]
