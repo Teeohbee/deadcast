@@ -119,10 +119,10 @@ func play_click() -> void:
 	for i in samples:
 		var t := float(i) / MIX_RATE
 		var noise_env := exp(-8.0 * t / 0.04)
-		var noise := randf_range(-1.0, 1.0) * noise_env
+		var noise := randf_range(-0.5, 0.5) * noise_env
 		var sine_env := exp(-40.0 * t / 0.04)
 		var sine := sin(TAU * 200.0 * pitch * t) * sine_env * 0.5
-		_click_buffer[i] = clamp(noise + sine, -0.8, 0.8)
+		_click_buffer[i] = clamp(noise + sine, -0.6, 0.6)
 	_click_pos = 0
 	_click_active = true
 
