@@ -236,6 +236,7 @@ func start_boot_hum() -> void:
 
 func stop_boot_hum() -> void:
 	_boot_mode = false
+	_hum_active = false
 	_hum_player.volume_db = HUM_VOLUME_DB
 
 func play_power_on() -> void:

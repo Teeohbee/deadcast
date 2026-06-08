@@ -7,12 +7,12 @@ const NARRATIVE_DELAY := 0.5
 @onready var output_label: RichTextLabel = $MarginContainer/OutputLabel
 
 var _groups: Array[Dictionary] = []
-var _current_group: int = 0
 var _finished := false
 var _waiting_for_key := false
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
+	UIStyle.apply_background(self)
 	output_label.add_theme_color_override("default_color", UIStyle.COL_DIM)
 
 	_groups = [
@@ -32,7 +32,6 @@ func _ready() -> void:
 
 func _run_sequence() -> void:
 	for i in _groups.size():
-		_current_group = i
 		var group: Dictionary = _groups[i]
 
 		if _finished:

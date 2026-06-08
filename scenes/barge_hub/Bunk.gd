@@ -43,10 +43,14 @@ func _set_mode(mode: Mode) -> void:
 	_refresh_content()
 
 func _refresh_toggles() -> void:
-	journal_toggle.add_theme_color_override("font_color",
-		UIStyle.COL_ACCENT if _mode == Mode.JOURNAL else UIStyle.COL_DIM)
-	manual_toggle.add_theme_color_override("font_color",
-		UIStyle.COL_ACCENT if _mode == Mode.MANUAL else UIStyle.COL_DIM)
+	var journal_col: Color = UIStyle.COL_ACCENT if _mode == Mode.JOURNAL else UIStyle.COL_DIM
+	var manual_col: Color = UIStyle.COL_ACCENT if _mode == Mode.MANUAL else UIStyle.COL_DIM
+	journal_toggle.add_theme_color_override("font_color", journal_col)
+	journal_toggle.add_theme_color_override("font_hover_color", journal_col)
+	journal_toggle.add_theme_color_override("font_focus_color", journal_col)
+	manual_toggle.add_theme_color_override("font_color", manual_col)
+	manual_toggle.add_theme_color_override("font_hover_color", manual_col)
+	manual_toggle.add_theme_color_override("font_focus_color", manual_col)
 
 func _refresh_content() -> void:
 	match _mode:
