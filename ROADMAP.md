@@ -202,7 +202,7 @@ Before each dive, let the player choose:
 
 Ties into the depth upgrade progression and gives the debt-pressured player a meaningful risk/reward decision. Modify CatchPool.generate_column to accept a run-type parameter.
 
-### 3.7 Audio
+### ~~3.7 Audio~~
 
 Even minimal audio transforms the feel:
 
