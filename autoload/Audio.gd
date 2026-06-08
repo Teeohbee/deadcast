@@ -8,10 +8,13 @@ const CROSSFADE_DURATION := 1.5
 const FOCUS_VOLUME_DB := -18.0
 const FOCUS_DURATION := 0.01
 const FOCUS_COOLDOWN := 0.08
+const BOOT_HUM_VOLUME_DB := -20.0
+const BOOT_STATIC_FREQ := 55.0
 
 # Hum state
 var _hum_active := false
 var _hum_blend := 0.0       # 0.0 = barge, 1.0 = dive
+var _boot_mode := false
 var _target_blend := 0.0
 var _sample_pos := 0        # cumulative sample counter
 
@@ -112,8 +115,14 @@ func _fill_hum(delta: float) -> void:
 	if _crackle_remaining > 0.0:
 		_crackle_remaining -= delta
 
-	var base_freq: float = lerp(60.0, 40.0, _hum_blend)
-	var h3_amp: float = lerp(0.2, 0.0, _hum_blend)
+	var base_freq: float
+	var h3_amp: float
+	if _boot_mode:
+		base_freq = BOOT_STATIC_FREQ
+		h3_amp = 0.05
+	else:
+		base_freq = lerp(60.0, 40.0, _hum_blend)
+		h3_amp = lerp(0.2, 0.0, _hum_blend)
 
 	for _i in frames:
 		var t := float(_sample_pos) / MIX_RATE
@@ -219,6 +228,56 @@ func _on_node_added(node: Node) -> void:
 		node.caught.connect(func(_t: int) -> void: stop_override_hum())
 		node.aborted.connect(func(_t: int) -> void: stop_override_hum())
 		node.snapped.connect(func() -> void: stop_override_hum(true))
+
+func start_boot_hum() -> void:
+	_boot_mode = true
+	_hum_active = true
+	_hum_player.volume_db = BOOT_HUM_VOLUME_DB
+
+func stop_boot_hum() -> void:
+	_boot_mode = false
+	_hum_player.volume_db = HUM_VOLUME_DB
+
+func play_power_on() -> void:
+	var samples := int(MIX_RATE * 0.08)
+	_click_buffer.resize(samples)
+	for i in samples:
+		var t := float(i) / MIX_RATE
+		var env := exp(-3.0 * t / 0.08)
+		_click_buffer[i] = sin(TAU * 45.0 * t) * env * 0.9
+	_click_pos = 0
+	_click_active = true
+
+func play_scan_blip() -> void:
+	var samples := int(MIX_RATE * 0.02)
+	_click_buffer.resize(samples)
+	for i in samples:
+		var t := float(i) / MIX_RATE
+		var env := exp(-5.0 * t / 0.02)
+		_click_buffer[i] = sin(TAU * 100.0 * t) * env * 0.7
+	_click_pos = 0
+	_click_active = true
+
+func play_warning_tone() -> void:
+	var samples := int(MIX_RATE * 0.12)
+	_click_buffer.resize(samples)
+	for i in samples:
+		var t := float(i) / MIX_RATE
+		var env := exp(-2.5 * t / 0.12)
+		var tone := sin(TAU * 220.0 * t) + sin(TAU * 277.0 * t) * 0.6
+		_click_buffer[i] = tone * env * 0.5
+	_click_pos = 0
+	_click_active = true
+
+func play_system_ready() -> void:
+	var samples := int(MIX_RATE * 0.15)
+	_click_buffer.resize(samples)
+	for i in samples:
+		var t := float(i) / MIX_RATE
+		var env := exp(-2.0 * t / 0.15)
+		_click_buffer[i] = sin(TAU * 440.0 * t) * env * 0.6
+	_click_pos = 0
+	_click_active = true
 
 func _rand_crackle_interval() -> float:
 	return randf_range(5.0, 15.0)
