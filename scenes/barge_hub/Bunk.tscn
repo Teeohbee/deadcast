@@ -18,6 +18,14 @@ anchor_bottom = 1.0
 [node name="TitleLabel" type="Label" parent="VBoxContainer"]
 text = "THE BUNK"
 
+[node name="ToggleRow" type="HBoxContainer" parent="VBoxContainer"]
+
+[node name="JournalToggle" type="Button" parent="VBoxContainer/ToggleRow"]
+text = "[JOURNAL]"
+
+[node name="ManualToggle" type="Button" parent="VBoxContainer/ToggleRow"]
+text = "[MANUAL]"
+
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
