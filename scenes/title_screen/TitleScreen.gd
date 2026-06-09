@@ -52,11 +52,11 @@ func _on_new_game_pressed() -> void:
 		$VBoxContainer/ConfirmPanel/HBoxContainer/YesButton.grab_focus()
 	else:
 		GameState.new_game()
-		get_tree().change_scene_to_file("res://scenes/AppShell.tscn")
+		get_tree().change_scene_to_file("res://scenes/boot/BootSequence.tscn")
 
 func _on_confirm_yes() -> void:
 	GameState.new_game()
-	get_tree().change_scene_to_file("res://scenes/AppShell.tscn")
+	get_tree().change_scene_to_file("res://scenes/boot/BootSequence.tscn")
 
 func _on_confirm_no() -> void:
 	confirm_panel.visible = false

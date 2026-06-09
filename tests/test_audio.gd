@@ -7,6 +7,7 @@ func before_each() -> void:
 	Audio._hum_blend = 0.0
 	Audio._click_active = false
 	Audio._click_pos = 0
+	Audio._boot_mode = false
 
 func test_hum_starts_on_first_screen_changed() -> void:
 	Audio._on_screen_changed("deck")
@@ -74,3 +75,35 @@ func test_stop_override_hum_immediate_cuts_blend() -> void:
 	Audio.stop_override_hum(true)
 	assert_eq(Audio._override_blend, 0.0)
 	assert_eq(Audio._target_override_blend, 0.0)
+
+func test_start_boot_hum_activates_hum_in_boot_mode() -> void:
+	Audio._hum_active = false
+	Audio._boot_mode = false
+	Audio.start_boot_hum()
+	assert_true(Audio._hum_active)
+	assert_true(Audio._boot_mode)
+
+func test_stop_boot_hum_clears_boot_mode() -> void:
+	Audio._boot_mode = true
+	Audio.stop_boot_hum()
+	assert_false(Audio._boot_mode)
+
+func test_play_scan_blip_activates_click() -> void:
+	Audio._click_active = false
+	Audio.play_scan_blip()
+	assert_true(Audio._click_active)
+
+func test_play_warning_tone_activates_click() -> void:
+	Audio._click_active = false
+	Audio.play_warning_tone()
+	assert_true(Audio._click_active)
+
+func test_play_power_on_activates_click() -> void:
+	Audio._click_active = false
+	Audio.play_power_on()
+	assert_true(Audio._click_active)
+
+func test_play_system_ready_activates_click() -> void:
+	Audio._click_active = false
+	Audio.play_system_ready()
+	assert_true(Audio._click_active)
