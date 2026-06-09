@@ -44,9 +44,11 @@ func _run_sequence() -> void:
 		_play_cue(group.cue)
 		await _typewrite(group.lines)
 
-		if _finished:
+		if not is_instance_valid(self) or _finished:
 			return
 		await get_tree().create_timer(group.delay).timeout
+		if not is_instance_valid(self):
+			return
 
 	if not _finished:
 		_show_prompt()
@@ -84,6 +86,8 @@ func _typewrite(text: String) -> void:
 		output_label.text += ch
 		var delay := randf_range(0.08, 0.18) if ch == "\n" else randf_range(CHAR_DELAY_MIN, CHAR_DELAY_MAX)
 		await get_tree().create_timer(delay).timeout
+		if not is_instance_valid(self):
+			return
 
 func _play_cue(cue: String) -> void:
 	match cue:

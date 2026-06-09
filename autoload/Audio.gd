@@ -214,6 +214,7 @@ func stop_override_hum(immediate: bool = false) -> void:
 		_override_blend = 0.0
 
 func _on_screen_changed(_id: String) -> void:
+	_boot_mode = false
 	_hum_active = true
 
 func _on_dive_state_changed(is_dive: bool) -> void:
