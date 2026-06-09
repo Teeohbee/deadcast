@@ -14,9 +14,9 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme_override_constants/margin_left = 40
+theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 30
-theme_override_constants/margin_right = 40
+theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 30
 
 [node name="OutputLabel" type="RichTextLabel" parent="MarginContainer"]
