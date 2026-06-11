@@ -38,7 +38,7 @@ func apply_button(btn: Button) -> void:
 	normal.content_margin_bottom = 4
 
 	var hover := StyleBoxFlat.new()
-	hover.bg_color = Color("#0a1a0a")
+	hover.bg_color = Color(0, 0, 0, 0)
 	hover.border_color = Color("#3a8a3a")
 	hover.set_border_width_all(1)
 	hover.content_margin_left = 8
@@ -50,7 +50,7 @@ func apply_button(btn: Button) -> void:
 	focus.border_color = COL_TEXT
 
 	var pressed := StyleBoxFlat.new()
-	pressed.bg_color = Color("#0a2a0a")
+	pressed.bg_color = Color(0, 0, 0, 0)
 	pressed.border_color = COL_ACCENT
 	pressed.set_border_width_all(1)
 	pressed.content_margin_left = 8
