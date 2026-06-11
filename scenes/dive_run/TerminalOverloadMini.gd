@@ -50,10 +50,15 @@ const OVERLOAD_CORE: Dictionary = {
 @onready var result_label: Label = $VBoxContainer/ResultLabel
 
 var _tension_fill: StyleBoxFlat = null
+var _flicker_timer: Timer = null
 
 func _ready() -> void:
     self.theme = UIStyle.get_theme()
     UIStyle.apply_background(self)
+    _flicker_timer = Timer.new()
+    _flicker_timer.wait_time = 0.15
+    _flicker_timer.timeout.connect(_update_status_ui)
+    add_child(_flicker_timer)
 
 func start() -> void:
     _current_tension = starting_tension
@@ -155,16 +160,28 @@ func _show_result_text(text: String, color: Color) -> void:
 
 func _update_status_ui() -> void:
     var next_backlash := roundi(5.0 * _security_threat)
-    hud_label.text = "slot %d / %d  ·  %s  ·  threat ×%.2f  ·  turn %d" % [
+    var ratio := float(_current_tension) / float(max_tension)
+    var glitch := maxf(0.0, (ratio - 0.6) * 0.4)
+
+    var hud_clean := "slot %d / %d  ·  %s  ·  threat ×%.2f  ·  turn %d" % [
         slot, total_slots, GameState.selected_zone, _security_threat, _turn]
+    var tension_clean := "line tension  %d / %d T  " % [_current_tension, max_tension]
+
+    hud_label.text = TextFX.corrupt(hud_clean, glitch)
     alert_label.text = "[ALERT] HOSTILE UPLINK: %s" % catch_name_str
     warning_label.text = "backlash loop active  —  +%dT on next turn" % next_backlash
 
     tension_bar.value = _current_tension
-    tension_row_label.text = "line tension  %d / %d T  " % [_current_tension, max_tension]
+    tension_row_label.text = TextFX.corrupt(tension_clean, glitch)
     if _tension_fill:
-        var t := float(_current_tension) / float(max_tension)
+        var t := ratio
         _tension_fill.bg_color = UIStyle.COL_TEXT.lerp(UIStyle.COL_DEBT, t)
+
+    if _flicker_timer:
+        if glitch > 0.0 and _flicker_timer.is_stopped():
+            _flicker_timer.start()
+        elif glitch <= 0.0 and not _flicker_timer.is_stopped():
+            _flicker_timer.stop()
 
     var filled := "◆".repeat(_anchor_current)
     var empty := "◇".repeat(anchor_strength - _anchor_current)
