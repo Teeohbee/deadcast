@@ -101,12 +101,13 @@ func _transition_to_game() -> void:
 	get_tree().change_scene_to_file("res://scenes/AppShell.tscn")
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not event is InputEventKey:
-		return
-	var key := event as InputEventKey
-	if not key.is_pressed() or key.is_echo():
-		return
-	var accepted := key.unicode > 0 or key.physical_keycode in [KEY_ENTER, KEY_ESCAPE]
+	var accepted := false
+	if event is InputEventKey:
+		var key := event as InputEventKey
+		if key.is_pressed() and not key.is_echo():
+			accepted = key.unicode > 0 or key.physical_keycode in [KEY_ENTER, KEY_ESCAPE]
+	elif event is InputEventJoypadButton:
+		accepted = (event as InputEventJoypadButton).is_pressed()
 	if not accepted:
 		return
 	if _waiting_for_key:
