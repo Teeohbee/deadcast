@@ -3,6 +3,7 @@ extends Node
 
 const SAVE_PATH = "user://save.cfg"
 const INFINITE_STOCK: int = -1
+const OS_VERSION := "v2.1.4"
 
 # Transient UI state — not saved
 var last_hub_focus: String = ""

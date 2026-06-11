@@ -18,7 +18,7 @@ func _ready() -> void:
 	output_label.add_theme_color_override("default_color", UIStyle.COL_COST)
 
 	_groups = [
-		{"lines": "DEADCAST_OS v2.1.4\nBOOT SEQUENCE INITIATED...", "delay": SYSTEM_DELAY, "cue": "power_on"},
+		{"lines": "DEADCAST_OS %s\nBOOT SEQUENCE INITIATED..." % GameState.OS_VERSION, "delay": SYSTEM_DELAY, "cue": "power_on"},
 		{"lines": "> SCANNING HARDWARE...\n  VESSEL:      THE MERIDIAN (deep-sea data trawler, class IV)\n  MOORING:     DISTRICT 7 DOCKS, THE SUMP\n  OPERATOR:    [NOT REGISTERED]\n  ROD SYSTEM:  SCRAP ROD Mk.I (salvage-grade, low depth)\n  HULL STATUS: pressure-rated to 200m. last survey: OVERDUE", "delay": SYSTEM_DELAY, "cue": "scan_blip"},
 		{"lines": "> CHECKING NETWORK...\n  ENCRYPTED CHANNEL DETECTED: MARTA VOSS [F5]", "delay": SYSTEM_DELAY, "cue": "scan_blip"},
 		{"lines": "  OUTSTANDING DEBT: 80,000cr\n  TERMS: 10,000cr every 5 runs. miss a payment and the terms change.", "delay": SYSTEM_DELAY, "cue": "warning"},
