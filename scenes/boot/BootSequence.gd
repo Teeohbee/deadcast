@@ -98,6 +98,9 @@ func _play_cue(cue: String) -> void:
 
 func _transition_to_game() -> void:
 	Audio.stop_boot_hum()
+	var tween := create_tween()
+	tween.tween_property(self, "modulate", Color(3.0, 3.0, 3.0), 0.04)
+	await tween.finished
 	get_tree().change_scene_to_file("res://scenes/AppShell.tscn")
 
 func _unhandled_input(event: InputEvent) -> void:
