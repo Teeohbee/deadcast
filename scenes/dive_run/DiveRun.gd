@@ -126,6 +126,7 @@ func _show_terminal_overload(catch_data: CatchData) -> void:
 	mini.total_slots = _column.size()
 	mini.shock_lure_equipped = (GameState.current_lure != null and
 		GameState.current_lure.effect == LureData.LureEffect.SHOCK)
+	mini.reward_credits = catch_data.options[0].credit_value
 	catch_container.add_child(mini)
 	mini.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mini.caught.connect(func(final_tension: int) -> void: _on_terminal_caught(catch_data, final_tension))
