@@ -21,7 +21,7 @@
 script = ExtResource("1_zone")
 zone_id = "exchange"
 display_name = "The Voss Exchange"
-passive_tension_drain = 0
+zone_interference = 0
 description = "Sunken black market. Rival fishers active."
 tag_label = "BLACK MARKET"
 tag_tier = 1

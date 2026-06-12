@@ -21,7 +21,7 @@
 script = ExtResource("1_zone")
 zone_id = "district7"
 display_name = "District 7 Ruins"
-passive_tension_drain = 0
+zone_interference = 0
 description = "Residential slums. Civilian ghost encounters, personal data."
 tag_label = "CIVILIAN"
 tag_tier = 0

@@ -21,7 +21,7 @@
 script = ExtResource("1_zone")
 zone_id = "axiom"
 display_name = "Axiom Tower Sub-Basement"
-passive_tension_drain = 5
+zone_interference = 5
 description = "Corporate server farm. Security countermeasures active."
 tag_label = "CORPORATE SECURE"
 tag_tier = 2

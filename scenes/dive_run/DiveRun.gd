@@ -375,11 +375,11 @@ func _apply_and_record(option: CatchOption, catch_data: CatchData) -> void:
 	EventBus.haul_changed.emit(_run_credits)
 
 func _advance_slot() -> void:
-	if _zone_data and _zone_data.passive_tension_drain > 0:
-		line_system.apply_tension(_zone_data.passive_tension_drain)
+	if _zone_data and _zone_data.zone_interference > 0:
+		line_system.apply_tension(_zone_data.zone_interference)
 		if _snapped:
 			return
-		session_log.log_line(">>> zone interference: +%dT" % _zone_data.passive_tension_drain,
+		session_log.log_line(">>> zone interference: +%dT" % _zone_data.zone_interference,
 			UIStyle.COL_WARNING)
 	_column.advance()
 	_show_next_catch()

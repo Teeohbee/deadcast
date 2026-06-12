@@ -21,3 +21,9 @@ func test_axiom_display_fields() -> void:
 	assert_eq(z.tag_tier, 2)
 	assert_eq(z.density, "95%")
 	assert_eq(z.threat, "HIGH")
+
+func test_zone_interference_loads_from_tres() -> void:
+	var axiom: ZoneData = load("res://resources/zones/axiom.tres")
+	assert_eq(axiom.zone_interference, 5)
+	var d7: ZoneData = load("res://resources/zones/district7.tres")
+	assert_eq(d7.zone_interference, 0)
