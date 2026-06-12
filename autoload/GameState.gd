@@ -201,6 +201,7 @@ func consume_lure_use() -> void:
 		return
 	if lure_inventory.has(lure_id):
 		lure_inventory[lure_id] = max(0, lure_inventory[lure_id] - 1)
+		EventBus.lure_stock_changed.emit(lure_id, lure_inventory[lure_id])
 
 func _roll_decrypt_outcome(roll: float) -> Dictionary:
 	var cumulative: float = 0.0
