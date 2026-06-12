@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/barge_hub/panels/zone_panel.gd" id="1_znp"]
+
+[node name="ZonePanel" type="PanelContainer"]
+script = ExtResource("1_znp")
