@@ -1,7 +1,7 @@
 # scenes/barge_hub/panels/log_feed_panel.gd
 extends TerminalPanel
 
-const MAX_LINES := 50
+const MAX_LINES := 8
 const AMBIENT_LINES: Array[String] = [
 	"NETWORK: Diver transceiver ping matched @ 42ms.",
 	"SYS: Auto-purging memory registers to prevent packet overflow.",
@@ -22,7 +22,7 @@ func _ready() -> void:
 
 	_rtl = RichTextLabel.new()
 	_rtl.bbcode_enabled = true
-	_rtl.scroll_following = true
+	_rtl.scroll_active = false
 	_rtl.fit_content = false
 	_rtl.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_rtl.add_theme_color_override("default_color", DeckStyle.DIM)
