@@ -15,6 +15,7 @@ var _zone_data: ZoneData = null
 var _run_credits: int = 0
 var _bio_credits: int = 0
 var _snapped: bool = false
+var _block_hud: bool = false
 var _current_event: CatchEvent = null
 var _current_catch_data: CatchData = null  # augmented data shown to player (may have Shock option injected)
 
@@ -22,8 +23,8 @@ func _ready() -> void:
 	catch_container.theme = UIStyle.get_theme()
 	UIStyle.apply_background(catch_container)
 	line_system.snapped.connect(_on_line_snapped)
-	line_system.tension_updated.connect(func(v: float) -> void: EventBus.tension_changed.emit(v))
-	line_system.corruption_updated.connect(func(v: float) -> void: EventBus.corruption_changed.emit(v))
+	line_system.tension_updated.connect(_on_line_tension_updated)
+	line_system.corruption_updated.connect(_on_line_corruption_updated)
 
 	if GameState.current_rod:
 		line_system.max_tension = GameState.current_rod.tension_cap
@@ -202,6 +203,7 @@ func _on_option_selected(index: int) -> void:
 		_advance_slot()
 		return
 
+	_block_hud = true
 	match catch_data.behavior:
 		CatchData.BehaviorType.RESISTANT:
 			_resolve_resistant(option, catch_data)
@@ -214,6 +216,11 @@ func _show_result_beat(text: String, color: Color, auto_dismiss: bool = false) -
 	if _current_event and not _snapped:
 		_current_event.show_result(text, color, auto_dismiss)
 		await _current_event.result_dismissed
+	_block_hud = false
+	if not _snapped:
+		EventBus.tension_changed.emit(line_system.tension)
+		EventBus.corruption_changed.emit(line_system.corruption)
+		EventBus.haul_changed.emit(_run_credits)
 
 func _apply_and_record(option: CatchOption, catch_data: CatchData) -> void:
 	line_system.apply_tension(option.tension_delta)
@@ -221,7 +228,6 @@ func _apply_and_record(option: CatchOption, catch_data: CatchData) -> void:
 	_run_credits += option.credit_value
 	if catch_data.catch_type == CatchData.CatchType.BIO:
 		_bio_credits += option.credit_value
-	EventBus.haul_changed.emit(_run_credits)
 
 func _apply_option(option: CatchOption, catch_data: CatchData) -> void:
 	_apply_and_record(option, catch_data)
@@ -255,7 +261,6 @@ func _resolve_negotiating(option: CatchOption, catch_data: CatchData) -> void:
 		if catch_data.catch_type == CatchData.CatchType.BIO:
 			_bio_credits += option.fail_credit_value
 		line_system.add_corruption(catch_data.corruption_gain)
-		EventBus.haul_changed.emit(_run_credits)
 		await _show_result_beat(
 			">>> negotiation failed  ·  +%dT" % option.fail_tension_delta,
 			UIStyle.COL_DEBT)
@@ -284,9 +289,18 @@ func _advance_slot() -> void:
 	_current_slot += 1
 	_show_next_catch()
 
+func _on_line_tension_updated(v: float) -> void:
+	if not _block_hud:
+		EventBus.tension_changed.emit(v)
+
+func _on_line_corruption_updated(v: float) -> void:
+	if not _block_hud:
+		EventBus.corruption_changed.emit(v)
+
 func _on_line_snapped() -> void:
 	if _snapped:
 		return
+	_block_hud = false
 	_snapped = true
 	var forfeited := _run_credits
 	_run_credits = 0
