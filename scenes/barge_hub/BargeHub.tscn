@@ -1,63 +1,90 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=10 format=3]
 
-[ext_resource type="Script" path="res://scenes/barge_hub/BargeHub.gd" id="1_BargeHub"]
-[ext_resource type="PackedScene" path="res://scenes/barge_hub/ZoneSelector.tscn" id="2_zsel"]
-[ext_resource type="PackedScene" path="res://scenes/barge_hub/LureEquip.tscn" id="3_leq"]
+[ext_resource type="Script" path="res://scenes/barge_hub/BargeHub.gd" id="1_hub"]
+[ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/SonarPanel.tscn" id="2_snp"]
+[ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/ZonePanel.tscn" id="3_znp"]
+[ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/LogFeedPanel.tscn" id="4_lfp"]
+[ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/LedgerPanel.tscn" id="5_lgp"]
+[ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/RigPanel.tscn" id="6_rgp"]
+[ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/FreezerPanel.tscn" id="7_fzp"]
+[ext_resource type="Shader" path="res://scenes/barge_hub/deck_crt.gdshader" id="8_crt"]
+
+[sub_resource type="ShaderMaterial" id="crt_mat"]
+shader = ExtResource("8_crt")
 
 [node name="BargeHub" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-script = ExtResource("1_BargeHub")
+script = ExtResource("1_hub")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = 20.0
-offset_right = -20.0
-offset_bottom = -20.0
+color = Color(0.0196, 0.0314, 0.0235, 1)
+mouse_filter = 2
 
-[node name="ContentRow" type="HBoxContainer" parent="VBoxContainer"]
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
 
-[node name="LeftColumn" type="VBoxContainer" parent="VBoxContainer/ContentRow"]
-size_flags_horizontal = 3
+[node name="VBox" type="VBoxContainer" parent="Margin"]
+theme_override_constants/separation = 10
 
-[node name="ZoneSelector" parent="VBoxContainer/ContentRow/LeftColumn" instance=ExtResource("2_zsel")]
-
-[node name="LureEquip" parent="VBoxContainer/ContentRow/LeftColumn" instance=ExtResource("3_leq")]
-
-[node name="RightColumn" type="VBoxContainer" parent="VBoxContainer/ContentRow"]
-custom_minimum_size = Vector2(240, 0)
-size_flags_horizontal = 4
-
-[node name="AccountLabel" type="Label" parent="VBoxContainer/ContentRow/RightColumn"]
-autowrap_mode = 0
-text = ""
-
-[node name="FreezerLabel" type="Label" parent="VBoxContainer/ContentRow/RightColumn"]
-autowrap_mode = 0
-text = ""
-
-[node name="FreezerSellButton" type="Button" parent="VBoxContainer/ContentRow/RightColumn"]
-text = ""
-visible = false
-
-[node name="Spacer" type="Control" parent="VBoxContainer"]
+[node name="MainGrid" type="HBoxContainer" parent="Margin/VBox"]
 size_flags_vertical = 3
+theme_override_constants/separation = 10
 
-[node name="DiveRow" type="HBoxContainer" parent="VBoxContainer"]
-
-[node name="DiveSpacer" type="Label" parent="VBoxContainer/DiveRow"]
+[node name="LeftColumn" type="VBoxContainer" parent="Margin/VBox/MainGrid"]
 size_flags_horizontal = 3
+size_flags_stretch_ratio = 2.0
+theme_override_constants/separation = 10
+
+[node name="SonarPanel" parent="Margin/VBox/MainGrid/LeftColumn" instance=ExtResource("2_snp")]
+
+[node name="ZonePanel" parent="Margin/VBox/MainGrid/LeftColumn" instance=ExtResource("3_znp")]
+
+[node name="LogFeedPanel" parent="Margin/VBox/MainGrid/LeftColumn" instance=ExtResource("4_lfp")]
+
+[node name="RightColumn" type="VBoxContainer" parent="Margin/VBox/MainGrid"]
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.0
+theme_override_constants/separation = 10
+
+[node name="LedgerPanel" parent="Margin/VBox/MainGrid/RightColumn" instance=ExtResource("5_lgp")]
+
+[node name="RigPanel" parent="Margin/VBox/MainGrid/RightColumn" instance=ExtResource("6_rgp")]
+
+[node name="FreezerPanel" parent="Margin/VBox/MainGrid/RightColumn" instance=ExtResource("7_fzp")]
+
+[node name="DiveBanner" type="PanelContainer" parent="Margin/VBox"]
+
+[node name="BannerRow" type="HBoxContainer" parent="Margin/VBox/DiveBanner"]
+alignment = 1
+theme_override_constants/separation = 16
+
+[node name="BannerCaption" type="Label" parent="Margin/VBox/DiveBanner/BannerRow"]
+text = "SELECTED RUIN:"
+
+[node name="BannerZone" type="Label" parent="Margin/VBox/DiveBanner/BannerRow"]
 text = ""
 
-[node name="DiveButton" type="Button" parent="VBoxContainer/DiveRow"]
-text = "[ READY TO DIVE ]"
+[node name="DiveButton" type="Button" parent="Margin/VBox/DiveBanner/BannerRow"]
+text = "[ ENTER ] READY TO DIVE"
 
-[node name="DiveSpacer2" type="Label" parent="VBoxContainer/DiveRow"]
-size_flags_horizontal = 3
-text = ""
+[node name="CRTOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+material = SubResource("crt_mat")
+mouse_filter = 2
