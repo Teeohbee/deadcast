@@ -80,3 +80,11 @@ func test_narrative_entry_indents_lines() -> void:
 	var entry := DiveFormat.narrative_entry("SOLACE-7", "line one\nline two")
 	assert_string_contains(entry, "LOG_ENTRY: SOLACE-7")
 	assert_string_contains(entry, "│  line one\n│  line two")
+
+func test_glitch_intensity_tiers() -> void:
+	assert_eq(DiveFormat.glitch_intensity(0.0), 0.0)
+	assert_eq(DiveFormat.glitch_intensity(29.9), 0.0)
+	assert_eq(DiveFormat.glitch_intensity(30.0), 0.02)
+	assert_eq(DiveFormat.glitch_intensity(50.0), 0.05)
+	assert_eq(DiveFormat.glitch_intensity(70.0), 0.10)
+	assert_eq(DiveFormat.glitch_intensity(90.0), 0.18)

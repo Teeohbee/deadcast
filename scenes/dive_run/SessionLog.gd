@@ -9,12 +9,14 @@ signal _choice_made(index: int)
 @onready var log_text: RichTextLabel = $VBoxContainer/Scroll/LogText
 @onready var live_block: VBoxContainer = $VBoxContainer/LiveBlock
 
+var glitch_intensity: float = 0.0
+
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
 
 func log_line(text: String, color: Color) -> void:
-	# Escape [ so catch tags like [DATA_CONTAINER] render literally, not as BBCode.
-	var safe := text.replace("[", "[lb]")
+	var display := TextFX.corrupt(text, glitch_intensity)
+	var safe := display.replace("[", "[lb]")
 	log_text.append_text("[color=#%s]%s[/color]\n" % [color.to_html(false), safe])
 	_scroll_to_bottom()
 

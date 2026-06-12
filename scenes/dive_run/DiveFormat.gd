@@ -94,3 +94,14 @@ static func overload_status(anchor_current: int, anchor_strength: int, threat: f
 static func narrative_entry(catch_name: String, text: String) -> String:
 	var indented := "│  " + "\n│  ".join(text.split("\n"))
 	return "── LOG_ENTRY: %s\n%s" % [catch_name, indented]
+
+static func glitch_intensity(corruption: float) -> float:
+	if corruption >= 90.0:
+		return 0.18
+	if corruption >= 70.0:
+		return 0.10
+	if corruption >= 50.0:
+		return 0.05
+	if corruption >= 30.0:
+		return 0.02
+	return 0.0

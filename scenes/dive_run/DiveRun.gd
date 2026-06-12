@@ -19,7 +19,9 @@ func _ready() -> void:
 	UIStyle.apply_background(self)
 	line_system.snapped.connect(_on_line_snapped)
 	line_system.tension_updated.connect(func(v: float) -> void: EventBus.tension_changed.emit(v))
-	line_system.corruption_updated.connect(func(v: float) -> void: EventBus.corruption_changed.emit(v))
+	line_system.corruption_updated.connect(func(v: float) -> void:
+		EventBus.corruption_changed.emit(v)
+		session_log.glitch_intensity = DiveFormat.glitch_intensity(v))
 
 	if GameState.current_rod:
 		line_system.max_tension = GameState.current_rod.tension_cap
