@@ -6,7 +6,8 @@ extends Control
 
 const ROD_DAMAGE_TENSION_PENALTY: int = 25
 @onready var line_system: LineSystem = $LineSystem
-@onready var catch_container: Control = $CatchContainer
+@onready var catch_container: Control = $VBoxContainer/CatchContainer
+@onready var dive_hud: DiveHUD = $VBoxContainer/DiveHUD
 
 var _column: Array[CatchData] = []
 var _current_slot: int = 0
@@ -42,6 +43,10 @@ func _ready() -> void:
 				var dup = c.duplicate()
 				dup.behavior = CatchData.BehaviorType.PASSIVE
 				_column[i] = dup
+	dive_hud.setup(line_system.max_tension, _layer_sizes_for(max_depth), _initial_lure_label())
+	EventBus.haul_changed.emit(0)
+	EventBus.tension_changed.emit(line_system.tension)
+	EventBus.corruption_changed.emit(line_system.corruption)
 	await get_tree().process_frame
 	_show_next_catch()
 
@@ -137,6 +142,7 @@ func _on_terminal_caught(catch_data: CatchData, final_tension: int) -> void:
 	if catch_data.catch_type == CatchData.CatchType.BIO:
 		_bio_credits += reward_option.credit_value
 	line_system.add_corruption(catch_data.corruption_gain)
+	EventBus.haul_changed.emit(_run_credits)
 	_current_slot += 1
 	_show_next_catch()
 
@@ -198,6 +204,7 @@ func _apply_and_record(option: CatchOption, catch_data: CatchData) -> void:
 	_run_credits += option.credit_value
 	if catch_data.catch_type == CatchData.CatchType.BIO:
 		_bio_credits += option.credit_value
+	EventBus.haul_changed.emit(_run_credits)
 
 func _apply_option(option: CatchOption, catch_data: CatchData) -> void:
 	_apply_and_record(option, catch_data)
@@ -224,6 +231,7 @@ func _resolve_negotiating(option: CatchOption, catch_data: CatchData) -> void:
 		if catch_data.catch_type == CatchData.CatchType.BIO:
 			_bio_credits += option.fail_credit_value
 		line_system.add_corruption(catch_data.corruption_gain)
+		EventBus.haul_changed.emit(_run_credits)
 		await _show_result_beat(
 			"negotiation failed  ·  +%dT" % option.fail_tension_delta,
 			UIStyle.COL_DEBT)
@@ -252,6 +260,23 @@ func _on_line_snapped() -> void:
 	_bio_credits = 0
 	await get_tree().create_timer(1.0).timeout
 	_end_run(true)
+
+func _layer_sizes_for(max_depth: int) -> Array:
+	var sizes: Array = [3]
+	if max_depth >= 60:
+		sizes.append(3)
+	if max_depth >= 150:
+		sizes.append(2)
+	return sizes
+
+func _initial_lure_label() -> String:
+	if not GameState.current_lure:
+		return "—"
+	var lure_id := GameState.get_lure_id(GameState.current_lure)
+	var qty: int = GameState.lure_inventory.get(lure_id, 0)
+	if qty == GameState.INFINITE_STOCK:
+		return "%s ∞" % lure_id
+	return "%s x%d" % [lure_id, qty]
 
 func _end_run(snapped: bool) -> void:
 	GameState.add_credits(_run_credits - _bio_credits)  # non-bio credits go directly to wallet
