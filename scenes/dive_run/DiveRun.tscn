@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scenes/dive_run/DiveRun.gd" id="1_DiveRun"]
 [ext_resource type="PackedScene" path="res://scenes/dive_run/LineSystem.tscn" id="2_LineSystem"]
+[ext_resource type="PackedScene" path="res://scenes/dive_run/DiveHUD.tscn" id="3_DiveHUD"]
 
 [node name="DiveRun" type="Control"]
 script = ExtResource("1_DiveRun")
@@ -9,8 +10,13 @@ script = ExtResource("1_DiveRun")
 [node name="LineSystem" parent="." instance=ExtResource("2_LineSystem")]
 max_tension = 80
 
-[node name="CatchContainer" type="Control" parent="."]
-layout_mode = 3
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+
+[node name="DiveHUD" parent="VBoxContainer" instance=ExtResource("3_DiveHUD")]
+
+[node name="CatchContainer" type="Control" parent="VBoxContainer"]
+size_flags_vertical = 3

@@ -16,6 +16,7 @@ var corruption: float = 0.0
 var slot: int = 1
 var total_slots: int = 1
 var shock_lure_equipped: bool = false
+var reward_credits: int = 0
 
 var _current_tension: int = 0
 var _anchor_current: int = 0
@@ -109,6 +110,7 @@ func _run_turns() -> void:
         var cmd: Dictionary = _active_commands[cmd_idx]
 
         if cmd.id == "ISOLATE_FEED":
+            await _show_outcome(">>> feed isolated  ·  catch lost  ·  tension restored", UIStyle.COL_DIM)
             aborted.emit(starting_tension)
             return
 
@@ -120,6 +122,7 @@ func _run_turns() -> void:
             return
 
         if _anchor_current <= 0:
+            await _show_outcome(">>> %s captured  ·  +%dcr" % [catch_name_str, reward_credits], UIStyle.COL_TEXT)
             caught.emit(_current_tension)
             return
 
@@ -153,6 +156,18 @@ func _execute_command(cmd: Dictionary) -> void:
         _current_tension = clampi(_current_tension + total_penalty, 0, max_tension)
         _update_status_ui()
         _show_result_text("%s — FAILED  +%dT backlash" % [cmd.id, cmd.fail_t], UIStyle.COL_DEBT)
+
+func _show_outcome(text: String, color: Color) -> void:
+    _clear_commands()
+    result_label.text = text
+    UIStyle.apply_label(result_label, color)
+    var btn := Button.new()
+    btn.text = "[CONTINUE →]"
+    btn.focus_mode = Control.FOCUS_ALL
+    UIStyle.apply_button(btn)
+    commands_container.add_child(btn)
+    btn.grab_focus()
+    await btn.pressed
 
 func _show_result_text(text: String, color: Color) -> void:
     result_label.text = text

@@ -90,13 +90,13 @@ func _on_continue_pressed() -> void:
 	options_container.visible = true
 	option_selected.emit(_pending_narrative_index)
 
-func show_result(text: String, color: Color) -> void:
+func show_result(text: String, color: Color, auto_dismiss: bool = false) -> void:
 	narrative_panel.visible = false
 	for child in options_container.get_children():
 		child.queue_free()
-	_animate_result(text, color)
+	_animate_result(text, color, auto_dismiss)
 
-func _animate_result(text: String, color: Color) -> void:
+func _animate_result(text: String, color: Color, auto_dismiss: bool) -> void:
 	var label := Label.new()
 	label.theme = UIStyle.get_theme()
 	options_container.add_child(label)
@@ -114,8 +114,14 @@ func _animate_result(text: String, color: Color) -> void:
 		if not is_instance_valid(self):
 			return
 
-	label.text = ">>> " + text
+	label.text = text
 	UIStyle.apply_label(label, color)
+
+	if auto_dismiss:
+		await get_tree().create_timer(1.0).timeout
+		if is_instance_valid(self):
+			result_dismissed.emit()
+		return
 
 	var btn := Button.new()
 	btn.text = "[CONTINUE →]"

@@ -6,7 +6,8 @@ extends Control
 
 const ROD_DAMAGE_TENSION_PENALTY: int = 25
 @onready var line_system: LineSystem = $LineSystem
-@onready var catch_container: Control = $CatchContainer
+@onready var catch_container: Control = $VBoxContainer/CatchContainer
+@onready var dive_hud: DiveHUD = $VBoxContainer/DiveHUD
 
 var _column: Array[CatchData] = []
 var _current_slot: int = 0
@@ -14,6 +15,7 @@ var _zone_data: ZoneData = null
 var _run_credits: int = 0
 var _bio_credits: int = 0
 var _snapped: bool = false
+var _block_hud: bool = false
 var _current_event: CatchEvent = null
 var _current_catch_data: CatchData = null  # augmented data shown to player (may have Shock option injected)
 
@@ -21,8 +23,8 @@ func _ready() -> void:
 	catch_container.theme = UIStyle.get_theme()
 	UIStyle.apply_background(catch_container)
 	line_system.snapped.connect(_on_line_snapped)
-	line_system.tension_updated.connect(func(v: float) -> void: EventBus.tension_changed.emit(v))
-	line_system.corruption_updated.connect(func(v: float) -> void: EventBus.corruption_changed.emit(v))
+	line_system.tension_updated.connect(_on_line_tension_updated)
+	line_system.corruption_updated.connect(_on_line_corruption_updated)
 
 	if GameState.current_rod:
 		line_system.max_tension = GameState.current_rod.tension_cap
@@ -42,7 +44,14 @@ func _ready() -> void:
 				var dup = c.duplicate()
 				dup.behavior = CatchData.BehaviorType.PASSIVE
 				_column[i] = dup
+	dive_hud.setup(line_system.max_tension, _layer_sizes_for(max_depth), _initial_lure_label())
+	EventBus.haul_changed.emit(0)
+	EventBus.tension_changed.emit(line_system.tension)
+	EventBus.corruption_changed.emit(line_system.corruption)
 	await get_tree().process_frame
+	if GameState.current_rod and GameState.rod_damaged:
+		await _show_notice(">>> rod damaged — tension cap reduced to %d" % line_system.max_tension,
+			UIStyle.COL_WARNING, 1.2)
 	_show_next_catch()
 
 func _show_next_catch() -> void:
@@ -61,6 +70,19 @@ func _show_next_catch() -> void:
 		return
 
 	_show_catch_event(catch_data)
+
+func _show_notice(text: String, color: Color, duration: float) -> void:
+	var label := Label.new()
+	label.theme = UIStyle.get_theme()
+	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.text = text
+	UIStyle.apply_label(label, color)
+	catch_container.add_child(label)
+	await get_tree().create_timer(duration).timeout
+	if is_instance_valid(label):
+		label.queue_free()
 
 func _show_deep_pulse_reveal(catch_data: CatchData) -> void:
 	var type_str: String = str(CatchData.CatchType.keys()[catch_data.catch_type]).to_lower()
@@ -121,6 +143,7 @@ func _show_terminal_overload(catch_data: CatchData) -> void:
 	mini.total_slots = _column.size()
 	mini.shock_lure_equipped = (GameState.current_lure != null and
 		GameState.current_lure.effect == LureData.LureEffect.SHOCK)
+	mini.reward_credits = catch_data.options[0].credit_value
 	catch_container.add_child(mini)
 	mini.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mini.caught.connect(func(final_tension: int) -> void: _on_terminal_caught(catch_data, final_tension))
@@ -137,6 +160,7 @@ func _on_terminal_caught(catch_data: CatchData, final_tension: int) -> void:
 	if catch_data.catch_type == CatchData.CatchType.BIO:
 		_bio_credits += reward_option.credit_value
 	line_system.add_corruption(catch_data.corruption_gain)
+	EventBus.haul_changed.emit(_run_credits)
 	_current_slot += 1
 	_show_next_catch()
 
@@ -179,6 +203,7 @@ func _on_option_selected(index: int) -> void:
 		_advance_slot()
 		return
 
+	_block_hud = true
 	match catch_data.behavior:
 		CatchData.BehaviorType.RESISTANT:
 			_resolve_resistant(option, catch_data)
@@ -187,10 +212,15 @@ func _on_option_selected(index: int) -> void:
 		_:
 			_apply_option(option, catch_data)
 
-func _show_result_beat(text: String, color: Color) -> void:
+func _show_result_beat(text: String, color: Color, auto_dismiss: bool = false) -> void:
 	if _current_event and not _snapped:
-		_current_event.show_result(text, color)
+		_current_event.show_result(text, color, auto_dismiss)
 		await _current_event.result_dismissed
+	_block_hud = false
+	if not _snapped:
+		EventBus.tension_changed.emit(line_system.tension)
+		EventBus.corruption_changed.emit(line_system.corruption)
+		EventBus.haul_changed.emit(_run_credits)
 
 func _apply_and_record(option: CatchOption, catch_data: CatchData) -> void:
 	line_system.apply_tension(option.tension_delta)
@@ -201,6 +231,11 @@ func _apply_and_record(option: CatchOption, catch_data: CatchData) -> void:
 
 func _apply_option(option: CatchOption, catch_data: CatchData) -> void:
 	_apply_and_record(option, catch_data)
+	await _show_result_beat(
+		DiveFormat.result_line(option.credit_value, option.tension_delta, catch_data.corruption_gain),
+		UIStyle.COL_TEXT, true)
+	if _snapped:
+		return
 	_advance_slot()
 
 func _resolve_resistant(option: CatchOption, catch_data: CatchData) -> void:
@@ -208,11 +243,13 @@ func _resolve_resistant(option: CatchOption, catch_data: CatchData) -> void:
 		line_system.apply_tension(option.resist_tension_penalty)
 		line_system.add_corruption(catch_data.corruption_gain)
 		await _show_result_beat(
-			"resisted  ·  +%dT  no reward" % option.resist_tension_penalty,
+			">>> resisted  ·  +%dT  ·  no reward" % option.resist_tension_penalty,
 			UIStyle.COL_DEBT)
 	else:
 		_apply_and_record(option, catch_data)
-		await _show_result_beat("+%dcr" % option.credit_value, UIStyle.COL_TEXT)
+		await _show_result_beat(
+			DiveFormat.result_line(option.credit_value, option.tension_delta, catch_data.corruption_gain),
+			UIStyle.COL_TEXT, true)
 	if _snapped:
 		return
 	_advance_slot()
@@ -225,11 +262,13 @@ func _resolve_negotiating(option: CatchOption, catch_data: CatchData) -> void:
 			_bio_credits += option.fail_credit_value
 		line_system.add_corruption(catch_data.corruption_gain)
 		await _show_result_beat(
-			"negotiation failed  ·  +%dT" % option.fail_tension_delta,
+			">>> negotiation failed  ·  +%dT" % option.fail_tension_delta,
 			UIStyle.COL_DEBT)
 	else:
 		_apply_and_record(option, catch_data)
-		await _show_result_beat("+%dcr" % option.credit_value, UIStyle.COL_TEXT)
+		await _show_result_beat(
+			DiveFormat.result_line(option.credit_value, option.tension_delta, catch_data.corruption_gain),
+			UIStyle.COL_TEXT, true)
 	if _snapped:
 		return
 	_advance_slot()
@@ -241,17 +280,68 @@ func _advance_slot() -> void:
 		child.queue_free()
 	if _zone_data and _zone_data.passive_tension_drain > 0:
 		line_system.apply_tension(_zone_data.passive_tension_drain)
+		if _snapped:
+			return
+		await _show_notice(">>> zone interference: +%dT" % _zone_data.passive_tension_drain,
+			UIStyle.COL_WARNING, 0.8)
+		if _snapped:
+			return
 	_current_slot += 1
 	_show_next_catch()
+
+func _on_line_tension_updated(v: float) -> void:
+	if not _block_hud:
+		EventBus.tension_changed.emit(v)
+
+func _on_line_corruption_updated(v: float) -> void:
+	if not _block_hud:
+		EventBus.corruption_changed.emit(v)
 
 func _on_line_snapped() -> void:
 	if _snapped:
 		return
+	_block_hud = false
 	_snapped = true
+	var forfeited := _run_credits
 	_run_credits = 0
 	_bio_credits = 0
-	await get_tree().create_timer(1.0).timeout
+	EventBus.haul_changed.emit(0)
+	for child in catch_container.get_children():
+		child.queue_free()
+
+	var label := Label.new()
+	label.theme = UIStyle.get_theme()
+	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	UIStyle.apply_label(label, UIStyle.COL_DEBT)
+	catch_container.add_child(label)
+
+	label.text = "[!!! TENSION EXCEEDED !!!]"
+	await get_tree().create_timer(0.5).timeout
+	label.text = TextFX.corrupt("[LINE SNAPPED — SIGNAL LOST]", 0.15)
+	await get_tree().create_timer(0.6).timeout
+	label.text = TextFX.corrupt("[LINE SNAPPED — SIGNAL LOST]", 0.3) \
+		+ "\n\n>>> haul forfeited: %dcr" % forfeited
+	await get_tree().create_timer(0.9).timeout
 	_end_run(true)
+
+func _layer_sizes_for(max_depth: int) -> Array:
+	var sizes: Array = [3]
+	if max_depth >= 60:
+		sizes.append(3)
+	if max_depth >= 150:
+		sizes.append(2)
+	return sizes
+
+func _initial_lure_label() -> String:
+	if not GameState.current_lure:
+		return "—"
+	var lure_id := GameState.get_lure_id(GameState.current_lure)
+	var qty: int = GameState.lure_inventory.get(lure_id, 0)
+	if qty == GameState.INFINITE_STOCK:
+		return "%s ∞" % lure_id
+	return "%s x%d" % [lure_id, qty]
 
 func _end_run(snapped: bool) -> void:
 	GameState.add_credits(_run_credits - _bio_credits)  # non-bio credits go directly to wallet
