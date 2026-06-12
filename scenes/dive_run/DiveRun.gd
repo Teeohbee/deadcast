@@ -10,7 +10,6 @@ const BEAT_PAUSE := 0.5
 
 var _column: DiveColumn = null
 var _zone_data: ZoneData = null
-var _lure_effect: LureData.LureEffect = LureData.LureEffect.NONE
 var _run_credits: int = 0
 var _bio_credits: int = 0
 var _snapped: bool = false
@@ -32,10 +31,8 @@ func _ready() -> void:
 	_zone_data = load("res://resources/zones/%s.tres" % zone_id)
 
 	var max_depth = GameState.current_rod.max_depth if GameState.current_rod else 100
-	_lure_effect = GameState.current_lure.effect if GameState.current_lure else LureData.LureEffect.NONE
 	_column = DiveColumn.new(zone_id, max_depth)
-	_column.generate_current_layer(line_system.corruption, _lure_effect)
-	_pacify_ghost_bait_entities()
+	_column.generate_current_layer(line_system.corruption)
 
 	dive_hud.setup(line_system.max_tension, _column.reachable_layer_sizes(), _initial_lure_label())
 	EventBus.haul_changed.emit(0)
@@ -67,10 +64,6 @@ func _show_next_catch() -> void:
 		_run_overload(catch_data)
 		return
 
-	if GameState.current_lure and GameState.current_lure.effect == LureData.LureEffect.DEEP_PULSE:
-		var type_str: String = str(CatchData.CatchType.keys()[catch_data.catch_type]).to_lower()
-		session_log.log_line(">>> deep_pulse  ·  incoming: [%s]" % type_str, UIStyle.COL_DIM)
-
 	_present_catch(catch_data)
 
 func _show_checkpoint() -> void:
@@ -94,15 +87,12 @@ func _show_checkpoint() -> void:
 		await _beat()
 		_end_run(false)
 		return
-	_column.descend(line_system.corruption, _lure_effect)
-	_pacify_ghost_bait_entities()
+	_column.descend(line_system.corruption)
 	_show_next_catch()
 
 func _present_catch(catch_data: CatchData) -> void:
 	var augmented := catch_data
-	var using_shock := (GameState.current_lure != null and
-		GameState.current_lure.effect == LureData.LureEffect.SHOCK and
-		catch_data.catch_type == CatchData.CatchType.MECH)
+	var using_shock := _shock_ready(catch_data)
 	if using_shock:
 		augmented = _inject_shock_option(catch_data)
 
@@ -199,9 +189,7 @@ func _resolve_negotiating(option: CatchOption, catch_data: CatchData) -> void:
 	_advance_slot()
 
 func _run_overload(catch_data: CatchData) -> void:
-	var shock_ready := (GameState.current_lure != null and
-		GameState.current_lure.effect == LureData.LureEffect.SHOCK and
-		catch_data.catch_type == CatchData.CatchType.MECH)
+	var shock_ready := _shock_ready(catch_data)
 	var fight := OverloadFight.new(line_system.max_tension, int(line_system.tension),
 		catch_data.anchor_strength, line_system.corruption, shock_ready)
 	var reward: CatchOption = catch_data.options[0]
@@ -300,9 +288,13 @@ func _advance_slot() -> void:
 	_column.advance()
 	_show_next_catch()
 
-func _pacify_ghost_bait_entities() -> void:
-	if not (GameState.current_lure and GameState.current_lure.effect == LureData.LureEffect.GHOST_BAIT):
-		return
+func _shock_ready(catch_data: CatchData) -> bool:
+	return (GameState.current_lure != null and
+		GameState.current_lure.effect == LureData.LureEffect.SHOCK and
+		GameState.has_lure_stock(GameState.current_lure) and
+		catch_data.catch_type == CatchData.CatchType.MECH)
+
+func _pacify_entities_in_layer() -> void:
 	for i in _column.slots.size():
 		var c = _column.slots[i]
 		if c.catch_type == CatchData.CatchType.ENTITY and c.behavior == CatchData.BehaviorType.AGGRESSIVE:
