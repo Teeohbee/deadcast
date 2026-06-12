@@ -17,12 +17,12 @@ var _tab_buttons: Array[Button] = []
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
-	UIStyle.apply_label(sep_label, UIStyle.COL_DIM)
+	DeckStyle.apply_label(sep_label, DeckStyle.BORDER)
 
 	for tab in _TABS:
 		var btn := Button.new()
 		btn.focus_mode = Control.FOCUS_ALL
-		UIStyle.apply_button(btn)
+		DeckStyle.apply_function_key(btn)
 		btn.text = tab["label"]
 		var id: String = tab["id"]
 		btn.pressed.connect(func() -> void: UIController.navigate_to(id))
@@ -41,11 +41,11 @@ func _on_screen_changed(id: String) -> void:
 
 		if tab_id == "marta" and GameState.has_new_marta_beat():
 			btn.text = base_label + " !"
-			btn.add_theme_color_override("font_color", UIStyle.COL_WARNING)
+			btn.add_theme_color_override("font_color", DeckStyle.AMBER)
 		elif tab_id == id:
 			btn.text = base_label
-			btn.add_theme_color_override("font_color", UIStyle.COL_ACCENT)
+			btn.add_theme_color_override("font_color", DeckStyle.GREEN)
 		else:
 			btn.text = base_label
-			btn.add_theme_color_override("font_color", UIStyle.COL_DIM)
+			btn.add_theme_color_override("font_color", DeckStyle.DIM)
 
