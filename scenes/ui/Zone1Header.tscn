@@ -17,18 +17,25 @@ text = "────────────────────────
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
 size_flags_horizontal = 3
+theme_override_constants/separation = 18
 
 [node name="OSLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(220, 0)
-text = "// DEADCAST_OS v2.16 //"
+text = ""
 
 [node name="HostLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
 size_flags_horizontal = 3
-horizontal_alignment = 1
 text = "HOST: THE_MERIDIAN_DECK"
 
+[node name="DepthLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
+text = "PRESSURE DEPTH: 4,200m"
+
+[node name="ClockLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
+text = "SYS_TIME: 00:00:00"
+
+[node name="BatteryLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
+text = "BATTERY: 100% [LINE]"
+
 [node name="StatusLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(180, 0)
 horizontal_alignment = 2
 text = "CR: 0  SIG: 100%"
 

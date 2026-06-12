@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/barge_hub/panels/freezer_panel.gd" id="1_fzp"]
+
+[node name="FreezerPanel" type="PanelContainer"]
+script = ExtResource("1_fzp")
