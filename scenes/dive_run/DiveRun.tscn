@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scenes/dive_run/DiveRun.gd" id="1_DiveRun"]
 [ext_resource type="PackedScene" path="res://scenes/dive_run/LineSystem.tscn" id="2_LineSystem"]
 [ext_resource type="PackedScene" path="res://scenes/dive_run/DiveHUD.tscn" id="3_DiveHUD"]
+[ext_resource type="PackedScene" path="res://scenes/dive_run/SessionLog.tscn" id="4_SessionLog"]
 
 [node name="DiveRun" type="Control"]
 script = ExtResource("1_DiveRun")
@@ -18,5 +19,5 @@ anchor_bottom = 1.0
 
 [node name="DiveHUD" parent="VBoxContainer" instance=ExtResource("3_DiveHUD")]
 
-[node name="CatchContainer" type="Control" parent="VBoxContainer"]
+[node name="SessionLog" parent="VBoxContainer" instance=ExtResource("4_SessionLog")]
 size_flags_vertical = 3
