@@ -8,9 +8,9 @@ const BEAT_PAUSE := 0.5
 @onready var dive_hud: DiveHUD = $VBoxContainer/DiveHUD
 @onready var session_log: SessionLog = $VBoxContainer/SessionLog
 
-var _column: Array[CatchData] = []
-var _current_slot: int = 0
+var _column: DiveColumn = null
 var _zone_data: ZoneData = null
+var _lure_effect: LureData.LureEffect = LureData.LureEffect.NONE
 var _run_credits: int = 0
 var _bio_credits: int = 0
 var _snapped: bool = false
@@ -19,7 +19,9 @@ func _ready() -> void:
 	UIStyle.apply_background(self)
 	line_system.snapped.connect(_on_line_snapped)
 	line_system.tension_updated.connect(func(v: float) -> void: EventBus.tension_changed.emit(v))
-	line_system.corruption_updated.connect(func(v: float) -> void: EventBus.corruption_changed.emit(v))
+	line_system.corruption_updated.connect(func(v: float) -> void:
+		EventBus.corruption_changed.emit(v)
+		session_log.glitch_intensity = DiveFormat.glitch_intensity(v))
 
 	if GameState.current_rod:
 		line_system.max_tension = GameState.current_rod.tension_cap
@@ -30,17 +32,12 @@ func _ready() -> void:
 	_zone_data = load("res://resources/zones/%s.tres" % zone_id)
 
 	var max_depth = GameState.current_rod.max_depth if GameState.current_rod else 100
-	var lure_effect = GameState.current_lure.effect if GameState.current_lure else LureData.LureEffect.NONE
-	_column = CatchPool.generate_column(zone_id, line_system.corruption, max_depth, lure_effect)
-	if GameState.current_lure and GameState.current_lure.effect == LureData.LureEffect.GHOST_BAIT:
-		for i in _column.size():
-			var c = _column[i]
-			if c.catch_type == CatchData.CatchType.ENTITY and c.behavior == CatchData.BehaviorType.AGGRESSIVE:
-				var dup = c.duplicate()
-				dup.behavior = CatchData.BehaviorType.PASSIVE
-				_column[i] = dup
+	_lure_effect = GameState.current_lure.effect if GameState.current_lure else LureData.LureEffect.NONE
+	_column = DiveColumn.new(zone_id, max_depth)
+	_column.generate_current_layer(line_system.corruption, _lure_effect)
+	_pacify_ghost_bait_entities()
 
-	dive_hud.setup(line_system.max_tension, _layer_sizes_for(max_depth), _initial_lure_label())
+	dive_hud.setup(line_system.max_tension, _column.reachable_layer_sizes(), _initial_lure_label())
 	EventBus.haul_changed.emit(0)
 	EventBus.tension_changed.emit(line_system.tension)
 	EventBus.corruption_changed.emit(line_system.corruption)
@@ -55,13 +52,16 @@ func _ready() -> void:
 func _show_next_catch() -> void:
 	if _snapped:
 		return
-	if _current_slot >= _column.size():
-		session_log.log_line("\n>>> column cleared  ·  surfacing", UIStyle.COL_TEXT)
-		await _beat()
-		_end_run(false)
+	if _column.layer_cleared():
+		if _column.can_descend():
+			_show_checkpoint()
+		else:
+			session_log.log_line("\n>>> column cleared  ·  surfacing", UIStyle.COL_TEXT)
+			await _beat()
+			_end_run(false)
 		return
-	var catch_data = _column[_current_slot]
-	EventBus.slot_changed.emit(_current_slot + 1, _column.size())
+	var catch_data = _column.current_catch()
+	EventBus.slot_changed.emit(_column.global_slot_index() + 1, _column.total_reachable_slots())
 
 	if catch_data.behavior == CatchData.BehaviorType.AGGRESSIVE:
 		_run_overload(catch_data)
@@ -72,6 +72,31 @@ func _show_next_catch() -> void:
 		session_log.log_line(">>> deep_pulse  ·  incoming: [%s]" % type_str, UIStyle.COL_DIM)
 
 	_present_catch(catch_data)
+
+func _show_checkpoint() -> void:
+	session_log.log_line("\n─── DEPTH CHECKPOINT ──────────────────────────", UIStyle.COL_ACCENT)
+	session_log.log_line("│  %s cleared  ·  haul: %dcr  ·  tension %d/%d  ·  SIG %d%%" % [
+		DiveColumn.LAYER_NAMES[_column.current_layer()], _run_credits,
+		int(line_system.tension), line_system.max_tension,
+		int(100.0 - line_system.corruption)], UIStyle.COL_TEXT)
+	session_log.log_line("│  %s scan: %d contacts  ·  draws weighted by current SIG" % [
+		_column.next_layer_name(), _column.next_layer_slot_count()], UIStyle.COL_DIM)
+
+	var labels: Array[String] = [
+		"[1] DESCEND   — push deeper. higher yields, SIG-weighted draws",
+		"[2] SURFACE   — bank %dcr and end the run" % _run_credits,
+	]
+	var index: int = await session_log.present_choices(labels, ["descend", "surface"])
+	if _snapped:
+		return
+	if index == 1:
+		session_log.log_line(">>> surfacing  ·  haul banked", UIStyle.COL_TEXT)
+		await _beat()
+		_end_run(false)
+		return
+	_column.descend(line_system.corruption, _lure_effect)
+	_pacify_ghost_bait_entities()
+	_show_next_catch()
 
 func _present_catch(catch_data: CatchData) -> void:
 	var augmented := catch_data
@@ -109,8 +134,11 @@ func _present_catch(catch_data: CatchData) -> void:
 		GameState.set_entity_encountered(augmented.entity_id)
 
 	if option.cuts_line:
-		line_system.reset_tension()
-		session_log.log_line(">>> connection cut  ·  tension reset  ·  no reward", UIStyle.COL_DIM)
+		var vented := int(line_system.tension) / 2
+		line_system.sync_tension(vented)
+		line_system.add_corruption(10)
+		session_log.log_line(">>> connection cut — tension vented to %d/%d  ·  SIG -10%%" % [
+			vented, line_system.max_tension], UIStyle.COL_WARNING)
 		await _beat()
 		_advance_slot()
 		return
@@ -204,8 +232,9 @@ func _run_overload(catch_data: CatchData) -> void:
 		var cmd: Dictionary = commands[index]
 
 		if cmd.id == "ISOLATE_FEED":
-			line_system.sync_tension(fight.starting_tension)
-			session_log.log_line(">>> feed isolated  ·  catch lost  ·  tension restored", UIStyle.COL_DIM)
+			line_system.sync_tension(fight.tension)
+			session_log.log_line(">>> feed isolated  ·  catch lost  ·  tension holds at %dT" % fight.tension,
+				UIStyle.COL_DIM)
 			await _beat()
 			_advance_slot()
 			return
@@ -268,8 +297,18 @@ func _advance_slot() -> void:
 			return
 		session_log.log_line(">>> zone interference: +%dT" % _zone_data.passive_tension_drain,
 			UIStyle.COL_WARNING)
-	_current_slot += 1
+	_column.advance()
 	_show_next_catch()
+
+func _pacify_ghost_bait_entities() -> void:
+	if not (GameState.current_lure and GameState.current_lure.effect == LureData.LureEffect.GHOST_BAIT):
+		return
+	for i in _column.slots.size():
+		var c = _column.slots[i]
+		if c.catch_type == CatchData.CatchType.ENTITY and c.behavior == CatchData.BehaviorType.AGGRESSIVE:
+			var dup = c.duplicate()
+			dup.behavior = CatchData.BehaviorType.PASSIVE
+			_column.slots[i] = dup
 
 func _beat() -> void:
 	await get_tree().create_timer(BEAT_PAUSE).timeout
@@ -301,14 +340,6 @@ func _end_run(snapped: bool) -> void:
 	GameState.on_run_complete(snapped, _bio_credits)
 	EventBus.run_ended.emit(GameState.last_run_result)
 	UIController.navigate_to("debrief")
-
-func _layer_sizes_for(max_depth: int) -> Array:
-	var sizes: Array = [3]
-	if max_depth >= 60:
-		sizes.append(3)
-	if max_depth >= 150:
-		sizes.append(2)
-	return sizes
 
 func _initial_lure_label() -> String:
 	if not GameState.current_lure:
