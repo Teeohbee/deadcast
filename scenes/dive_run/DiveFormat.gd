@@ -41,7 +41,7 @@ static func contact_card(catch_data: CatchData) -> String:
 
 static func option_label(num: int, option: CatchOption, behavior: CatchData.BehaviorType) -> String:
 	if option.cuts_line:
-		return "[%d] abort_connection  ·  resets tension  ·  no reward" % num
+		return "[%d] abort_connection  ·  vents half tension  ·  SIG -10%%  ·  no reward" % num
 
 	var t_str: String
 	if option.tension_delta > 0:
@@ -82,7 +82,7 @@ static func command_label(num: int, cmd: Dictionary) -> String:
 		"OVERLOAD_CORE":
 			return "[%d] OVERLOAD_CORE [shock] +15T  ·  -2 anchor  ·  guaranteed" % num
 		"ISOLATE_FEED":
-			return "[%d] ISOLATE_FEED          emergency disconnect  (lose catch, restore tension)" % num
+			return "[%d] ISOLATE_FEED          emergency disconnect  (lose catch, keep tension)" % num
 	return ""
 
 static func overload_status(anchor_current: int, anchor_strength: int, threat: float, turn: int) -> String:

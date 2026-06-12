@@ -132,8 +132,11 @@ func _present_catch(catch_data: CatchData) -> void:
 		GameState.set_entity_encountered(augmented.entity_id)
 
 	if option.cuts_line:
-		line_system.reset_tension()
-		session_log.log_line(">>> connection cut  ·  tension reset  ·  no reward", UIStyle.COL_DIM)
+		var vented := int(line_system.tension) / 2
+		line_system.sync_tension(vented)
+		line_system.add_corruption(10)
+		session_log.log_line(">>> connection cut — tension vented to %d/%d  ·  SIG -10%%" % [
+			vented, line_system.max_tension], UIStyle.COL_WARNING)
 		await _beat()
 		_advance_slot()
 		return
@@ -227,8 +230,9 @@ func _run_overload(catch_data: CatchData) -> void:
 		var cmd: Dictionary = commands[index]
 
 		if cmd.id == "ISOLATE_FEED":
-			line_system.sync_tension(fight.starting_tension)
-			session_log.log_line(">>> feed isolated  ·  catch lost  ·  tension restored", UIStyle.COL_DIM)
+			line_system.sync_tension(fight.tension)
+			session_log.log_line(">>> feed isolated  ·  catch lost  ·  tension holds at %dT" % fight.tension,
+				UIStyle.COL_DIM)
 			await _beat()
 			_advance_slot()
 			return

@@ -28,7 +28,10 @@ func test_option_label_cuts_line() -> void:
 	var o := CatchOption.new()
 	o.cuts_line = true
 	assert_eq(DiveFormat.option_label(3, o, CatchData.BehaviorType.PASSIVE),
-		"[3] abort_connection  ·  resets tension  ·  no reward")
+		"[3] abort_connection  ·  vents half tension  ·  SIG -10%  ·  no reward")
+
+func test_command_label_isolate_keeps_tension() -> void:
+	assert_string_contains(DiveFormat.command_label(4, {"id": "ISOLATE_FEED"}), "keep tension")
 
 func test_option_label_resistant_shows_odds() -> void:
 	var o := _make_option("Brute Decrypt", 15, 550)
