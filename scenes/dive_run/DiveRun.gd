@@ -1,13 +1,12 @@
 # scenes/dive_run/DiveRun.gd
 extends Control
 
-@export var catch_event_scene: PackedScene = preload("res://scenes/dive_run/CatchEvent.tscn")
-@export var terminal_overload_scene: PackedScene = preload("res://scenes/dive_run/TerminalOverloadMini.tscn")
-
 const ROD_DAMAGE_TENSION_PENALTY: int = 25
+const BEAT_PAUSE := 0.5
+
 @onready var line_system: LineSystem = $LineSystem
-@onready var catch_container: Control = $VBoxContainer/CatchContainer
 @onready var dive_hud: DiveHUD = $VBoxContainer/DiveHUD
+@onready var session_log: SessionLog = $VBoxContainer/SessionLog
 
 var _column: Array[CatchData] = []
 var _current_slot: int = 0
@@ -15,16 +14,12 @@ var _zone_data: ZoneData = null
 var _run_credits: int = 0
 var _bio_credits: int = 0
 var _snapped: bool = false
-var _block_hud: bool = false
-var _current_event: CatchEvent = null
-var _current_catch_data: CatchData = null  # augmented data shown to player (may have Shock option injected)
 
 func _ready() -> void:
-	catch_container.theme = UIStyle.get_theme()
-	UIStyle.apply_background(catch_container)
+	UIStyle.apply_background(self)
 	line_system.snapped.connect(_on_line_snapped)
-	line_system.tension_updated.connect(_on_line_tension_updated)
-	line_system.corruption_updated.connect(_on_line_corruption_updated)
+	line_system.tension_updated.connect(func(v: float) -> void: EventBus.tension_changed.emit(v))
+	line_system.corruption_updated.connect(func(v: float) -> void: EventBus.corruption_changed.emit(v))
 
 	if GameState.current_rod:
 		line_system.max_tension = GameState.current_rod.tension_cap
@@ -44,78 +39,205 @@ func _ready() -> void:
 				var dup = c.duplicate()
 				dup.behavior = CatchData.BehaviorType.PASSIVE
 				_column[i] = dup
+
 	dive_hud.setup(line_system.max_tension, _layer_sizes_for(max_depth), _initial_lure_label())
 	EventBus.haul_changed.emit(0)
 	EventBus.tension_changed.emit(line_system.tension)
 	EventBus.corruption_changed.emit(line_system.corruption)
+
 	await get_tree().process_frame
+	session_log.log_line("> cast — %s" % _zone_data.display_name.to_lower(), UIStyle.COL_DIM)
 	if GameState.current_rod and GameState.rod_damaged:
-		await _show_notice(">>> rod damaged — tension cap reduced to %d" % line_system.max_tension,
-			UIStyle.COL_WARNING, 1.2)
+		session_log.log_line(">>> rod damaged — tension cap reduced to %d" % line_system.max_tension,
+			UIStyle.COL_WARNING)
 	_show_next_catch()
 
 func _show_next_catch() -> void:
+	if _snapped:
+		return
 	if _current_slot >= _column.size():
+		session_log.log_line("\n>>> column cleared  ·  surfacing", UIStyle.COL_TEXT)
+		await _beat()
 		_end_run(false)
 		return
 	var catch_data = _column[_current_slot]
 	EventBus.slot_changed.emit(_current_slot + 1, _column.size())
 
 	if catch_data.behavior == CatchData.BehaviorType.AGGRESSIVE:
-		_show_terminal_overload(catch_data)
+		_run_overload(catch_data)
 		return
 
 	if GameState.current_lure and GameState.current_lure.effect == LureData.LureEffect.DEEP_PULSE:
-		_show_deep_pulse_reveal(catch_data)
-		return
+		var type_str: String = str(CatchData.CatchType.keys()[catch_data.catch_type]).to_lower()
+		session_log.log_line(">>> deep_pulse  ·  incoming: [%s]" % type_str, UIStyle.COL_DIM)
 
-	_show_catch_event(catch_data)
+	_present_catch(catch_data)
 
-func _show_notice(text: String, color: Color, duration: float) -> void:
-	var label := Label.new()
-	label.theme = UIStyle.get_theme()
-	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.text = text
-	UIStyle.apply_label(label, color)
-	catch_container.add_child(label)
-	await get_tree().create_timer(duration).timeout
-	if is_instance_valid(label):
-		label.queue_free()
+func _present_catch(catch_data: CatchData) -> void:
+	var augmented := catch_data
+	var using_shock := (GameState.current_lure != null and
+		GameState.current_lure.effect == LureData.LureEffect.SHOCK and
+		catch_data.catch_type == CatchData.CatchType.MECH)
+	if using_shock:
+		augmented = _inject_shock_option(catch_data)
 
-func _show_deep_pulse_reveal(catch_data: CatchData) -> void:
-	var type_str: String = str(CatchData.CatchType.keys()[catch_data.catch_type]).to_lower()
-	var label := Label.new()
-	label.theme = UIStyle.get_theme()
-	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.text = "deep_pulse  ·  slot %d / %d  ·  incoming: [%s]" % [
-		_current_slot + 1, _column.size(), type_str]
-	UIStyle.apply_label(label, UIStyle.COL_DIM)
-	catch_container.add_child(label)
-	await get_tree().create_timer(2.0).timeout
+	session_log.log_line(DiveFormat.contact_card(augmented), UIStyle.COL_TEXT)
+
+	var labels: Array[String] = []
+	var echoes: Array[String] = []
+	for i in augmented.options.size():
+		labels.append(DiveFormat.option_label(i + 1, augmented.options[i], augmented.behavior))
+		echoes.append(augmented.options[i].label.to_lower().replace(" ", "_"))
+
+	var index: int = await session_log.present_choices(labels, echoes)
 	if _snapped:
 		return
-	label.queue_free()
-	_show_catch_event(catch_data)
 
-func _show_catch_event(catch_data: CatchData) -> void:
-	var augmented = catch_data
-	if GameState.current_lure and GameState.current_lure.effect == LureData.LureEffect.SHOCK:
-		if catch_data.catch_type == CatchData.CatchType.MECH:
-			augmented = _inject_shock_option(catch_data)
-	_current_catch_data = augmented
-	var event_ui: CatchEvent = catch_event_scene.instantiate()
-	catch_container.add_child(event_ui)
-	event_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_current_event = event_ui
-	var lure_qty: int = GameState.INFINITE_STOCK
-	if GameState.current_lure:
-		lure_qty = GameState.lure_inventory.get(GameState.get_lure_id(GameState.current_lure), 0)
-	event_ui.populate(augmented, _current_slot + 1, _column.size(), int(line_system.tension), line_system.max_tension, lure_qty)
-	event_ui.option_selected.connect(_on_option_selected)
+	var option: CatchOption = augmented.options[index]
+
+	if option.narrative_text != "":
+		session_log.log_line(DiveFormat.narrative_entry(augmented.catch_name, option.narrative_text),
+			UIStyle.COL_DIM)
+		GameState.journal_entries.append("[%s]\n\n%s" % [augmented.catch_name, option.narrative_text])
+		GameState.save()
+		await session_log.present_continue()
+
+	if using_shock and index == 0:
+		GameState.consume_lure_use()
+
+	if option.sets_entity_flag and augmented.entity_id != "":
+		GameState.set_entity_encountered(augmented.entity_id)
+
+	if option.cuts_line:
+		line_system.reset_tension()
+		session_log.log_line(">>> connection cut  ·  tension reset  ·  no reward", UIStyle.COL_DIM)
+		await _beat()
+		_advance_slot()
+		return
+
+	match augmented.behavior:
+		CatchData.BehaviorType.RESISTANT:
+			await _resolve_resistant(option, augmented)
+		CatchData.BehaviorType.NEGOTIATING:
+			await _resolve_negotiating(option, augmented)
+		_:
+			_apply_and_record(option, augmented)
+			session_log.log_line(
+				DiveFormat.result_line(option.credit_value, option.tension_delta, augmented.corruption_gain),
+				UIStyle.COL_TEXT)
+			await _beat()
+			if _snapped:
+				return
+			_advance_slot()
+
+func _resolve_resistant(option: CatchOption, catch_data: CatchData) -> void:
+	if option.resist_chance > 0.0 and randf() < option.resist_chance:
+		line_system.apply_tension(option.resist_tension_penalty)
+		line_system.add_corruption(catch_data.corruption_gain)
+		session_log.log_line(">>> [!!! COUNTERMEASURE TRIGGERED !!!]", UIStyle.COL_WARNING)
+		session_log.log_line(">>> resisted  ·  +%dT  ·  no reward" % option.resist_tension_penalty,
+			UIStyle.COL_DEBT)
+	else:
+		_apply_and_record(option, catch_data)
+		session_log.log_line(
+			DiveFormat.result_line(option.credit_value, option.tension_delta, catch_data.corruption_gain),
+			UIStyle.COL_TEXT)
+	await _beat()
+	if _snapped:
+		return
+	_advance_slot()
+
+func _resolve_negotiating(option: CatchOption, catch_data: CatchData) -> void:
+	if option.fail_chance > 0.0 and randf() < option.fail_chance:
+		line_system.apply_tension(option.fail_tension_delta)
+		_run_credits += option.fail_credit_value
+		if catch_data.catch_type == CatchData.CatchType.BIO:
+			_bio_credits += option.fail_credit_value
+		EventBus.haul_changed.emit(_run_credits)
+		line_system.add_corruption(catch_data.corruption_gain)
+		session_log.log_line(">>> [!!! COUNTERMEASURE TRIGGERED !!!]", UIStyle.COL_WARNING)
+		session_log.log_line(
+			">>> negotiation failed  ·  " + DiveFormat.result_line(
+				option.fail_credit_value, option.fail_tension_delta, catch_data.corruption_gain).trim_prefix(">>> "),
+			UIStyle.COL_DEBT)
+	else:
+		_apply_and_record(option, catch_data)
+		session_log.log_line(
+			DiveFormat.result_line(option.credit_value, option.tension_delta, catch_data.corruption_gain),
+			UIStyle.COL_TEXT)
+	await _beat()
+	if _snapped:
+		return
+	_advance_slot()
+
+func _run_overload(catch_data: CatchData) -> void:
+	var shock_ready := (GameState.current_lure != null and
+		GameState.current_lure.effect == LureData.LureEffect.SHOCK and
+		catch_data.catch_type == CatchData.CatchType.MECH)
+	var fight := OverloadFight.new(line_system.max_tension, int(line_system.tension),
+		catch_data.anchor_strength, line_system.corruption, shock_ready)
+	var reward: CatchOption = catch_data.options[0]
+
+	session_log.log_line(DiveFormat.contact_card(catch_data), UIStyle.COL_DEBT)
+	session_log.log_line("│  est. yield: ~%dcr" % reward.credit_value, UIStyle.COL_DIM)
+
+	while true:
+		var backlash := fight.apply_backlash()
+		line_system.sync_tension(fight.tension)
+		session_log.log_line(">>> backlash: +%dT" % backlash, UIStyle.COL_WARNING)
+		if fight.is_snapped():
+			_on_line_snapped()
+			return
+		session_log.log_line(
+			DiveFormat.overload_status(fight.anchor, catch_data.anchor_strength, fight.threat, fight.turn),
+			UIStyle.COL_DIM)
+
+		var commands := fight.pick_commands()
+		var labels: Array[String] = []
+		var echoes: Array[String] = []
+		for i in commands.size():
+			labels.append(DiveFormat.command_label(i + 1, commands[i]))
+			echoes.append(str(commands[i].id).to_lower())
+		var index: int = await session_log.present_choices(labels, echoes)
+		if _snapped:
+			return
+		var cmd: Dictionary = commands[index]
+
+		if cmd.id == "ISOLATE_FEED":
+			line_system.sync_tension(fight.starting_tension)
+			session_log.log_line(">>> feed isolated  ·  catch lost  ·  tension restored", UIStyle.COL_DIM)
+			await _beat()
+			_advance_slot()
+			return
+
+		if cmd.id == "OVERLOAD_CORE":
+			GameState.consume_lure_use()
+
+		var result: Dictionary = fight.execute(cmd)
+		line_system.sync_tension(fight.tension)
+		if result.succeeded:
+			session_log.log_line(">>> %s — EXECUTED" % cmd.id, UIStyle.COL_TEXT)
+		else:
+			session_log.log_line(">>> %s — FAILED  ·  +%dT backlash" % [cmd.id, int(cmd.fail_t)],
+				UIStyle.COL_DEBT)
+
+		if fight.is_snapped():
+			_on_line_snapped()
+			return
+		if fight.is_captured():
+			_run_credits += reward.credit_value
+			if catch_data.catch_type == CatchData.CatchType.BIO:
+				_bio_credits += reward.credit_value
+			EventBus.haul_changed.emit(_run_credits)
+			line_system.add_corruption(catch_data.corruption_gain)
+			session_log.log_line(">>> %s captured" % catch_data.catch_name, UIStyle.COL_TEXT)
+			session_log.log_line(
+				DiveFormat.result_line(reward.credit_value, 0, catch_data.corruption_gain),
+				UIStyle.COL_TEXT)
+			await _beat()
+			_advance_slot()
+			return
+		fight.next_turn()
 
 func _inject_shock_option(catch_data: CatchData) -> CatchData:
 	var overload_opt = CatchOption.new()
@@ -131,200 +253,54 @@ func _inject_shock_option(catch_data: CatchData) -> CatchData:
 	augmented.options = new_options
 	return augmented
 
-func _show_terminal_overload(catch_data: CatchData) -> void:
-	var mini: TerminalOverloadMini = terminal_overload_scene.instantiate()
-	mini.max_tension = line_system.max_tension
-	mini.anchor_strength = catch_data.anchor_strength
-	mini.starting_tension = int(line_system.tension)
-	mini.corruption = line_system.corruption
-	mini.catch_name_str = catch_data.catch_name
-	mini.catch_type = catch_data.catch_type
-	mini.slot = _current_slot + 1
-	mini.total_slots = _column.size()
-	mini.shock_lure_equipped = (GameState.current_lure != null and
-		GameState.current_lure.effect == LureData.LureEffect.SHOCK)
-	mini.reward_credits = catch_data.options[0].credit_value
-	catch_container.add_child(mini)
-	mini.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	mini.caught.connect(func(final_tension: int) -> void: _on_terminal_caught(catch_data, final_tension))
-	mini.aborted.connect(func(restore_tension: int) -> void: _on_terminal_aborted(restore_tension))
-	mini.snapped.connect(_on_line_snapped)
-	mini.start()
-
-func _on_terminal_caught(catch_data: CatchData, final_tension: int) -> void:
-	for child in catch_container.get_children():
-		child.queue_free()
-	line_system.sync_tension(final_tension)
-	var reward_option: CatchOption = catch_data.options[0]
-	_run_credits += reward_option.credit_value
-	if catch_data.catch_type == CatchData.CatchType.BIO:
-		_bio_credits += reward_option.credit_value
-	line_system.add_corruption(catch_data.corruption_gain)
-	EventBus.haul_changed.emit(_run_credits)
-	_current_slot += 1
-	_show_next_catch()
-
-func _on_terminal_aborted(restore_tension: int) -> void:
-	for child in catch_container.get_children():
-		child.queue_free()
-	line_system.sync_tension(restore_tension)
-	_current_slot += 1
-	_show_next_catch()
-
-func _on_option_selected(index: int) -> void:
-	if _snapped:
-		return
-
-	if _current_event:
-		_current_event.option_selected.disconnect(_on_option_selected)
-
-	var catch_data = _column[_current_slot]
-
-	# Shock Lure: if MECH catch with Shock equipped, index 0 is the injected Overload
-	var using_shock = (GameState.current_lure != null and
-		GameState.current_lure.effect == LureData.LureEffect.SHOCK and
-		catch_data.catch_type == CatchData.CatchType.MECH)
-
-	if using_shock and index == 0:
-		# Overload selected — read from augmented data stored at show time (single source of truth)
-		GameState.consume_lure_use()
-		_apply_option(_current_catch_data.options[0], catch_data)
-		return
-
-	# Adjust index back if Shock Lure injected an option at index 0
-	var effective_index = index - 1 if using_shock else index
-	var option: CatchOption = catch_data.options[effective_index]
-
-	if option.sets_entity_flag and catch_data.entity_id != "":
-		GameState.set_entity_encountered(catch_data.entity_id)
-
-	if option.cuts_line:
-		line_system.reset_tension()
-		_advance_slot()
-		return
-
-	_block_hud = true
-	match catch_data.behavior:
-		CatchData.BehaviorType.RESISTANT:
-			_resolve_resistant(option, catch_data)
-		CatchData.BehaviorType.NEGOTIATING:
-			_resolve_negotiating(option, catch_data)
-		_:
-			_apply_option(option, catch_data)
-
-func _show_result_beat(text: String, color: Color, auto_dismiss: bool = false) -> void:
-	if _current_event and not _snapped:
-		_current_event.show_result(text, color, auto_dismiss)
-		await _current_event.result_dismissed
-	_block_hud = false
-	if not _snapped:
-		EventBus.tension_changed.emit(line_system.tension)
-		EventBus.corruption_changed.emit(line_system.corruption)
-		EventBus.haul_changed.emit(_run_credits)
-
 func _apply_and_record(option: CatchOption, catch_data: CatchData) -> void:
 	line_system.apply_tension(option.tension_delta)
 	line_system.add_corruption(catch_data.corruption_gain)
 	_run_credits += option.credit_value
 	if catch_data.catch_type == CatchData.CatchType.BIO:
 		_bio_credits += option.credit_value
-
-func _apply_option(option: CatchOption, catch_data: CatchData) -> void:
-	_apply_and_record(option, catch_data)
-	await _show_result_beat(
-		DiveFormat.result_line(option.credit_value, option.tension_delta, catch_data.corruption_gain),
-		UIStyle.COL_TEXT, true)
-	if _snapped:
-		return
-	_advance_slot()
-
-func _resolve_resistant(option: CatchOption, catch_data: CatchData) -> void:
-	if option.resist_chance > 0.0 and randf() < option.resist_chance:
-		line_system.apply_tension(option.resist_tension_penalty)
-		line_system.add_corruption(catch_data.corruption_gain)
-		await _show_result_beat(
-			">>> resisted  ·  +%dT  ·  no reward" % option.resist_tension_penalty,
-			UIStyle.COL_DEBT)
-	else:
-		_apply_and_record(option, catch_data)
-		await _show_result_beat(
-			DiveFormat.result_line(option.credit_value, option.tension_delta, catch_data.corruption_gain),
-			UIStyle.COL_TEXT, true)
-	if _snapped:
-		return
-	_advance_slot()
-
-func _resolve_negotiating(option: CatchOption, catch_data: CatchData) -> void:
-	if option.fail_chance > 0.0 and randf() < option.fail_chance:
-		line_system.apply_tension(option.fail_tension_delta)
-		_run_credits += option.fail_credit_value
-		if catch_data.catch_type == CatchData.CatchType.BIO:
-			_bio_credits += option.fail_credit_value
-		line_system.add_corruption(catch_data.corruption_gain)
-		await _show_result_beat(
-			">>> negotiation failed  ·  +%dT" % option.fail_tension_delta,
-			UIStyle.COL_DEBT)
-	else:
-		_apply_and_record(option, catch_data)
-		await _show_result_beat(
-			DiveFormat.result_line(option.credit_value, option.tension_delta, catch_data.corruption_gain),
-			UIStyle.COL_TEXT, true)
-	if _snapped:
-		return
-	_advance_slot()
+	EventBus.haul_changed.emit(_run_credits)
 
 func _advance_slot() -> void:
-	_current_catch_data = null
-	_current_event = null
-	for child in catch_container.get_children():
-		child.queue_free()
 	if _zone_data and _zone_data.passive_tension_drain > 0:
 		line_system.apply_tension(_zone_data.passive_tension_drain)
 		if _snapped:
 			return
-		await _show_notice(">>> zone interference: +%dT" % _zone_data.passive_tension_drain,
-			UIStyle.COL_WARNING, 0.8)
-		if _snapped:
-			return
+		session_log.log_line(">>> zone interference: +%dT" % _zone_data.passive_tension_drain,
+			UIStyle.COL_WARNING)
 	_current_slot += 1
 	_show_next_catch()
 
-func _on_line_tension_updated(v: float) -> void:
-	if not _block_hud:
-		EventBus.tension_changed.emit(v)
-
-func _on_line_corruption_updated(v: float) -> void:
-	if not _block_hud:
-		EventBus.corruption_changed.emit(v)
+func _beat() -> void:
+	await get_tree().create_timer(BEAT_PAUSE).timeout
 
 func _on_line_snapped() -> void:
 	if _snapped:
 		return
-	_block_hud = false
 	_snapped = true
 	var forfeited := _run_credits
 	_run_credits = 0
 	_bio_credits = 0
 	EventBus.haul_changed.emit(0)
-	for child in catch_container.get_children():
-		child.queue_free()
-
-	var label := Label.new()
-	label.theme = UIStyle.get_theme()
-	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	UIStyle.apply_label(label, UIStyle.COL_DEBT)
-	catch_container.add_child(label)
-
-	label.text = "[!!! TENSION EXCEEDED !!!]"
+	session_log.clear_live()
+	session_log.log_line("\n[!!! TENSION EXCEEDED !!!]", UIStyle.COL_DEBT)
 	await get_tree().create_timer(0.5).timeout
-	label.text = TextFX.corrupt("[LINE SNAPPED — SIGNAL LOST]", 0.15)
+	session_log.log_line(TextFX.corrupt("[LINE SNAPPED — SIGNAL LOST]", 0.2), UIStyle.COL_DEBT)
 	await get_tree().create_timer(0.6).timeout
-	label.text = TextFX.corrupt("[LINE SNAPPED — SIGNAL LOST]", 0.3) \
-		+ "\n\n>>> haul forfeited: %dcr" % forfeited
+	session_log.log_line(">>> haul forfeited: %dcr" % forfeited, UIStyle.COL_DEBT)
 	await get_tree().create_timer(0.9).timeout
 	_end_run(true)
+
+func _end_run(snapped: bool) -> void:
+	GameState.add_credits(_run_credits - _bio_credits)  # non-bio credits go directly to wallet
+	GameState.last_run_result = {
+		"credits": _run_credits,
+		"bio_credits": _bio_credits,
+		"snapped": snapped
+	}
+	GameState.on_run_complete(snapped, _bio_credits)
+	EventBus.run_ended.emit(GameState.last_run_result)
+	UIController.navigate_to("debrief")
 
 func _layer_sizes_for(max_depth: int) -> Array:
 	var sizes: Array = [3]
@@ -342,14 +318,3 @@ func _initial_lure_label() -> String:
 	if qty == GameState.INFINITE_STOCK:
 		return "%s ∞" % lure_id
 	return "%s x%d" % [lure_id, qty]
-
-func _end_run(snapped: bool) -> void:
-	GameState.add_credits(_run_credits - _bio_credits)  # non-bio credits go directly to wallet
-	GameState.last_run_result = {
-		"credits": _run_credits,
-		"bio_credits": _bio_credits,
-		"snapped": snapped
-	}
-	GameState.on_run_complete(snapped, _bio_credits)
-	EventBus.run_ended.emit(GameState.last_run_result)
-	UIController.navigate_to("debrief")
