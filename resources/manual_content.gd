@@ -4,7 +4,7 @@ class_name ManualContent
 const SECTIONS: Array[Dictionary] = [
 	{
 		"title": "DIVE OPERATIONS",
-		"body": "the meridian's trawl line deploys into the sump.\ncatches arrive in slots. each presents options with\ndifferent tension and credit trade-offs.\n\ntension accumulates across the run.\nline snap = run forfeited. all credits lost.",
+		"body": "the meridian's trawl line deploys into the sump.\ncontacts arrive in slots, layer by layer.\n\nat each depth checkpoint: SURFACE banks the haul,\nDESCEND draws the next layer — weighted by current SIG.\n\ntension accumulates across the run.\nline snap = run forfeited. all credits lost.\ncutting a connection vents half your tension\nbut costs 10% SIG.",
 	},
 	{
 		"title": "CATCH CLASSIFICATION",
