@@ -288,9 +288,28 @@ func _on_line_snapped() -> void:
 	if _snapped:
 		return
 	_snapped = true
+	var forfeited := _run_credits
 	_run_credits = 0
 	_bio_credits = 0
-	await get_tree().create_timer(1.0).timeout
+	EventBus.haul_changed.emit(0)
+	for child in catch_container.get_children():
+		child.queue_free()
+
+	var label := Label.new()
+	label.theme = UIStyle.get_theme()
+	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	UIStyle.apply_label(label, UIStyle.COL_DEBT)
+	catch_container.add_child(label)
+
+	label.text = "[!!! TENSION EXCEEDED !!!]"
+	await get_tree().create_timer(0.5).timeout
+	label.text = TextFX.corrupt("[LINE SNAPPED — SIGNAL LOST]", 0.15)
+	await get_tree().create_timer(0.6).timeout
+	label.text = TextFX.corrupt("[LINE SNAPPED — SIGNAL LOST]", 0.3) \
+		+ "\n\n>>> haul forfeited: %dcr" % forfeited
+	await get_tree().create_timer(0.9).timeout
 	_end_run(true)
 
 func _layer_sizes_for(max_depth: int) -> Array:
