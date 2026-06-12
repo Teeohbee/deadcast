@@ -193,9 +193,9 @@ func _on_option_selected(index: int) -> void:
 		_:
 			_apply_option(option, catch_data)
 
-func _show_result_beat(text: String, color: Color) -> void:
+func _show_result_beat(text: String, color: Color, auto_dismiss: bool = false) -> void:
 	if _current_event and not _snapped:
-		_current_event.show_result(text, color)
+		_current_event.show_result(text, color, auto_dismiss)
 		await _current_event.result_dismissed
 
 func _apply_and_record(option: CatchOption, catch_data: CatchData) -> void:
@@ -208,6 +208,11 @@ func _apply_and_record(option: CatchOption, catch_data: CatchData) -> void:
 
 func _apply_option(option: CatchOption, catch_data: CatchData) -> void:
 	_apply_and_record(option, catch_data)
+	await _show_result_beat(
+		DiveFormat.result_line(option.credit_value, option.tension_delta, catch_data.corruption_gain),
+		UIStyle.COL_TEXT, true)
+	if _snapped:
+		return
 	_advance_slot()
 
 func _resolve_resistant(option: CatchOption, catch_data: CatchData) -> void:
@@ -215,11 +220,13 @@ func _resolve_resistant(option: CatchOption, catch_data: CatchData) -> void:
 		line_system.apply_tension(option.resist_tension_penalty)
 		line_system.add_corruption(catch_data.corruption_gain)
 		await _show_result_beat(
-			"resisted  ·  +%dT  no reward" % option.resist_tension_penalty,
+			">>> resisted  ·  +%dT  ·  no reward" % option.resist_tension_penalty,
 			UIStyle.COL_DEBT)
 	else:
 		_apply_and_record(option, catch_data)
-		await _show_result_beat("+%dcr" % option.credit_value, UIStyle.COL_TEXT)
+		await _show_result_beat(
+			DiveFormat.result_line(option.credit_value, option.tension_delta, catch_data.corruption_gain),
+			UIStyle.COL_TEXT, true)
 	if _snapped:
 		return
 	_advance_slot()
@@ -233,11 +240,13 @@ func _resolve_negotiating(option: CatchOption, catch_data: CatchData) -> void:
 		line_system.add_corruption(catch_data.corruption_gain)
 		EventBus.haul_changed.emit(_run_credits)
 		await _show_result_beat(
-			"negotiation failed  ·  +%dT" % option.fail_tension_delta,
+			">>> negotiation failed  ·  +%dT" % option.fail_tension_delta,
 			UIStyle.COL_DEBT)
 	else:
 		_apply_and_record(option, catch_data)
-		await _show_result_beat("+%dcr" % option.credit_value, UIStyle.COL_TEXT)
+		await _show_result_beat(
+			DiveFormat.result_line(option.credit_value, option.tension_delta, catch_data.corruption_gain),
+			UIStyle.COL_TEXT, true)
 	if _snapped:
 		return
 	_advance_slot()
