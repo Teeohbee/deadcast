@@ -67,6 +67,7 @@ func _show_next_catch() -> void:
 	_present_catch(catch_data)
 
 func _show_checkpoint() -> void:
+	var ghost_bait_armed := false
 	session_log.log_line("\n─── DEPTH CHECKPOINT ──────────────────────────", UIStyle.COL_ACCENT)
 	session_log.log_line("│  %s cleared  ·  haul: %dcr  ·  tension %d/%d  ·  SIG %d%%" % [
 		DiveColumn.LAYER_NAMES[_column.current_layer()], _run_credits,
@@ -75,20 +76,44 @@ func _show_checkpoint() -> void:
 	session_log.log_line("│  %s scan: %d contacts  ·  draws weighted by current SIG" % [
 		_column.next_layer_name(), _column.next_layer_slot_count()], UIStyle.COL_DIM)
 
-	var labels: Array[String] = [
-		"[1] DESCEND   — push deeper. higher yields, SIG-weighted draws",
-		"[2] SURFACE   — bank %dcr and end the run" % _run_credits,
-	]
-	var index: int = await session_log.present_choices(labels, ["descend", "surface"])
-	if _snapped:
+	while true:
+		var labels: Array[String] = [
+			"[1] DESCEND   — push deeper. higher yields, SIG-weighted draws",
+			"[2] SURFACE   — bank %dcr and end the run" % _run_credits,
+		]
+		var echoes: Array[String] = ["descend", "surface"]
+
+		var offer_ghost_bait := (not ghost_bait_armed and
+			GameState.current_lure != null and
+			GameState.current_lure.effect == LureData.LureEffect.GHOST_BAIT and
+			GameState.has_lure_stock(GameState.current_lure))
+		if offer_ghost_bait:
+			var qty: int = GameState.lure_inventory.get(GameState.get_lure_id(GameState.current_lure), 0)
+			labels.append("[L] fire ghost_bait (x%d)  ·  bait the next layer — entities surface, aggression suppressed" % qty)
+			echoes.append("fire ghost_bait")
+
+		var index: int = await session_log.present_choices(labels, echoes)
+		if _snapped:
+			return
+
+		if offer_ghost_bait and index == labels.size() - 1:
+			GameState.consume_lure_use()
+			ghost_bait_armed = true
+			session_log.log_line(">>> ghost bait armed — the next layer will draw what's listening",
+				UIStyle.COL_ACCENT)
+			continue
+
+		if index == 1:
+			session_log.log_line(">>> surfacing  ·  haul banked", UIStyle.COL_TEXT)
+			await _beat()
+			_end_run(false)
+			return
+
+		_column.descend(line_system.corruption, ghost_bait_armed)
+		if ghost_bait_armed:
+			_pacify_entities_in_layer()
+		_show_next_catch()
 		return
-	if index == 1:
-		session_log.log_line(">>> surfacing  ·  haul banked", UIStyle.COL_TEXT)
-		await _beat()
-		_end_run(false)
-		return
-	_column.descend(line_system.corruption)
-	_show_next_catch()
 
 func _present_catch(catch_data: CatchData) -> void:
 	var current := catch_data
