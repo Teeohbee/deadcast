@@ -202,16 +202,15 @@ Before each dive, let the player choose:
 
 Ties into the depth upgrade progression and gives the debt-pressured player a meaningful risk/reward decision. Modify CatchPool.generate_column to accept a run-type parameter.
 
-### ~~3.7 Audio~~
+### 3.7 Audio
 
-Even minimal audio transforms the feel:
+Removed in favour of a ground-up rebuild after UI/UX rework. The previous procedural audio system (sine-wave synthesis for hums, clicks, and boot cues) was removed as it didn't meet quality standards and would be invalidated by upcoming UI changes.
 
+Goals for the rebuild:
 - **Ambient:** Low electrical hum, water/pressure sounds. Loop with subtle variation.
 - **UI:** Click/keypress on button selection. Different tone for navigation vs confirmation.
 - **Events:** Line snap sound (sharp, mechanical). Catch reveal (data chirp). Terminal Overload backlash (warning tone). Entity encounter (distinct, unsettling tone).
 - **Music:** Optional. A single droning ambient track per zone would be enough.
-
-Godot's AudioStreamPlayer makes this straightforward. Source sounds from freesound.org or generate with sfxr/jsfxr.
 
 ### 3.8 Screen transitions
 
