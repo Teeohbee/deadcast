@@ -6,6 +6,5 @@
 script = ExtResource("1_lure")
 lure_name = "Basic Hook"
 effect = 0
-uses_per_run = 3
 purchase_cost = 0
 description = "No special effect."

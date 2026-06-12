@@ -6,6 +6,5 @@
 script = ExtResource("1_lure")
 lure_name = "Shock Lure"
 effect = 1
-uses_per_run = 2
 purchase_cost = 400
-description = "Enables Overload option on mechanical catches."
+description = "Adds a guaranteed shock overload option on mechanical contacts. Each use consumes stock."

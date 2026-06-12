@@ -8,7 +8,6 @@ var _rod_meta: Label
 var _rod_damage: Label
 var _lure_button: Button
 var _effect_value: Label
-var _uses_value: Label
 
 func _ready() -> void:
 	title = "active_rig_module"
@@ -59,7 +58,6 @@ func _build() -> void:
 	var cells := HBoxContainer.new()
 	cells.add_theme_constant_override("separation", 6)
 	_effect_value = _add_cell(cells, "EFFECT:")
-	_uses_value = _add_cell(cells, "USES/RUN:")
 	root.add_child(cells)
 
 func _add_cell(parent: Container, caption: String) -> Label:
@@ -100,7 +98,6 @@ func refresh() -> void:
 		var stock := "∞" if qty == GameState.INFINITE_STOCK else "x%d" % qty
 		_lure_button.text = "LURE: %s (%s)" % [lure.lure_name.to_upper(), stock]
 		_effect_value.text = LureData.LureEffect.keys()[lure.effect]
-		_uses_value.text = str(lure.uses_per_run)
 
 func owned_lure_ids() -> Array[String]:
 	var out: Array[String] = []

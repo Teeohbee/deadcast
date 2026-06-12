@@ -6,6 +6,5 @@
 script = ExtResource("1_lure")
 lure_name = "Ghost Bait"
 effect = 4
-uses_per_run = 1
 purchase_cost = 1000
-description = "+50% chance of Entity catches. Reduces their aggression."
+description = "Fire at a depth checkpoint: the next layer draws entity-heavy, aggression suppressed. Each fire consumes stock."
