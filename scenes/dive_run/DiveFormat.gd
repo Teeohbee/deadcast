@@ -95,6 +95,42 @@ static func narrative_entry(catch_name: String, text: String) -> String:
 	var indented := "│  " + "\n│  ".join(text.split("\n"))
 	return "── LOG_ENTRY: %s\n%s" % [catch_name, indented]
 
+static func archive_result(result: String, credits: int, tension: int, sig: int) -> String:
+	if credits == 0 and tension == 0 and sig == 0:
+		return result if result != "" else "no change"
+	var base := result_line(credits, tension, sig).trim_prefix(">>> ")
+	if result == "":
+		return base
+	return "%s  ·  %s" % [result, base]
+
+static func run_log_text(record: Dictionary) -> String:
+	var lines: Array[String] = []
+	lines.append("── RUN_%03d.LOG  ·  %s ──────────────────" % [int(record.run), str(record.zone)])
+	lines.append("")
+	var contacts := 0
+	for e: Dictionary in record.entries:
+		match str(e.kind):
+			"slot":
+				contacts += 1
+				lines.append("[S%d] %s  %s" % [int(e.slot), str(e.name), str(e.type_tag)])
+				lines.append("     > %s" % str(e.echo))
+				lines.append("     >>> %s" % archive_result(
+					str(e.result), int(e.credits), int(e.tension), int(e.sig)))
+			"checkpoint":
+				lines.append("[CP] %s cleared  ·  haul %dcr" % [str(e.layer), int(e.haul)])
+				lines.append("     > %s" % str(e.choice))
+			"lure":
+				lines.append("     >>> %s" % str(e.text))
+			"snapped":
+				lines.append("     [!!! TENSION EXCEEDED !!!]")
+	lines.append("")
+	if str(record.outcome) == "snapped":
+		lines.append(">>> session terminated  ·  haul forfeited: %dcr" % int(record.forfeited))
+	else:
+		lines.append(">>> surfaced  ·  banked %dcr  ·  contacts resolved: %d" % [
+			int(record.banked), contacts])
+	return "\n".join(lines)
+
 static func glitch_intensity(corruption: float) -> float:
 	if corruption >= 90.0:
 		return 0.18

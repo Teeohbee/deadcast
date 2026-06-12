@@ -88,3 +88,56 @@ func test_glitch_intensity_tiers() -> void:
 	assert_eq(DiveFormat.glitch_intensity(50.0), 0.05)
 	assert_eq(DiveFormat.glitch_intensity(70.0), 0.10)
 	assert_eq(DiveFormat.glitch_intensity(90.0), 0.18)
+
+func test_archive_result_plain() -> void:
+	assert_eq(DiveFormat.archive_result("", 800, 15, 3), "+800cr  ·  +15T  ·  SIG -3%")
+
+func test_archive_result_labelled() -> void:
+	assert_eq(DiveFormat.archive_result("resisted", 0, 35, 0), "resisted  ·  +35T")
+
+func test_archive_result_label_only() -> void:
+	assert_eq(DiveFormat.archive_result("feed isolated  ·  catch lost", 0, 0, 0),
+		"feed isolated  ·  catch lost")
+
+func _surfaced_record() -> Dictionary:
+	return {
+		"run": 7,
+		"zone": "district 7 ruins",
+		"entries": [
+			{"kind": "slot", "slot": 1, "name": "Corrupted Finance Archive",
+				"type_tag": "[DATA_CONTAINER]", "echo": "extract --careful",
+				"result": "", "credits": 800, "tension": 15, "sig": 3},
+			{"kind": "lure", "text": "deep_pulse: 2 contacts ahead — [DATA] [HOSTILE]"},
+			{"kind": "checkpoint", "layer": "shallows", "haul": 800, "choice": "surface"},
+		],
+		"banked": 800, "forfeited": 0, "outcome": "surfaced",
+	}
+
+func test_run_log_text_surfaced() -> void:
+	var text := DiveFormat.run_log_text(_surfaced_record())
+	assert_string_contains(text, "RUN_007.LOG  ·  district 7 ruins")
+	assert_string_contains(text, "[S1] Corrupted Finance Archive  [DATA_CONTAINER]")
+	assert_string_contains(text, "> extract --careful")
+	assert_string_contains(text, ">>> +800cr  ·  +15T  ·  SIG -3%")
+	assert_string_contains(text, ">>> deep_pulse: 2 contacts ahead")
+	assert_string_contains(text, "[CP] shallows cleared  ·  haul 800cr")
+	assert_string_contains(text, "> surface")
+	assert_string_contains(text, ">>> surfaced  ·  banked 800cr  ·  contacts resolved: 1")
+
+func test_run_log_text_snapped() -> void:
+	var record := {
+		"run": 8,
+		"zone": "the exchange",
+		"entries": [
+			{"kind": "slot", "slot": 1, "name": "Salvage Drone",
+				"type_tag": "[MECH_SYSTEM]", "echo": "strip --parts",
+				"result": "resisted", "credits": 0, "tension": 35, "sig": 0},
+			{"kind": "snapped"},
+		],
+		"banked": 0, "forfeited": 450, "outcome": "snapped",
+	}
+	var text := DiveFormat.run_log_text(record)
+	assert_string_contains(text, "RUN_008.LOG")
+	assert_string_contains(text, ">>> resisted  ·  +35T")
+	assert_string_contains(text, "[!!! TENSION EXCEEDED !!!]")
+	assert_string_contains(text, ">>> session terminated  ·  haul forfeited: 450cr")
