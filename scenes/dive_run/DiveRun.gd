@@ -10,7 +10,6 @@ const BEAT_PAUSE := 0.5
 
 var _column: DiveColumn = null
 var _zone_data: ZoneData = null
-var _lure_effect: LureData.LureEffect = LureData.LureEffect.NONE
 var _run_credits: int = 0
 var _bio_credits: int = 0
 var _snapped: bool = false
@@ -32,10 +31,8 @@ func _ready() -> void:
 	_zone_data = load("res://resources/zones/%s.tres" % zone_id)
 
 	var max_depth = GameState.current_rod.max_depth if GameState.current_rod else 100
-	_lure_effect = GameState.current_lure.effect if GameState.current_lure else LureData.LureEffect.NONE
 	_column = DiveColumn.new(zone_id, max_depth)
-	_column.generate_current_layer(line_system.corruption, _lure_effect)
-	_pacify_ghost_bait_entities()
+	_column.generate_current_layer(line_system.corruption)
 
 	dive_hud.setup(line_system.max_tension, _column.reachable_layer_sizes(), _initial_lure_label())
 	EventBus.haul_changed.emit(0)
@@ -67,13 +64,10 @@ func _show_next_catch() -> void:
 		_run_overload(catch_data)
 		return
 
-	if GameState.current_lure and GameState.current_lure.effect == LureData.LureEffect.DEEP_PULSE:
-		var type_str: String = str(CatchData.CatchType.keys()[catch_data.catch_type]).to_lower()
-		session_log.log_line(">>> deep_pulse  ·  incoming: [%s]" % type_str, UIStyle.COL_DIM)
-
 	_present_catch(catch_data)
 
 func _show_checkpoint() -> void:
+	var ghost_bait_armed := false
 	session_log.log_line("\n─── DEPTH CHECKPOINT ──────────────────────────", UIStyle.COL_ACCENT)
 	session_log.log_line("│  %s cleared  ·  haul: %dcr  ·  tension %d/%d  ·  SIG %d%%" % [
 		DiveColumn.LAYER_NAMES[_column.current_layer()], _run_credits,
@@ -82,81 +76,173 @@ func _show_checkpoint() -> void:
 	session_log.log_line("│  %s scan: %d contacts  ·  draws weighted by current SIG" % [
 		_column.next_layer_name(), _column.next_layer_slot_count()], UIStyle.COL_DIM)
 
-	var labels: Array[String] = [
-		"[1] DESCEND   — push deeper. higher yields, SIG-weighted draws",
-		"[2] SURFACE   — bank %dcr and end the run" % _run_credits,
-	]
-	var index: int = await session_log.present_choices(labels, ["descend", "surface"])
-	if _snapped:
+	while true:
+		var labels: Array[String] = [
+			"[1] DESCEND   — push deeper. higher yields, SIG-weighted draws",
+			"[2] SURFACE   — bank %dcr and end the run" % _run_credits,
+		]
+		var echoes: Array[String] = ["descend", "surface"]
+
+		var offer_ghost_bait := (not ghost_bait_armed and
+			GameState.current_lure != null and
+			GameState.current_lure.effect == LureData.LureEffect.GHOST_BAIT and
+			GameState.has_lure_stock(GameState.current_lure))
+		if offer_ghost_bait:
+			var qty: int = GameState.lure_inventory.get(GameState.get_lure_id(GameState.current_lure), 0)
+			labels.append("[L] fire ghost_bait (x%d)  ·  bait the next layer — entities surface, aggression suppressed" % qty)
+			echoes.append("fire ghost_bait")
+
+		var index: int = await session_log.present_choices(labels, echoes)
+		if _snapped:
+			return
+
+		if offer_ghost_bait and index == labels.size() - 1:
+			GameState.consume_lure_use()
+			ghost_bait_armed = true
+			session_log.log_line(">>> ghost bait armed — the next layer will draw what's listening",
+				UIStyle.COL_ACCENT)
+			continue
+
+		if index == 1:
+			session_log.log_line(">>> surfacing  ·  haul banked", UIStyle.COL_TEXT)
+			await _beat()
+			_end_run(false)
+			return
+
+		_column.descend(line_system.corruption, ghost_bait_armed)
+		if ghost_bait_armed:
+			_pacify_entities_in_layer()
+		_show_next_catch()
 		return
-	if index == 1:
-		session_log.log_line(">>> surfacing  ·  haul banked", UIStyle.COL_TEXT)
-		await _beat()
-		_end_run(false)
-		return
-	_column.descend(line_system.corruption, _lure_effect)
-	_pacify_ghost_bait_entities()
-	_show_next_catch()
 
 func _present_catch(catch_data: CatchData) -> void:
-	var augmented := catch_data
-	var using_shock := (GameState.current_lure != null and
-		GameState.current_lure.effect == LureData.LureEffect.SHOCK and
-		catch_data.catch_type == CatchData.CatchType.MECH)
-	if using_shock:
-		augmented = _inject_shock_option(catch_data)
+	var current := catch_data
+	var need_card := true
+	while true:
+		var augmented := current
+		var using_shock := _shock_ready(current)
+		if using_shock:
+			augmented = _inject_shock_option(current)
 
-	session_log.log_line(DiveFormat.contact_card(augmented), UIStyle.COL_TEXT)
+		if need_card:
+			session_log.log_line(DiveFormat.contact_card(augmented), UIStyle.COL_TEXT)
+			need_card = false
 
-	var labels: Array[String] = []
-	var echoes: Array[String] = []
-	for i in augmented.options.size():
-		labels.append(DiveFormat.option_label(i + 1, augmented.options[i], augmented.behavior))
-		echoes.append(augmented.options[i].label.to_lower().replace(" ", "_"))
+		var labels: Array[String] = []
+		var echoes: Array[String] = []
+		for i in augmented.options.size():
+			labels.append(DiveFormat.option_label(i + 1, augmented.options[i], augmented.behavior))
+			echoes.append(augmented.options[i].label.to_lower().replace(" ", "_"))
 
-	var index: int = await session_log.present_choices(labels, echoes)
-	if _snapped:
-		return
+		var lure_action := _contact_lure_action()
+		if not lure_action.is_empty():
+			labels.append(lure_action.label)
+			echoes.append(lure_action.echo)
 
-	var option: CatchOption = augmented.options[index]
+		var index: int = await session_log.present_choices(labels, echoes)
+		if _snapped:
+			return
 
-	if option.narrative_text != "":
-		session_log.log_line(DiveFormat.narrative_entry(augmented.catch_name, option.narrative_text),
-			UIStyle.COL_DIM)
-		GameState.journal_entries.append("[%s]\n\n%s" % [augmented.catch_name, option.narrative_text])
-		GameState.save()
-		await session_log.present_continue()
+		if not lure_action.is_empty() and index == labels.size() - 1:
+			match lure_action.effect:
+				LureData.LureEffect.DECOY:
+					GameState.consume_lure_use()
+					session_log.log_line(">>> decoy deployed — contact slipped", UIStyle.COL_ACCENT)
+					current = CatchPool.draw_replacement(
+						_column.zone_id, _column.current_layer(), line_system.corruption)
+					_column.slots[_column.slot_in_layer] = current
+					need_card = true
+					if current.behavior == CatchData.BehaviorType.AGGRESSIVE:
+						_run_overload(current)
+						return
+					continue
+				LureData.LureEffect.DEEP_PULSE:
+					_fire_deep_pulse()
+					continue
+			continue
 
-	if using_shock and index == 0:
-		GameState.consume_lure_use()
+		var option: CatchOption = augmented.options[index]
 
-	if option.sets_entity_flag and augmented.entity_id != "":
-		GameState.set_entity_encountered(augmented.entity_id)
+		if option.narrative_text != "":
+			session_log.log_line(DiveFormat.narrative_entry(augmented.catch_name, option.narrative_text),
+				UIStyle.COL_DIM)
+			GameState.journal_entries.append("[%s]\n\n%s" % [augmented.catch_name, option.narrative_text])
+			GameState.save()
+			await session_log.present_continue()
 
-	if option.cuts_line:
-		var vented := int(line_system.tension) / 2
-		line_system.sync_tension(vented)
-		line_system.add_corruption(10)
-		session_log.log_line(">>> connection cut — tension vented to %d/%d  ·  SIG -10%%" % [
-			vented, line_system.max_tension], UIStyle.COL_WARNING)
-		await _beat()
-		_advance_slot()
-		return
+		if using_shock and index == 0:
+			GameState.consume_lure_use()
 
-	match augmented.behavior:
-		CatchData.BehaviorType.RESISTANT:
-			await _resolve_resistant(option, augmented)
-		CatchData.BehaviorType.NEGOTIATING:
-			await _resolve_negotiating(option, augmented)
-		_:
-			_apply_and_record(option, augmented)
-			session_log.log_line(
-				DiveFormat.result_line(option.credit_value, option.tension_delta, augmented.corruption_gain),
-				UIStyle.COL_TEXT)
+		if option.sets_entity_flag and augmented.entity_id != "":
+			GameState.set_entity_encountered(augmented.entity_id)
+
+		if option.cuts_line:
+			var vented := int(line_system.tension) / 2
+			line_system.sync_tension(vented)
+			line_system.add_corruption(10)
+			session_log.log_line(">>> connection cut — tension vented to %d/%d  ·  SIG -10%%" % [
+				vented, line_system.max_tension], UIStyle.COL_WARNING)
 			await _beat()
-			if _snapped:
-				return
 			_advance_slot()
+			return
+
+		match augmented.behavior:
+			CatchData.BehaviorType.RESISTANT:
+				await _resolve_resistant(option, augmented)
+			CatchData.BehaviorType.NEGOTIATING:
+				await _resolve_negotiating(option, augmented)
+			_:
+				_apply_and_record(option, augmented)
+				session_log.log_line(
+					DiveFormat.result_line(option.credit_value, option.tension_delta, augmented.corruption_gain),
+					UIStyle.COL_TEXT)
+				await _beat()
+				if _snapped:
+					return
+				_advance_slot()
+		return
+
+func _contact_lure_action() -> Dictionary:
+	if GameState.current_lure == null or not GameState.has_lure_stock(GameState.current_lure):
+		return {}
+	var lure_id := GameState.get_lure_id(GameState.current_lure)
+	var qty: int = GameState.lure_inventory.get(lure_id, 0)
+	match GameState.current_lure.effect:
+		LureData.LureEffect.DECOY:
+			return {
+				"label": "[L] fire %s (x%d)  ·  slip this contact, draw a safer replacement" % [lure_id, qty],
+				"echo": "fire %s" % lure_id,
+				"effect": LureData.LureEffect.DECOY,
+			}
+		LureData.LureEffect.DEEP_PULSE:
+			if _column.slot_in_layer + 1 >= _column.slots.size():
+				return {}
+			return {
+				"label": "[L] fire %s (x%d)  ·  scan remaining contacts in this layer" % [lure_id, qty],
+				"echo": "fire %s" % lure_id,
+				"effect": LureData.LureEffect.DEEP_PULSE,
+			}
+	return {}
+
+func _fire_deep_pulse() -> void:
+	GameState.consume_lure_use()
+	var base := _column.global_slot_index() - _column.slot_in_layer
+	var tags: Array[String] = []
+	for i in range(_column.slot_in_layer + 1, _column.slots.size()):
+		var c := _column.slots[i]
+		var marker: String
+		var tag: String
+		if c.behavior == CatchData.BehaviorType.AGGRESSIVE:
+			marker = "!"
+			tag = "[HOSTILE]"
+		else:
+			var type_name := str(CatchData.CatchType.keys()[c.catch_type])
+			marker = type_name.substr(0, 1)
+			tag = "[%s]" % type_name
+		EventBus.slot_revealed.emit(base + i, marker)
+		tags.append(tag)
+	session_log.log_line(">>> deep_pulse: %d contacts ahead — %s" % [tags.size(), " ".join(tags)],
+		UIStyle.COL_ACCENT)
 
 func _resolve_resistant(option: CatchOption, catch_data: CatchData) -> void:
 	if option.resist_chance > 0.0 and randf() < option.resist_chance:
@@ -199,9 +285,7 @@ func _resolve_negotiating(option: CatchOption, catch_data: CatchData) -> void:
 	_advance_slot()
 
 func _run_overload(catch_data: CatchData) -> void:
-	var shock_ready := (GameState.current_lure != null and
-		GameState.current_lure.effect == LureData.LureEffect.SHOCK and
-		catch_data.catch_type == CatchData.CatchType.MECH)
+	var shock_ready := _shock_ready(catch_data)
 	var fight := OverloadFight.new(line_system.max_tension, int(line_system.tension),
 		catch_data.anchor_strength, line_system.corruption, shock_ready)
 	var reward: CatchOption = catch_data.options[0]
@@ -291,18 +375,22 @@ func _apply_and_record(option: CatchOption, catch_data: CatchData) -> void:
 	EventBus.haul_changed.emit(_run_credits)
 
 func _advance_slot() -> void:
-	if _zone_data and _zone_data.passive_tension_drain > 0:
-		line_system.apply_tension(_zone_data.passive_tension_drain)
+	if _zone_data and _zone_data.zone_interference > 0:
+		line_system.apply_tension(_zone_data.zone_interference)
 		if _snapped:
 			return
-		session_log.log_line(">>> zone interference: +%dT" % _zone_data.passive_tension_drain,
+		session_log.log_line(">>> zone interference: +%dT" % _zone_data.zone_interference,
 			UIStyle.COL_WARNING)
 	_column.advance()
 	_show_next_catch()
 
-func _pacify_ghost_bait_entities() -> void:
-	if not (GameState.current_lure and GameState.current_lure.effect == LureData.LureEffect.GHOST_BAIT):
-		return
+func _shock_ready(catch_data: CatchData) -> bool:
+	return (GameState.current_lure != null and
+		GameState.current_lure.effect == LureData.LureEffect.SHOCK and
+		GameState.has_lure_stock(GameState.current_lure) and
+		catch_data.catch_type == CatchData.CatchType.MECH)
+
+func _pacify_entities_in_layer() -> void:
 	for i in _column.slots.size():
 		var c = _column.slots[i]
 		if c.catch_type == CatchData.CatchType.ENTITY and c.behavior == CatchData.BehaviorType.AGGRESSIVE:

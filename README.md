@@ -12,9 +12,10 @@ DEADCAST_OS presents itself as a diegetic operating system running on failing ba
 
 ## mechanics
 
-- **Dive runs** — cast into one of several zones, work through a column of catches: data containers, bio specimens, mechanical systems, entities
-- **Tension** — your line has a cap; exceed it and it snaps, ending the run early
-- **Corruption** — builds over a run, affects catch behaviour and hostile encounter difficulty
+- **Dive runs** — cast into a zone and work the column layer by layer; at each depth checkpoint, bank your haul or descend for richer, riskier draws
+- **Tension** — your line has a cap; exceed it and it snaps, forfeiting the run's haul. Cutting a connection vents half your tension but costs signal
+- **Corruption (SIG)** — builds as you extract; weights what deeper layers send up, scales hostile backlash, and garbles your terminal
+- **Lures** — active tools fired mid-dive: scan the layer ahead, slip a contact, bait entities at a checkpoint, or shock mechanical systems
 - **Debt clock** — 10,000cr due every five runs; miss payments and pressure escalates
 - **Vendors** — Okeke sells lures at a discount; the vendor sells rods and restocks; both have opinions about you
 

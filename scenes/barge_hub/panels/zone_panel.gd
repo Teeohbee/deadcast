@@ -93,6 +93,12 @@ func _build_card(zone_id: String, zone: ZoneData) -> Button:
 	DeckStyle.apply_label(desc, DeckStyle.DIM, DeckStyle.FONT_SIZE_TINY)
 	left.add_child(desc)
 
+	if zone.zone_interference > 0:
+		var interference := Label.new()
+		interference.text = "interference: +%dT per contact" % zone.zone_interference
+		DeckStyle.apply_label(interference, DeckStyle.AMBER, DeckStyle.FONT_SIZE_TINY)
+		left.add_child(interference)
+
 	var stats := VBoxContainer.new()
 	stats.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var density := Label.new()

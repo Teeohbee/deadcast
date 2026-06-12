@@ -6,6 +6,5 @@
 script = ExtResource("1_lure")
 lure_name = "Decoy Swarm"
 effect = 2
-uses_per_run = 1
 purchase_cost = 600
-description = "Attracts lower-Corruption catch pool for 3 events."
+description = "Fire on a contact to slip it and draw a safer replacement. Each fire consumes stock."

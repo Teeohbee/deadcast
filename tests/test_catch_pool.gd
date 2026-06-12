@@ -26,15 +26,15 @@ func test_weighted_random_with_dominant_weight_prefers_that_item() -> void:
 func test_calculate_weight_boosts_entity_with_high_corruption() -> void:
 	var catch = CatchData.new()
 	catch.catch_type = CatchData.CatchType.ENTITY
-	var weight_low = CatchPool._calculate_weight(catch, 0.0, [], LureData.LureEffect.NONE)
-	var weight_high = CatchPool._calculate_weight(catch, 100.0, [], LureData.LureEffect.NONE)
+	var weight_low = CatchPool._calculate_weight(catch, 0.0, [], false)
+	var weight_high = CatchPool._calculate_weight(catch, 100.0, [], false)
 	assert_gt(weight_high, weight_low)
 
 func test_calculate_weight_halves_for_duplicate_type() -> void:
 	var catch = CatchData.new()
 	catch.catch_type = CatchData.CatchType.DATA
-	var weight_fresh = CatchPool._calculate_weight(catch, 0.0, [], LureData.LureEffect.NONE)
-	var weight_seen = CatchPool._calculate_weight(catch, 0.0, [CatchData.CatchType.DATA], LureData.LureEffect.NONE)
+	var weight_fresh = CatchPool._calculate_weight(catch, 0.0, [], false)
+	var weight_seen = CatchPool._calculate_weight(catch, 0.0, [CatchData.CatchType.DATA], false)
 	assert_eq(weight_seen, weight_fresh * 0.5)
 
 func test_generate_layer_shallows_has_3_slots() -> void:
@@ -59,16 +59,28 @@ func test_generate_layer_accepts_corruption() -> void:
 	var layer = CatchPool.generate_layer("district7", CatchData.Layer.SHALLOWS, 80.0)
 	assert_eq(layer.size(), 3)
 
-func test_ghost_bait_boosts_entity_weight_vs_none() -> void:
-	var entity_catch = CatchData.new()
-	entity_catch.catch_type = CatchData.CatchType.ENTITY
-	var weight_none = CatchPool._calculate_weight(entity_catch, 0.0, [], LureData.LureEffect.NONE)
-	var weight_ghost = CatchPool._calculate_weight(entity_catch, 0.0, [], LureData.LureEffect.GHOST_BAIT)
-	assert_gt(weight_ghost, weight_none)
+func test_entity_bias_boosts_entity_weight() -> void:
+	var catch = CatchData.new()
+	catch.catch_type = CatchData.CatchType.ENTITY
+	var plain = CatchPool._calculate_weight(catch, 0.0, [], false)
+	var biased = CatchPool._calculate_weight(catch, 0.0, [], true)
+	assert_eq(biased, plain * 1.5)
 
-func test_decoy_reduces_entity_weight() -> void:
-	var entity_catch = CatchData.new()
-	entity_catch.catch_type = CatchData.CatchType.ENTITY
-	var weight_none = CatchPool._calculate_weight(entity_catch, 0.0, [], LureData.LureEffect.NONE)
-	var weight_decoy = CatchPool._calculate_weight(entity_catch, 0.0, [], LureData.LureEffect.DECOY)
-	assert_lt(weight_decoy, weight_none)
+func test_entity_bias_ignores_non_entities() -> void:
+	var catch = CatchData.new()
+	catch.catch_type = CatchData.CatchType.DATA
+	assert_eq(CatchPool._calculate_weight(catch, 0.0, [], true),
+		CatchPool._calculate_weight(catch, 0.0, [], false))
+
+func test_draw_replacement_returns_catch_from_layer() -> void:
+	var c = CatchPool.draw_replacement("district7", CatchData.Layer.SHALLOWS, 0.0)
+	assert_not_null(c)
+	assert_eq(c.layer, CatchData.Layer.SHALLOWS)
+
+func test_draw_replacement_damps_entities_and_hostiles() -> void:
+	var risky := 0
+	for i in 100:
+		var c = CatchPool.draw_replacement("district7", CatchData.Layer.MID, 0.0)
+		if c.catch_type == CatchData.CatchType.ENTITY or c.behavior == CatchData.BehaviorType.AGGRESSIVE:
+			risky += 1
+	assert_lt(risky, 50, "entity/aggressive draws weighted x0.2 should be a clear minority")
