@@ -48,6 +48,9 @@ func _ready() -> void:
 	EventBus.tension_changed.emit(line_system.tension)
 	EventBus.corruption_changed.emit(line_system.corruption)
 	await get_tree().process_frame
+	if GameState.current_rod and GameState.rod_damaged:
+		await _show_notice(">>> rod damaged — tension cap reduced to %d" % line_system.max_tension,
+			UIStyle.COL_WARNING, 1.2)
 	_show_next_catch()
 
 func _show_next_catch() -> void:
@@ -66,6 +69,19 @@ func _show_next_catch() -> void:
 		return
 
 	_show_catch_event(catch_data)
+
+func _show_notice(text: String, color: Color, duration: float) -> void:
+	var label := Label.new()
+	label.theme = UIStyle.get_theme()
+	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.text = text
+	UIStyle.apply_label(label, color)
+	catch_container.add_child(label)
+	await get_tree().create_timer(duration).timeout
+	if is_instance_valid(label):
+		label.queue_free()
 
 func _show_deep_pulse_reveal(catch_data: CatchData) -> void:
 	var type_str: String = str(CatchData.CatchType.keys()[catch_data.catch_type]).to_lower()
@@ -259,6 +275,12 @@ func _advance_slot() -> void:
 		child.queue_free()
 	if _zone_data and _zone_data.passive_tension_drain > 0:
 		line_system.apply_tension(_zone_data.passive_tension_drain)
+		if _snapped:
+			return
+		await _show_notice(">>> zone interference: +%dT" % _zone_data.passive_tension_drain,
+			UIStyle.COL_WARNING, 0.8)
+		if _snapped:
+			return
 	_current_slot += 1
 	_show_next_catch()
 
