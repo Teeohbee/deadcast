@@ -93,7 +93,7 @@ func _transition_to_game() -> void:
 	await tween.finished
 	get_tree().change_scene_to_file("res://scenes/AppShell.tscn")
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	var accepted := false
 	if event is InputEventKey:
 		var key := event as InputEventKey
@@ -101,6 +101,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			accepted = key.unicode > 0 or key.physical_keycode in [KEY_ENTER, KEY_ESCAPE]
 	elif event is InputEventJoypadButton:
 		accepted = (event as InputEventJoypadButton).is_pressed()
+	elif event is InputEventMouseButton:
+		accepted = (event as InputEventMouseButton).is_pressed()
+	elif event is InputEventScreenTouch:
+		accepted = (event as InputEventScreenTouch).is_pressed()
 	if not accepted:
 		return
 	if _waiting_for_key:
