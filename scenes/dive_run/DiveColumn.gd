@@ -27,8 +27,8 @@ func _init(p_zone_id: String, p_max_depth: int) -> void:
 func current_layer() -> CatchData.Layer:
 	return LAYER_ORDER[layer_index]
 
-func generate_current_layer(corruption: float, lure_effect: LureData.LureEffect) -> void:
-	slots = CatchPool.generate_layer(zone_id, current_layer(), corruption, lure_effect)
+func generate_current_layer(corruption: float, entity_bias: bool = false) -> void:
+	slots = CatchPool.generate_layer(zone_id, current_layer(), corruption, entity_bias)
 	slot_in_layer = 0
 
 func current_catch() -> CatchData:
@@ -45,10 +45,10 @@ func can_descend() -> bool:
 		return false
 	return max_depth >= LAYER_DEPTH_REQ[LAYER_ORDER[layer_index + 1]]
 
-func descend(corruption: float, lure_effect: LureData.LureEffect) -> void:
+func descend(corruption: float, entity_bias: bool = false) -> void:
 	_resolved_before_layer += slots.size()
 	layer_index += 1
-	generate_current_layer(corruption, lure_effect)
+	generate_current_layer(corruption, entity_bias)
 
 func global_slot_index() -> int:
 	return _resolved_before_layer + slot_in_layer

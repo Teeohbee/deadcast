@@ -20,43 +20,50 @@ const LAYER_SLOTS: Dictionary = {
 }
 
 func generate_layer(zone: String, layer: CatchData.Layer, corruption: float = 0.0,
-		lure_effect: LureData.LureEffect = LureData.LureEffect.NONE) -> Array[CatchData]:
+		entity_bias: bool = false) -> Array[CatchData]:
 	load_catches_for_zone(zone)
 	var column: Array[CatchData] = []
 	var seen_types: Array = []
 	for i in LAYER_SLOTS[layer]:
-		var catch = _draw_catch(layer, corruption, seen_types, lure_effect)
+		var catch = _draw_catch(layer, corruption, seen_types, entity_bias)
 		if catch:
 			catch = _apply_entity_substitution(catch)
 			column.append(catch)
 			seen_types.append(catch.catch_type)
 	return column
 
-func _draw_catch(layer: CatchData.Layer, corruption: float, seen_types: Array, lure_effect: LureData.LureEffect) -> CatchData:
+func draw_replacement(zone: String, layer: CatchData.Layer, corruption: float) -> CatchData:
+	load_catches_for_zone(zone)
 	var pool = _loaded_catches.filter(func(c: CatchData) -> bool: return c.layer == layer)
 	if pool.is_empty():
 		return null
-	var weights = pool.map(func(c: CatchData) -> float: return _calculate_weight(c, corruption, seen_types, lure_effect))
+	var weights = pool.map(func(c: CatchData) -> float:
+		var w: float = _calculate_weight(c, corruption, [])
+		if c.catch_type == CatchData.CatchType.ENTITY or c.behavior == CatchData.BehaviorType.AGGRESSIVE:
+			w *= 0.2
+		return w)
+	var picked: CatchData = _weighted_random(pool, weights)
+	return _apply_entity_substitution(picked)
+
+func _draw_catch(layer: CatchData.Layer, corruption: float, seen_types: Array,
+		entity_bias: bool) -> CatchData:
+	var pool = _loaded_catches.filter(func(c: CatchData) -> bool: return c.layer == layer)
+	if pool.is_empty():
+		return null
+	var weights = pool.map(func(c: CatchData) -> float: return _calculate_weight(c, corruption, seen_types, entity_bias))
 	return _weighted_random(pool, weights)
 
-func _calculate_weight(catch: CatchData, corruption: float, seen_types: Array, lure_effect: LureData.LureEffect) -> float:
+func _calculate_weight(catch: CatchData, corruption: float, seen_types: Array,
+		entity_bias: bool = false) -> float:
 	var weight: float = 1.0
 
 	if catch.catch_type == CatchData.CatchType.ENTITY:
 		weight += corruption * 0.02
+		if entity_bias:
+			weight *= 1.5
 
 	if catch.catch_type in seen_types:
 		weight *= 0.5
-
-	# Lure pool weight effects. SHOCK and DEEP_PULSE affect gameplay mechanics
-	# at the catch event level (DiveRun), not pool weighting.
-	match lure_effect:
-		LureData.LureEffect.DECOY:
-			if catch.catch_type == CatchData.CatchType.ENTITY:
-				weight *= 0.2
-		LureData.LureEffect.GHOST_BAIT:
-			if catch.catch_type == CatchData.CatchType.ENTITY:
-				weight *= 1.5
 
 	return max(weight, 0.0)
 
