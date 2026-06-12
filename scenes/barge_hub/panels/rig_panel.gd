@@ -11,7 +11,7 @@ var _effect_value: Label
 var _uses_value: Label
 
 func _ready() -> void:
-	title = "⁵active_rig_module"
+	title = "active_rig_module"
 	_build()
 	refresh()
 

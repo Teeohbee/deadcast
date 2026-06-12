@@ -11,7 +11,7 @@ var _wave: SonarWave
 var _sig_label: Label
 
 func _ready() -> void:
-	title = "¹sonar_hydro-scan"
+	title = "sonar_hydro-scan"
 	custom_minimum_size = Vector2(0, 160)
 	_build()
 	EventBus.zone_changed.connect(_on_zone_changed)

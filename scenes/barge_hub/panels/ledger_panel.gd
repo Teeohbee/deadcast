@@ -11,7 +11,7 @@ var _segments: Array[ColorRect] = []
 var _due_value: Label
 
 func _ready() -> void:
-	title = "⁴account_ledger"
+	title = "account_ledger"
 	_build()
 	EventBus.credits_changed.connect(_on_credits_changed)
 	refresh()

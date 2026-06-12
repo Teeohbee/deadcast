@@ -17,8 +17,9 @@ var _rtl: RichTextLabel
 var _timer: Timer
 
 func _ready() -> void:
-	title = "³system_log_feed"
+	title = "system_log_feed"
 	custom_minimum_size = Vector2(0, 120)
+	size_flags_vertical = Control.SIZE_EXPAND_FILL
 
 	_rtl = RichTextLabel.new()
 	_rtl.bbcode_enabled = true

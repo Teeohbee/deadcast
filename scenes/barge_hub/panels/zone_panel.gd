@@ -8,9 +8,8 @@ var _indicators: Dictionary = {}  # zone_id -> Label
 var _names: Dictionary = {}       # zone_id -> Label
 
 func _ready() -> void:
-	title = "²available_zones"
+	title = "available_zones"
 	active = true
-	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_build()
 	EventBus.zone_changed.connect(_on_zone_changed)
 	_on_zone_changed(GameState.selected_zone)

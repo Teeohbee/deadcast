@@ -9,7 +9,7 @@ var _chip: Label
 var _sell_btn: Button
 
 func _ready() -> void:
-	title = "⁶freezer_storage"
+	title = "freezer_storage"
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_build()
 	refresh()
