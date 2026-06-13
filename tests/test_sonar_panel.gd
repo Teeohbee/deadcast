@@ -26,3 +26,7 @@ func test_zone_change_updates_wave_and_legend() -> void:
 	assert_eq(p._wave.amplitude, 35.0)
 	assert_eq(p._wave.frequency, 0.04)
 	assert_string_contains(p._sig_label.text, "CRITICAL")
+
+func test_ghost_sig_uses_body_tier() -> void:
+	var p := _make_panel()
+	assert_eq(p._sig_label.get_theme_font_size("font_size"), DeckStyle.SIZE_BODY)

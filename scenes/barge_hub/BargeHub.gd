@@ -6,16 +6,22 @@ extends Control
 @onready var _banner_caption: Label = $Margin/VBox/DiveBanner/BannerRow/BannerCaption
 @onready var _banner_zone: Label = $Margin/VBox/DiveBanner/BannerRow/BannerZone
 @onready var _dive_button: Button = $Margin/VBox/DiveBanner/BannerRow/DiveButton
+@onready var _crt_overlay: ColorRect = $CRTOverlay
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
+
+	var crt_mat := (_crt_overlay.material as ShaderMaterial).duplicate() as ShaderMaterial
+	if not Settings.crt_enabled:
+		crt_mat.set_shader_parameter("scan_alpha", 0.0)
+	_crt_overlay.material = crt_mat
 
 	var banner_sb := DeckStyle.panel_style(false)
 	banner_sb.bg_color = Color("#09110d")
 	banner_sb.border_color = Color("#14291c")
 	_banner.add_theme_stylebox_override("panel", banner_sb)
 	DeckStyle.apply_label(_banner_caption, DeckStyle.DIM)
-	DeckStyle.apply_label(_banner_zone, Color.WHITE, DeckStyle.FONT_SIZE_BODY)
+	DeckStyle.apply_label(_banner_zone, Color.WHITE, DeckStyle.SIZE_VALUE)
 	DeckStyle.apply_action_button(_dive_button)
 	_dive_button.focus_mode = Control.FOCUS_ALL
 	_dive_button.pressed.connect(_on_dive_pressed)

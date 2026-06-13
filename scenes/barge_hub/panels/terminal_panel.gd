@@ -26,7 +26,7 @@ func _draw() -> void:
 	if title.is_empty():
 		return
 	var font := get_theme_font("font", "Label")
-	var fsize := DeckStyle.FONT_SIZE_SMALL
+	var fsize := DeckStyle.SIZE_BODY
 	var text_size := font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, fsize)
 	var x := 14.0
 	# Mask the border line behind the title, then draw it overhanging the top edge.

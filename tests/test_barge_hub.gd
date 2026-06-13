@@ -26,6 +26,12 @@ func test_banner_shows_selected_zone() -> void:
 	GameState.select_zone("axiom")
 	assert_string_contains(hub._banner_zone.text, "AXIOM TOWER SUB-BASEMENT")
 
+func test_banner_zone_uses_value_tier() -> void:
+	var hub := HUB.instantiate()
+	add_child_autofree(hub)
+	await get_tree().process_frame
+	assert_eq(hub._banner_zone.get_theme_font_size("font_size"), DeckStyle.SIZE_VALUE)
+
 func test_default_focus_on_selected_zone_card() -> void:
 	var hub := HUB.instantiate()
 	add_child_autofree(hub)
@@ -33,3 +39,22 @@ func test_default_focus_on_selected_zone_card() -> void:
 	await get_tree().process_frame
 	var zone_panel := hub.get_node("Margin/VBox/MainGrid/LeftColumn/ZonePanel")
 	assert_true((zone_panel._cards["district7"] as Button).has_focus())
+
+func test_crt_disabled_zeroes_scan_alpha() -> void:
+	Settings.crt_enabled = false
+	var hub := HUB.instantiate()
+	add_child_autofree(hub)
+	await get_tree().process_frame
+	var overlay := hub.get_node("CRTOverlay") as ColorRect
+	assert_eq(overlay.material.get_shader_parameter("scan_alpha"), 0.0)
+	Settings.crt_enabled = true
+
+func test_crt_enabled_leaves_shader_default() -> void:
+	# scan_alpha must NOT be overridden when CRT is on - shader default is the
+	# single source of truth, so null here means no drift between code and shader.
+	Settings.crt_enabled = true
+	var hub := HUB.instantiate()
+	add_child_autofree(hub)
+	await get_tree().process_frame
+	var overlay := hub.get_node("CRTOverlay") as ColorRect
+	assert_null(overlay.material.get_shader_parameter("scan_alpha"))

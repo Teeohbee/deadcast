@@ -27,7 +27,7 @@ func _build() -> void:
 		var l := Label.new()
 		l.text = text
 		l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		DeckStyle.apply_label(l, DeckStyle.DIM, DeckStyle.FONT_SIZE_TINY)
+		DeckStyle.apply_label(l, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 		header.add_child(l)
 	(header.get_child(2) as Label).horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	root.add_child(header)
@@ -42,15 +42,15 @@ func _build() -> void:
 
 	var legend := VBoxContainer.new()
 	legend.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	legend.offset_left = -170
+	legend.offset_left = -210
 	legend.offset_top = 6
 	legend.offset_right = -6
 	_sig_label = Label.new()
-	DeckStyle.apply_label(_sig_label, DeckStyle.TEXT, 9)
+	DeckStyle.apply_label(_sig_label, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
 	legend.add_child(_sig_label)
 	var thermo := Label.new()
 	thermo.text = "█ THERMOCLINE: 4.1°C"
-	DeckStyle.apply_label(thermo, DeckStyle.SKY, 9)
+	DeckStyle.apply_label(thermo, DeckStyle.SKY, DeckStyle.SIZE_AMBIENT)
 	legend.add_child(thermo)
 	wave_holder.add_child(legend)
 
@@ -62,4 +62,4 @@ func _on_zone_changed(zone_id: String) -> void:
 	_wave.amplitude = params["amp"]
 	_wave.frequency = params["freq"]
 	_sig_label.text = "█ GHOST-SIG: %s" % params["sig"]
-	DeckStyle.apply_label(_sig_label, DeckStyle.tier_color(params["sig_tier"]), 9)
+	DeckStyle.apply_label(_sig_label, DeckStyle.tier_color(params["sig_tier"]), DeckStyle.SIZE_BODY)

@@ -1,7 +1,7 @@
 // scenes/barge_hub/deck_crt.gdshader
 shader_type canvas_item;
 
-uniform float scan_alpha : hint_range(0.0, 1.0) = 0.10;
+uniform float scan_alpha : hint_range(0.0, 1.0) = 0.05;
 
 void fragment() {
 	float line = step(0.5, fract(FRAGCOORD.y / 4.0));

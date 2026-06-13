@@ -61,3 +61,9 @@ func test_refreshes_on_credits_changed() -> void:
 	var p := _make_panel()
 	GameState.add_credits(2500)
 	assert_eq(p._wallet_value.text, "2,500 cr")
+
+func test_money_readouts_use_value_tier() -> void:
+	var p := _make_panel()
+	assert_eq(p._wallet_value.get_theme_font_size("font_size"), DeckStyle.SIZE_VALUE)
+	assert_eq(p._debt_value.get_theme_font_size("font_size"), DeckStyle.SIZE_VALUE)
+	assert_eq(p._due_value.get_theme_font_size("font_size"), DeckStyle.SIZE_VALUE)

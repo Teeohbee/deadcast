@@ -2,6 +2,7 @@
 extends GutTest
 
 const PANEL := preload("res://scenes/barge_hub/panels/LogFeedPanel.tscn")
+const PANEL_SCRIPT := preload("res://scenes/barge_hub/panels/log_feed_panel.gd")
 
 func _make_panel() -> Node:
 	var p := PANEL.instantiate()
@@ -35,3 +36,20 @@ func test_zone_change_logs_realignment() -> void:
 	EventBus.zone_changed.emit("axiom")
 	assert_eq(p._lines.size(), before + 1)
 	assert_string_contains(p._lines[p._lines.size() - 1], "AXIOM")
+
+func test_feed_uses_ambient_floor() -> void:
+	var p := _make_panel()
+	assert_eq(p._rtl.get_theme_font_size("normal_font_size"), DeckStyle.SIZE_AMBIENT)
+
+func test_fit_lines_shows_only_whole_lines() -> void:
+	# 90px tall, 17px lines -> 5 whole lines (no clipped partial).
+	assert_eq(PANEL_SCRIPT._fit_lines(90.0, 17.0, 8), 5)
+
+func test_fit_lines_clamps_to_cap() -> void:
+	# Tall panel never shows more than the history cap.
+	assert_eq(PANEL_SCRIPT._fit_lines(1000.0, 17.0, 8), 8)
+
+func test_fit_lines_falls_back_before_layout() -> void:
+	# Height 0 (not yet laid out) shows the cap; corrects on first resize.
+	assert_eq(PANEL_SCRIPT._fit_lines(0.0, 17.0, 8), 8)
+	assert_eq(PANEL_SCRIPT._fit_lines(90.0, 0.0, 8), 8)

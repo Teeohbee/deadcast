@@ -24,10 +24,10 @@ func _build() -> void:
 	var caption := Label.new()
 	caption.text = "COLLECTED GHOST DATA REGISTRY"
 	caption.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	DeckStyle.apply_label(caption, DeckStyle.DIM, DeckStyle.FONT_SIZE_TINY)
+	DeckStyle.apply_label(caption, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 	header.add_child(caption)
 	_count_label = Label.new()
-	DeckStyle.apply_label(_count_label, DeckStyle.DIM, DeckStyle.FONT_SIZE_TINY)
+	DeckStyle.apply_label(_count_label, DeckStyle.DIM, DeckStyle.SIZE_BODY)
 	header.add_child(_count_label)
 	root.add_child(header)
 
@@ -36,7 +36,7 @@ func _build() -> void:
 	_vacant.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_vacant.custom_minimum_size = Vector2(0, 48)
 	_vacant.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	DeckStyle.apply_label(_vacant, DeckStyle.DIM, DeckStyle.FONT_SIZE_TINY)
+	DeckStyle.apply_label(_vacant, DeckStyle.DIM, DeckStyle.SIZE_BODY)
 	var vsb := StyleBoxFlat.new()
 	vsb.bg_color = Color(0, 0, 0, 0)
 	vsb.border_color = DeckStyle.BORDER
@@ -59,10 +59,10 @@ func _build() -> void:
 	sleft.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var fname := Label.new()
 	fname.text = "BIO_ARCHIVE_BUNDLE.dat"
-	DeckStyle.apply_label(fname, DeckStyle.TEXT, DeckStyle.FONT_SIZE_SMALL)
+	DeckStyle.apply_label(fname, DeckStyle.TEXT, DeckStyle.SIZE_AMBIENT)
 	sleft.add_child(fname)
 	_value_label = Label.new()
-	DeckStyle.apply_label(_value_label, DeckStyle.DIM, DeckStyle.FONT_SIZE_TINY)
+	DeckStyle.apply_label(_value_label, DeckStyle.DIM, DeckStyle.SIZE_BODY)
 	sleft.add_child(_value_label)
 	srow.add_child(sleft)
 	_chip = Label.new()
@@ -107,7 +107,7 @@ func _apply_chip() -> void:
 	_chip.text = styled.text
 	_chip.add_theme_stylebox_override("normal", styled.get_theme_stylebox("normal"))
 	_chip.add_theme_color_override("font_color", styled.get_theme_color("font_color"))
-	_chip.add_theme_font_size_override("font_size", 9)
+	_chip.add_theme_font_size_override("font_size", DeckStyle.SIZE_AMBIENT)
 	styled.free()
 
 func _on_sell() -> void:

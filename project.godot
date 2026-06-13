@@ -26,6 +26,7 @@ CatchPool="*res://autoload/CatchPool.gd"
 UIStyle="*res://autoload/UIStyle.gd"
 UIController="*res://autoload/UIController.gd"
 TextFX="*res://autoload/TextFX.gd"
+Settings="*res://autoload/Settings.gd"
 
 [display]
 

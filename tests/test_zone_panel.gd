@@ -43,3 +43,7 @@ func test_focus_selected_grabs_selected_card() -> void:
 	GameState.select_zone("exchange")
 	p.focus_selected()
 	assert_true((p._cards["exchange"] as Button).has_focus())
+
+func test_zone_name_uses_value_tier() -> void:
+	var p := _make_panel()
+	assert_eq(p._names["district7"].get_theme_font_size("font_size"), DeckStyle.SIZE_VALUE)
