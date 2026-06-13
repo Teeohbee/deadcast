@@ -28,10 +28,10 @@ func _build() -> void:
 	var plabel := Label.new()
 	plabel.text = "DEBT ACCRUAL PRESSURE:"
 	plabel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	DeckStyle.apply_label(plabel, DeckStyle.DIM, DeckStyle.FONT_SIZE_TINY)
+	DeckStyle.apply_label(plabel, DeckStyle.DIM, DeckStyle.SIZE_BODY)
 	ratio_row.add_child(plabel)
 	_pressure_ratio = Label.new()
-	DeckStyle.apply_label(_pressure_ratio, DeckStyle.AMBER, DeckStyle.FONT_SIZE_TINY)
+	DeckStyle.apply_label(_pressure_ratio, DeckStyle.AMBER, DeckStyle.SIZE_BODY)
 	ratio_row.add_child(_pressure_ratio)
 	root.add_child(ratio_row)
 
@@ -55,7 +55,7 @@ func _add_row(parent: Container, caption: String, value_color: Color) -> Label:
 	DeckStyle.apply_label(cap, DeckStyle.DIM)
 	row.add_child(cap)
 	var val := Label.new()
-	DeckStyle.apply_label(val, value_color, DeckStyle.FONT_SIZE_BODY)
+	DeckStyle.apply_label(val, value_color, DeckStyle.SIZE_VALUE)
 	row.add_child(val)
 	parent.add_child(row)
 	return val
@@ -69,17 +69,17 @@ func refresh() -> void:
 	_pressure_ratio.text = "%d / %d" % [GameState.pressure_level, SEGMENTS]
 
 	var fill := pressure_fill_color(GameState.pressure_level)
-	DeckStyle.apply_label(_pressure_ratio, fill, DeckStyle.FONT_SIZE_TINY)
+	DeckStyle.apply_label(_pressure_ratio, fill, DeckStyle.SIZE_BODY)
 	for i in SEGMENTS:
 		_segments[i].color = fill if i < GameState.pressure_level else SEGMENT_EMPTY
 
 	var runs_left := 5 - GameState.runs_since_payment
 	if runs_left > 0:
 		_due_value.text = "in %d run%s" % [runs_left, "s" if runs_left != 1 else ""]
-		DeckStyle.apply_label(_due_value, DeckStyle.AMBER, DeckStyle.FONT_SIZE_BODY)
+		DeckStyle.apply_label(_due_value, DeckStyle.AMBER, DeckStyle.SIZE_VALUE)
 	else:
 		_due_value.text = "IMMEDIATE DANGER"
-		DeckStyle.apply_label(_due_value, DeckStyle.RED, DeckStyle.FONT_SIZE_BODY)
+		DeckStyle.apply_label(_due_value, DeckStyle.RED, DeckStyle.SIZE_VALUE)
 
 static func pressure_fill_color(level: int) -> Color:
 	if level >= 4:
