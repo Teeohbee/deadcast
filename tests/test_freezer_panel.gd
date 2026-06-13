@@ -44,6 +44,11 @@ func test_chip_singular_run() -> void:
 	var p := _make_panel()
 	assert_eq(p.spoil_chip_text(), "SPOILS IN 1 RUN")
 
+func test_stored_count_uses_body_tier() -> void:
+	GameState.freezer_value = 1200
+	var p := _make_panel()
+	assert_eq(p._count_label.get_theme_font_size("font_size"), DeckStyle.SIZE_BODY)
+
 func test_sell_credits_and_clears() -> void:
 	GameState.freezer_value = 1400
 	GameState.freezer_runs = 2
