@@ -8,25 +8,26 @@ const DEPTH_UPGRADE_AMOUNT: int = 50
 @onready var repair_button: Button = $MarginContainer/HBox/LeftColumn/ControlPanel/VBox/RepairButton
 @onready var depth_upgrade_button: Button = $MarginContainer/HBox/LeftColumn/ControlPanel/VBox/DepthUpgradeButton
 @onready var message_label: Label = $MarginContainer/HBox/LeftColumn/ControlPanel/VBox/MessageLabel
+@onready var _diagnostics: RodDiagnosticsPanel = $MarginContainer/HBox/RightColumn/RodDiagnosticsPanel
+@onready var _maintenance_log: MaintenanceLogPanel = $MarginContainer/HBox/RightColumn/MaintenanceLogPanel
 
 func _ready() -> void:
-	self.theme = UIStyle.get_theme()
 	for btn in [repair_button, depth_upgrade_button]:
 		btn.focus_mode = Control.FOCUS_ALL
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		UIStyle.apply_button(btn)
+		DeckStyle.apply_action_button(btn)
 
-	UIStyle.apply_label(rod_label, UIStyle.COL_TEXT)
-	UIStyle.apply_label(message_label, UIStyle.COL_DIM)
-
-	repair_button.text = "repair rod"
-	depth_upgrade_button.text = "depth upgrade"
+	DeckStyle.apply_label(rod_label, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
+	DeckStyle.apply_label(message_label, DeckStyle.DIM, DeckStyle.SIZE_BODY)
 
 	repair_button.pressed.connect(_on_repair_pressed)
 	depth_upgrade_button.pressed.connect(_on_depth_upgrade_pressed)
 
 	_refresh()
+
+	await get_tree().process_frame
 	repair_button.grab_focus()
+	DeckNav.chain_vertical([repair_button, depth_upgrade_button])
 
 func _refresh() -> void:
 	var rod = GameState.current_rod
@@ -57,6 +58,8 @@ func _on_repair_pressed() -> void:
 		GameState.rod_damaged = false
 		GameState.save()
 		message_label.text = "%s repaired." % rod.rod_name.to_lower()
+		_maintenance_log.append_line("REPAIR: %s serviced. Micro-fractures sealed." % rod.rod_name.to_lower())
+		_diagnostics.refresh()
 		_refresh()
 	else:
 		message_label.text = "not enough credits."
@@ -71,6 +74,8 @@ func _on_depth_upgrade_pressed() -> void:
 		GameState.current_rod = rod
 		GameState.save()
 		message_label.text = "depth increased to %dft." % rod.max_depth
+		_maintenance_log.append_line("DEPTH MOD: Extension coil fitted. New ceiling: %dft." % rod.max_depth)
+		_diagnostics.refresh()
 		_refresh()
 	else:
 		message_label.text = "not enough credits."
