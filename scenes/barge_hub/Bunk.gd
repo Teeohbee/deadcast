@@ -3,8 +3,8 @@ extends Control
 
 enum Mode { JOURNAL, MANUAL, LOG }
 
-@onready var content_label: RichTextLabel = $MarginContainer/VBoxContainer/ScrollContainer/JournalLabel
-@onready var scroll_container: ScrollContainer = $MarginContainer/VBoxContainer/ScrollContainer
+@onready var content_label: RichTextLabel = $MarginContainer/VBoxContainer/ReaderPanel/ScrollContainer/JournalLabel
+@onready var scroll_container: ScrollContainer = $MarginContainer/VBoxContainer/ReaderPanel/ScrollContainer
 @onready var page_up_btn: Button = $MarginContainer/VBoxContainer/PageButtons/PageUpButton
 @onready var page_down_btn: Button = $MarginContainer/VBoxContainer/PageButtons/PageDownButton
 @onready var journal_toggle: Button = $MarginContainer/VBoxContainer/ToggleRow/JournalToggle

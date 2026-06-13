@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scenes/barge_hub/Bunk.gd" id="1_bunk"]
+[ext_resource type="Script" path="res://scenes/barge_hub/panels/terminal_panel.gd" id="2_tp"]
+[ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/LifeSupportStrip.tscn" id="3_lss"]
 
 [node name="Bunk" type="Control"]
 script = ExtResource("1_bunk")
@@ -28,6 +30,9 @@ theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+theme_override_constants/separation = 8
+
+[node name="LifeSupportStrip" parent="MarginContainer/VBoxContainer" instance=ExtResource("3_lss")]
 
 [node name="ToggleRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 
@@ -40,12 +45,16 @@ text = "[MANUAL]"
 [node name="RunLogToggle" type="Button" parent="MarginContainer/VBoxContainer/ToggleRow"]
 text = "[RUN LOG]"
 
-[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer"]
+[node name="ReaderPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+script = ExtResource("2_tp")
 size_flags_vertical = 3
+title = "bunk_terminal"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/ReaderPanel"]
 horizontal_scroll_mode = 0
 vertical_scroll_mode = 3
 
-[node name="JournalLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer/ScrollContainer"]
+[node name="JournalLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer/ReaderPanel/ScrollContainer"]
 size_flags_horizontal = 3
 fit_content = true
 scroll_active = false
