@@ -86,3 +86,20 @@ func test_zone_card_reaches_right_column() -> void:
 	var first_card: Button = zone.focus_targets()[0]
 	var right: Button = hub.get_node("Margin/VBox/MainGrid/RightColumn/RigPanel").focus_targets()[0]
 	assert_eq(first_card.get_node(first_card.focus_neighbor_right), right)
+
+func test_dive_button_shows_pad_glyph_and_verb() -> void:
+	InputGlyphs.mode = InputGlyphs.Mode.PAD
+	var hub := HUB.instantiate()
+	add_child_autofree(hub)
+	await get_tree().process_frame
+	assert_string_contains(hub._dive_button.text, "[A]")
+	assert_string_contains(hub._dive_button.text, "INITIATE DIVE")
+
+func test_dive_button_updates_on_device_change() -> void:
+	InputGlyphs.mode = InputGlyphs.Mode.PAD
+	var hub := HUB.instantiate()
+	add_child_autofree(hub)
+	await get_tree().process_frame
+	InputGlyphs.mode = InputGlyphs.Mode.KEY
+	InputGlyphs.device_changed.emit(InputGlyphs.Mode.KEY)
+	assert_string_contains(hub._dive_button.text, "[ENTER]")

@@ -27,6 +27,8 @@ func _ready() -> void:
 	DeckStyle.apply_action_button(_dive_button)
 	_dive_button.focus_mode = Control.FOCUS_ALL
 	_dive_button.pressed.connect(_on_dive_pressed)
+	InputGlyphs.device_changed.connect(_on_device_changed)
+	_refresh_prompts()
 
 	EventBus.zone_changed.connect(_on_zone_changed)
 	_on_zone_changed(GameState.selected_zone)
@@ -63,6 +65,15 @@ func _wire_focus_graph() -> void:
 func _on_zone_changed(zone_id: String) -> void:
 	var zone: ZoneData = load("res://resources/zones/%s.tres" % zone_id)
 	_banner_zone.text = zone.display_name.to_upper() if zone else zone_id.to_upper()
+
+func _on_device_changed(mode: int) -> void:
+	_refresh_prompts()
+	var line := "INPUT: gamepad peripheral linked." if mode == InputGlyphs.Mode.PAD \
+		else "INPUT: keyboard relay active."
+	EventBus.deck_log.emit(line)
+
+func _refresh_prompts() -> void:
+	_dive_button.text = "%s > INITIATE DIVE" % InputGlyphs.glyph("accept")
 
 func _on_dive_pressed() -> void:
 	UIController.navigate_to("dive")

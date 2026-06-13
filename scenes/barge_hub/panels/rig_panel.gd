@@ -33,11 +33,12 @@ func _build() -> void:
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	rod_row.add_child(spacer)
 	_switch_btn = Button.new()
-	_switch_btn.text = "SWITCH [F2]"
 	_switch_btn.focus_mode = Control.FOCUS_ALL
 	DeckStyle.apply_action_button(_switch_btn)
 	_switch_btn.pressed.connect(_on_switch_pressed)
 	rod_row.add_child(_switch_btn)
+	InputGlyphs.device_changed.connect(_refresh_switch_prompt)
+	_refresh_switch_prompt()
 	root.add_child(rod_row)
 
 	_rod_meta = Label.new()
@@ -119,6 +120,9 @@ func cycle_lure() -> void:
 	GameState.equip_lure(load("res://resources/lures/%s.tres" % next_id))
 	EventBus.deck_log.emit("RIGS: Lure module swapped to %s." % next_id.to_upper().replace("_", " "))
 	refresh()
+
+func _refresh_switch_prompt(_mode: int = 0) -> void:
+	_switch_btn.text = "%s SWITCH RIG" % InputGlyphs.glyph("accept")
 
 func focus_targets() -> Array[Control]:
 	return [_switch_btn, _lure_button]
