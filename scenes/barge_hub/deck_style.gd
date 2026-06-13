@@ -12,10 +12,6 @@ const RED      := Color("#ef4444")  # debt/critical
 const TEXT     := Color("#d1d5db")  # bright value text
 const SKY      := Color("#38bdf8")  # depth/thermocline accents
 
-const FONT_SIZE_TINY  := 10
-const FONT_SIZE_SMALL := 11
-const FONT_SIZE_BODY  := 13
-
 const SIZE_VALUE   := 18  # headline readouts - the btop "big number"
 const SIZE_BODY    := 14  # readable labels, instructions, secondary values
 const SIZE_AMBIENT := 12  # telemetry, chatter, chrome, captions
