@@ -58,3 +58,8 @@ func test_sell_credits_and_clears() -> void:
 	assert_eq(GameState.freezer_value, 0)
 	assert_eq(GameState.freezer_runs, 0)
 	assert_true(p._vacant.visible)
+
+func test_focus_targets_is_sell_button() -> void:
+	GameState.freezer_value = 500
+	var p := _make_panel()
+	assert_eq(p.focus_targets(), [p._sell_btn])

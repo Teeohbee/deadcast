@@ -22,6 +22,10 @@ func _init() -> void:
 func _apply_style() -> void:
 	add_theme_stylebox_override("panel", DeckStyle.panel_style(active))
 
+# Interactive panels override this to report focusable controls, in focus order.
+func focus_targets() -> Array[Control]:
+	return []
+
 func _draw() -> void:
 	if title.is_empty():
 		return

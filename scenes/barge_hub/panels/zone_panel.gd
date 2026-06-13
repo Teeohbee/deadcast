@@ -133,3 +133,9 @@ func focus_selected() -> void:
 	var btn: Button = _cards.get(GameState.selected_zone)
 	if btn:
 		btn.grab_focus()
+
+func focus_targets() -> Array[Control]:
+	var out: Array[Control] = []
+	for id in ZONE_IDS:
+		out.append(_cards[id])
+	return out

@@ -8,6 +8,7 @@ var _rod_meta: Label
 var _rod_damage: Label
 var _lure_button: Button
 var _effect_value: Label
+var _switch_btn: Button
 
 func _ready() -> void:
 	title = "active_rig_module"
@@ -31,12 +32,12 @@ func _build() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	rod_row.add_child(spacer)
-	var switch_btn := Button.new()
-	switch_btn.text = "SWITCH [F2]"
-	switch_btn.focus_mode = Control.FOCUS_ALL
-	DeckStyle.apply_action_button(switch_btn)
-	switch_btn.pressed.connect(_on_switch_pressed)
-	rod_row.add_child(switch_btn)
+	_switch_btn = Button.new()
+	_switch_btn.text = "SWITCH [F2]"
+	_switch_btn.focus_mode = Control.FOCUS_ALL
+	DeckStyle.apply_action_button(_switch_btn)
+	_switch_btn.pressed.connect(_on_switch_pressed)
+	rod_row.add_child(_switch_btn)
 	root.add_child(rod_row)
 
 	_rod_meta = Label.new()
@@ -118,6 +119,9 @@ func cycle_lure() -> void:
 	GameState.equip_lure(load("res://resources/lures/%s.tres" % next_id))
 	EventBus.deck_log.emit("RIGS: Lure module swapped to %s." % next_id.to_upper().replace("_", " "))
 	refresh()
+
+func focus_targets() -> Array[Control]:
+	return [_switch_btn, _lure_button]
 
 func _on_switch_pressed() -> void:
 	UIController.navigate_to("workshop")

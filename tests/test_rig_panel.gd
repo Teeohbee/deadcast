@@ -58,3 +58,10 @@ func test_rod_name_and_damage_use_body_tier() -> void:
 	var p := _make_panel()
 	assert_eq(p._rod_name.get_theme_font_size("font_size"), DeckStyle.SIZE_BODY)
 	assert_eq(p._rod_damage.get_theme_font_size("font_size"), DeckStyle.SIZE_BODY)
+
+func test_focus_targets_are_switch_then_lure() -> void:
+	var p := _make_panel()
+	var targets: Array = p.focus_targets()
+	assert_eq(targets.size(), 2)
+	assert_eq(targets[0], p._switch_btn)
+	assert_eq(targets[1], p._lure_button)
