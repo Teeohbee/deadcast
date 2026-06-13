@@ -2,6 +2,8 @@
 extends Control
 
 @onready var _zone_panel: Control = $Margin/VBox/MainGrid/LeftColumn/ZonePanel
+@onready var _rig_panel: Control = $Margin/VBox/MainGrid/RightColumn/RigPanel
+@onready var _freezer_panel: Control = $Margin/VBox/MainGrid/RightColumn/FreezerPanel
 @onready var _banner: PanelContainer = $Margin/VBox/DiveBanner
 @onready var _banner_caption: Label = $Margin/VBox/DiveBanner/BannerRow/BannerCaption
 @onready var _banner_zone: Label = $Margin/VBox/DiveBanner/BannerRow/BannerZone
@@ -31,6 +33,32 @@ func _ready() -> void:
 
 	await get_tree().process_frame
 	_zone_panel.focus_selected()
+	_wire_focus_graph()
+
+func _wire_focus_graph() -> void:
+	var left: Array[Control] = _zone_panel.focus_targets()
+	var right: Array[Control] = _rig_panel.focus_targets() + _freezer_panel.focus_targets()
+	if left.is_empty() or right.is_empty():
+		return
+	var first_right: Control = right[0]
+	# Left column -> right column, and bottom of left -> dive.
+	for i in left.size():
+		var card: Control = left[i]
+		card.focus_neighbor_right = card.get_path_to(first_right)
+		if i == left.size() - 1:
+			card.focus_neighbor_bottom = card.get_path_to(_dive_button)
+	# Right column vertical chain + back to left + bottom -> dive.
+	for i in right.size():
+		var node: Control = right[i]
+		node.focus_neighbor_left = node.get_path_to(left[0])
+		if i < right.size() - 1:
+			node.focus_neighbor_bottom = node.get_path_to(right[i + 1])
+		else:
+			node.focus_neighbor_bottom = node.get_path_to(_dive_button)
+		if i > 0:
+			node.focus_neighbor_top = node.get_path_to(right[i - 1])
+	# Dive back up into the right column.
+	_dive_button.focus_neighbor_top = _dive_button.get_path_to(right[right.size() - 1])
 
 func _on_zone_changed(zone_id: String) -> void:
 	var zone: ZoneData = load("res://resources/zones/%s.tres" % zone_id)
