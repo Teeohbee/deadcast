@@ -12,7 +12,8 @@ func _ready() -> void:
 	self.theme = UIStyle.get_theme()
 
 	var crt_mat := (_crt_overlay.material as ShaderMaterial).duplicate() as ShaderMaterial
-	crt_mat.set_shader_parameter("scan_alpha", 0.05 if Settings.crt_enabled else 0.0)
+	if not Settings.crt_enabled:
+		crt_mat.set_shader_parameter("scan_alpha", 0.0)
 	_crt_overlay.material = crt_mat
 
 	var banner_sb := DeckStyle.panel_style(false)

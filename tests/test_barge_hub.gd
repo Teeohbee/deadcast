@@ -49,10 +49,12 @@ func test_crt_disabled_zeroes_scan_alpha() -> void:
 	assert_eq(overlay.material.get_shader_parameter("scan_alpha"), 0.0)
 	Settings.crt_enabled = true
 
-func test_crt_enabled_uses_default_intensity() -> void:
+func test_crt_enabled_leaves_shader_default() -> void:
+	# scan_alpha must NOT be overridden when CRT is on - shader default is the
+	# single source of truth, so null here means no drift between code and shader.
 	Settings.crt_enabled = true
 	var hub := HUB.instantiate()
 	add_child_autofree(hub)
 	await get_tree().process_frame
 	var overlay := hub.get_node("CRTOverlay") as ColorRect
-	assert_almost_eq(overlay.material.get_shader_parameter("scan_alpha"), 0.05, 0.0001)
+	assert_null(overlay.material.get_shader_parameter("scan_alpha"))

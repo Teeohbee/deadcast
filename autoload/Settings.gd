@@ -18,4 +18,6 @@ func set_crt_enabled(value: bool) -> void:
 	var cfg := ConfigFile.new()
 	cfg.load(PATH)  # ignore error; fresh file is fine
 	cfg.set_value("video", "crt_enabled", value)
-	cfg.save(PATH)
+	var err := cfg.save(PATH)
+	if err != OK:
+		push_warning("Settings: failed to save %s (error %d)" % [PATH, err])
