@@ -54,7 +54,7 @@ static func make_chip(text: String, tier: int) -> Label:
 	var chip := Label.new()
 	chip.text = text
 	chip.add_theme_stylebox_override("normal", sb)
-	apply_label(chip, c, 9)
+	apply_label(chip, c, SIZE_AMBIENT)
 	return chip
 
 static func apply_action_button(btn: Button, color: Color = GREEN) -> void:

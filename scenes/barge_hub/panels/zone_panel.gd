@@ -24,11 +24,11 @@ func _build() -> void:
 	var hint := Label.new()
 	hint.text = "SELECT TARGET DESTINATION [▲/▼]"
 	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	DeckStyle.apply_label(hint, DeckStyle.DIM, DeckStyle.FONT_SIZE_TINY)
+	DeckStyle.apply_label(hint, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 	header.add_child(hint)
 	var hosts := Label.new()
 	hosts.text = "%d LOCAL HOSTS CONNECTED" % ZONE_IDS.size()
-	DeckStyle.apply_label(hosts, DeckStyle.DIM, DeckStyle.FONT_SIZE_TINY)
+	DeckStyle.apply_label(hosts, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 	header.add_child(hosts)
 	root.add_child(header)
 
@@ -46,7 +46,7 @@ func _build() -> void:
 func _build_card(zone_id: String, zone: ZoneData) -> Button:
 	var btn := Button.new()
 	btn.focus_mode = Control.FOCUS_ALL
-	btn.custom_minimum_size = Vector2(0, 58)
+	btn.custom_minimum_size = Vector2(0, 66)
 	btn.pressed.connect(_on_card_pressed.bind(zone_id))
 	DeckStyle.apply_card(btn, false)
 
@@ -76,13 +76,13 @@ func _build_card(zone_id: String, zone: ZoneData) -> Button:
 	var indicator := Label.new()
 	indicator.text = ">"
 	indicator.modulate.a = 0.0
-	DeckStyle.apply_label(indicator, DeckStyle.GREEN, DeckStyle.FONT_SIZE_BODY)
+	DeckStyle.apply_label(indicator, DeckStyle.GREEN, DeckStyle.SIZE_VALUE)
 	name_row.add_child(indicator)
 	_indicators[zone_id] = indicator
 
 	var name_label := Label.new()
 	name_label.text = zone.display_name.to_lower()
-	DeckStyle.apply_label(name_label, DeckStyle.TEXT, DeckStyle.FONT_SIZE_BODY)
+	DeckStyle.apply_label(name_label, DeckStyle.TEXT, DeckStyle.SIZE_VALUE)
 	name_row.add_child(name_label)
 	_names[zone_id] = name_label
 
@@ -90,13 +90,13 @@ func _build_card(zone_id: String, zone: ZoneData) -> Button:
 
 	var desc := Label.new()
 	desc.text = zone.description.to_lower()
-	DeckStyle.apply_label(desc, DeckStyle.DIM, DeckStyle.FONT_SIZE_TINY)
+	DeckStyle.apply_label(desc, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 	left.add_child(desc)
 
 	if zone.zone_interference > 0:
 		var interference := Label.new()
 		interference.text = "interference: +%dT per contact" % zone.zone_interference
-		DeckStyle.apply_label(interference, DeckStyle.AMBER, DeckStyle.FONT_SIZE_TINY)
+		DeckStyle.apply_label(interference, DeckStyle.AMBER, DeckStyle.SIZE_BODY)
 		left.add_child(interference)
 
 	var stats := VBoxContainer.new()
@@ -104,12 +104,12 @@ func _build_card(zone_id: String, zone: ZoneData) -> Button:
 	var density := Label.new()
 	density.text = "DENSITY: %s" % zone.density
 	density.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	DeckStyle.apply_label(density, DeckStyle.tier_color(zone.tag_tier), DeckStyle.FONT_SIZE_TINY)
+	DeckStyle.apply_label(density, DeckStyle.tier_color(zone.tag_tier), DeckStyle.SIZE_BODY)
 	stats.add_child(density)
 	var threat := Label.new()
 	threat.text = "THREAT: %s" % zone.threat
 	threat.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	DeckStyle.apply_label(threat, DeckStyle.tier_color(zone.tag_tier), DeckStyle.FONT_SIZE_TINY)
+	DeckStyle.apply_label(threat, DeckStyle.tier_color(zone.tag_tier), DeckStyle.SIZE_BODY)
 	stats.add_child(threat)
 	row.add_child(stats)
 
