@@ -6,7 +6,7 @@ const BG       := Color("#050806")  # screen background
 const PANEL_BG := Color("#070c09")  # panel fill
 const BORDER   := Color("#16251d")  # 1px borders, separators
 const GREEN    := Color("#22c55e")  # active/primary
-const DIM      := Color("#4a6b57")  # secondary text
+const DIM      := Color("#6b8f7a")  # secondary text - lifted to clear 4.5:1 on panel
 const AMBER    := Color("#f59e0b")  # medium risk
 const RED      := Color("#ef4444")  # debt/critical
 const TEXT     := Color("#d1d5db")  # bright value text
@@ -15,6 +15,10 @@ const SKY      := Color("#38bdf8")  # depth/thermocline accents
 const FONT_SIZE_TINY  := 10
 const FONT_SIZE_SMALL := 11
 const FONT_SIZE_BODY  := 13
+
+const SIZE_VALUE   := 18  # headline readouts - the btop "big number"
+const SIZE_BODY    := 14  # readable labels, instructions, secondary values
+const SIZE_AMBIENT := 12  # telemetry, chatter, chrome, captions
 
 static func panel_style(active: bool = false) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
@@ -33,7 +37,7 @@ static func tier_color(tier: int) -> Color:
 		2: return RED
 		_: return GREEN
 
-static func apply_label(label: Label, color: Color, font_size: int = FONT_SIZE_SMALL) -> void:
+static func apply_label(label: Label, color: Color, font_size: int = SIZE_BODY) -> void:
 	label.add_theme_color_override("font_color", color)
 	label.add_theme_font_size_override("font_size", font_size)
 
