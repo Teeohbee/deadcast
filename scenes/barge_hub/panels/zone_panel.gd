@@ -46,7 +46,9 @@ func _build() -> void:
 func _build_card(zone_id: String, zone: ZoneData) -> Button:
 	var btn := Button.new()
 	btn.focus_mode = Control.FOCUS_ALL
-	btn.custom_minimum_size = Vector2(0, 66)
+	# Zones with an interference line need a fourth text row; size to fit it so
+	# the content does not overflow the card border.
+	btn.custom_minimum_size = Vector2(0, 88 if zone.zone_interference > 0 else 66)
 	btn.pressed.connect(_on_card_pressed.bind(zone_id))
 	DeckStyle.apply_card(btn, false)
 
