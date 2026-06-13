@@ -14,7 +14,6 @@ var _credits: int = 0
 var _corruption: float = 0.0
 
 func _ready() -> void:
-	self.theme = UIStyle.get_theme()
 	DeckStyle.apply_label(top_sep, DeckStyle.BORDER)
 	DeckStyle.apply_label(bot_sep, DeckStyle.BORDER)
 	DeckStyle.apply_label(os_label, DeckStyle.GREEN)

@@ -18,7 +18,6 @@ var _prev_hint: Label
 var _next_hint: Label
 
 func _ready() -> void:
-	self.theme = UIStyle.get_theme()
 	DeckStyle.apply_label(sep_label, DeckStyle.BORDER)
 
 	_prev_hint = Label.new()
