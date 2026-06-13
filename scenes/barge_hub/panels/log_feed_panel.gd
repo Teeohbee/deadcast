@@ -25,9 +25,13 @@ func _ready() -> void:
 	_rtl.bbcode_enabled = true
 	_rtl.scroll_active = false
 	_rtl.fit_content = false
+	_rtl.clip_contents = true
 	_rtl.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_rtl.add_theme_color_override("default_color", DeckStyle.DIM)
 	_rtl.add_theme_font_size_override("normal_font_size", DeckStyle.SIZE_AMBIENT)
+	# Re-render when the panel resizes (e.g. a taller zone card shrinks this
+	# panel) so we only ever show whole lines, never a clipped final line.
+	_rtl.resized.connect(_render)
 	add_child(_rtl)
 
 	_timer = Timer.new()
@@ -45,7 +49,25 @@ func append_line(text: String) -> void:
 	_lines.append("[color=#22c55e][%s][/color] %s" % [stamp, text])
 	while _lines.size() > MAX_LINES:
 		_lines.remove_at(0)
-	_rtl.text = "\n".join(_lines)
+	_render()
+
+# Show only as many of the newest lines as fit the panel's current height, so
+# the most recent message is always whole rather than clipped at the bottom.
+func _render() -> void:
+	var cap := _fit_lines(_rtl.size.y, _line_height(), MAX_LINES)
+	_rtl.text = "\n".join(_lines.slice(maxi(0, _lines.size() - cap)))
+
+func _line_height() -> float:
+	var font := _rtl.get_theme_font("normal_font")
+	var fs := _rtl.get_theme_font_size("normal_font_size")
+	return font.get_height(fs) if font else float(fs)
+
+# Whole lines that fit `height`. Falls back to `cap` before the panel is laid
+# out (height 0), which self-corrects on the first `resized` signal.
+static func _fit_lines(height: float, line_height: float, cap: int) -> int:
+	if height <= 0.0 or line_height <= 0.0:
+		return cap
+	return clampi(int(height / line_height), 1, cap)
 
 func _on_zone_changed(zone_id: String) -> void:
 	append_line("TRANS-RECEIVER: Realigned focus to [%s]. Sector payload analyzed." % zone_id.to_upper())
