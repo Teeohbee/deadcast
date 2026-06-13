@@ -27,8 +27,8 @@ func _ready() -> void:
 	DeckStyle.apply_action_button(_dive_button)
 	_dive_button.focus_mode = Control.FOCUS_ALL
 	_dive_button.pressed.connect(_on_dive_pressed)
+	DeckPrompt.bind(_dive_button, "accept", "INITIATE DIVE")
 	InputGlyphs.device_changed.connect(_on_device_changed)
-	_refresh_prompts()
 
 	EventBus.zone_changed.connect(_on_zone_changed)
 	_on_zone_changed(GameState.selected_zone)
@@ -43,37 +43,27 @@ func _wire_focus_graph() -> void:
 	if left.is_empty() or right.is_empty():
 		return
 	var first_right: Control = right[0]
-	# Left column -> right column, and bottom of left -> dive.
+	# Left column: each card reaches the right column; the last descends to dive.
 	for i in left.size():
-		var card: Control = left[i]
-		card.focus_neighbor_right = card.get_path_to(first_right)
+		DeckNav.link(left[i], first_right, SIDE_RIGHT)
 		if i == left.size() - 1:
-			card.focus_neighbor_bottom = card.get_path_to(_dive_button)
-	# Right column vertical chain + back to left + bottom -> dive.
-	for i in right.size():
-		var node: Control = right[i]
-		node.focus_neighbor_left = node.get_path_to(left[0])
-		if i < right.size() - 1:
-			node.focus_neighbor_bottom = node.get_path_to(right[i + 1])
-		else:
-			node.focus_neighbor_bottom = node.get_path_to(_dive_button)
-		if i > 0:
-			node.focus_neighbor_top = node.get_path_to(right[i - 1])
-	# Dive back up into the right column.
-	_dive_button.focus_neighbor_top = _dive_button.get_path_to(right[right.size() - 1])
+			DeckNav.link(left[i], _dive_button, SIDE_BOTTOM)
+	# Right column: vertical chain, back to left, last descends to dive.
+	DeckNav.chain_vertical(right)
+	for node in right:
+		DeckNav.link(node, left[0], SIDE_LEFT)
+	DeckNav.link(right[right.size() - 1], _dive_button, SIDE_BOTTOM)
+	# Dive button climbs back into the right column.
+	DeckNav.link(_dive_button, right[right.size() - 1], SIDE_TOP)
 
 func _on_zone_changed(zone_id: String) -> void:
 	var zone: ZoneData = load("res://resources/zones/%s.tres" % zone_id)
 	_banner_zone.text = zone.display_name.to_upper() if zone else zone_id.to_upper()
 
 func _on_device_changed(mode: int) -> void:
-	_refresh_prompts()
 	var line := "INPUT: gamepad peripheral linked." if mode == InputGlyphs.Mode.PAD \
 		else "INPUT: keyboard relay active."
 	EventBus.deck_log.emit(line)
-
-func _refresh_prompts() -> void:
-	_dive_button.text = "%s > INITIATE DIVE" % InputGlyphs.glyph("accept")
 
 func _on_dive_pressed() -> void:
 	UIController.navigate_to("dive")
