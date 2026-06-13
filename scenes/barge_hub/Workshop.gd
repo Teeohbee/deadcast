@@ -4,10 +4,10 @@ extends Control
 const DEPTH_UPGRADE_BASE_COST: int = 2000
 const DEPTH_UPGRADE_AMOUNT: int = 50
 
-@onready var rod_label: Label = $VBoxContainer/RodLabel
-@onready var repair_button: Button = $VBoxContainer/RepairButton
-@onready var depth_upgrade_button: Button = $VBoxContainer/DepthUpgradeButton
-@onready var message_label: Label = $VBoxContainer/MessageLabel
+@onready var rod_label: Label = $MarginContainer/HBox/LeftColumn/ControlPanel/VBox/RodLabel
+@onready var repair_button: Button = $MarginContainer/HBox/LeftColumn/ControlPanel/VBox/RepairButton
+@onready var depth_upgrade_button: Button = $MarginContainer/HBox/LeftColumn/ControlPanel/VBox/DepthUpgradeButton
+@onready var message_label: Label = $MarginContainer/HBox/LeftColumn/ControlPanel/VBox/MessageLabel
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
@@ -16,8 +16,6 @@ func _ready() -> void:
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		UIStyle.apply_button(btn)
 
-	$VBoxContainer/TitleLabel.text = "┌── [ WORKSHOP ] ──────────────────────────────────────────────"
-	UIStyle.apply_label($VBoxContainer/TitleLabel, UIStyle.COL_DIM)
 	UIStyle.apply_label(rod_label, UIStyle.COL_TEXT)
 	UIStyle.apply_label(message_label, UIStyle.COL_DIM)
 

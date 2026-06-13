@@ -1,6 +1,9 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scenes/barge_hub/Workshop.gd" id="1_ws"]
+[ext_resource type="Script" path="res://scenes/barge_hub/panels/terminal_panel.gd" id="2_tp"]
+[ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/RodDiagnosticsPanel.tscn" id="3_rdp"]
+[ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/MaintenanceLogPanel.tscn" id="4_mlp"]
 
 [node name="Workshop" type="Control"]
 script = ExtResource("1_ws")
@@ -14,30 +17,50 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.0392, 0.0392, 0.0392, 1)
+color = Color(0.0196, 0.0314, 0.0235, 1)
 mouse_filter = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = 20.0
-offset_right = -20.0
-offset_bottom = -20.0
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
 
-[node name="TitleLabel" type="Label" parent="VBoxContainer"]
-text = "WORKSHOP"
+[node name="HBox" type="HBoxContainer" parent="MarginContainer"]
+theme_override_constants/separation = 8
 
-[node name="RodLabel" type="Label" parent="VBoxContainer"]
+[node name="LeftColumn" type="VBoxContainer" parent="MarginContainer/HBox"]
+size_flags_horizontal = 3
+
+[node name="ControlPanel" type="PanelContainer" parent="MarginContainer/HBox/LeftColumn"]
+script = ExtResource("2_tp")
+size_flags_vertical = 3
+title = "workshop_ops"
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/HBox/LeftColumn/ControlPanel"]
+theme_override_constants/separation = 8
+
+[node name="RodLabel" type="Label" parent="MarginContainer/HBox/LeftColumn/ControlPanel/VBox"]
 text = ""
 
-[node name="RepairButton" type="Button" parent="VBoxContainer"]
+[node name="RepairButton" type="Button" parent="MarginContainer/HBox/LeftColumn/ControlPanel/VBox"]
 text = "Repair Rod"
 
-[node name="DepthUpgradeButton" type="Button" parent="VBoxContainer"]
+[node name="DepthUpgradeButton" type="Button" parent="MarginContainer/HBox/LeftColumn/ControlPanel/VBox"]
 text = "Depth Upgrade"
 
-[node name="MessageLabel" type="Label" parent="VBoxContainer"]
+[node name="MessageLabel" type="Label" parent="MarginContainer/HBox/LeftColumn/ControlPanel/VBox"]
 text = ""
+
+[node name="RightColumn" type="VBoxContainer" parent="MarginContainer/HBox"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="RodDiagnosticsPanel" parent="MarginContainer/HBox/RightColumn" instance=ExtResource("3_rdp")]
+size_flags_vertical = 3
+
+[node name="MaintenanceLogPanel" parent="MarginContainer/HBox/RightColumn" instance=ExtResource("4_mlp")]
