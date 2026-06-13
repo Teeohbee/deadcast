@@ -8,7 +8,7 @@ var _rod_meta: Label
 var _rod_damage: Label
 var _lure_button: Button
 var _effect_value: Label
-var _switch_btn: Button
+var _cycle_hint: Label
 
 func _ready() -> void:
 	title = "active_rig_module"
@@ -29,33 +29,26 @@ func _build() -> void:
 	_rod_damage.text = "[DAMAGED]"
 	DeckStyle.apply_label(_rod_damage, DeckStyle.RED, DeckStyle.SIZE_BODY)
 	rod_row.add_child(_rod_damage)
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	rod_row.add_child(spacer)
-	_switch_btn = Button.new()
-	_switch_btn.focus_mode = Control.FOCUS_ALL
-	DeckStyle.apply_action_button(_switch_btn)
-	_switch_btn.pressed.connect(_on_switch_pressed)
-	rod_row.add_child(_switch_btn)
-	InputGlyphs.device_changed.connect(_refresh_switch_prompt)
-	_refresh_switch_prompt()
 	root.add_child(rod_row)
 
 	_rod_meta = Label.new()
 	DeckStyle.apply_label(_rod_meta, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 	root.add_child(_rod_meta)
 
+	# Not focusable: lure cycling is a global hotkey (see _input), not a focus
+	# stop. Mouse click still cycles for desktop convenience.
 	_lure_button = Button.new()
-	_lure_button.focus_mode = Control.FOCUS_ALL
+	_lure_button.focus_mode = Control.FOCUS_NONE
 	_lure_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	DeckStyle.apply_action_button(_lure_button, DeckStyle.TEXT)
 	_lure_button.pressed.connect(cycle_lure)
 	root.add_child(_lure_button)
 
-	var hint := Label.new()
-	hint.text = "[PRESS TO CYCLE LURE MODULE]"
-	DeckStyle.apply_label(hint, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
-	root.add_child(hint)
+	_cycle_hint = Label.new()
+	DeckStyle.apply_label(_cycle_hint, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
+	root.add_child(_cycle_hint)
+	InputGlyphs.device_changed.connect(_refresh_cycle_hint)
+	_refresh_cycle_hint()
 
 	var cells := HBoxContainer.new()
 	cells.add_theme_constant_override("separation", 6)
@@ -121,11 +114,18 @@ func cycle_lure() -> void:
 	EventBus.deck_log.emit("RIGS: Lure module swapped to %s." % next_id.to_upper().replace("_", " "))
 	refresh()
 
-func _refresh_switch_prompt(_mode: int = 0) -> void:
-	_switch_btn.text = "%s SWITCH RIG" % InputGlyphs.glyph("accept")
+func _refresh_cycle_hint(_mode: int = 0) -> void:
+	_cycle_hint.text = "%s CYCLE LURE" % InputGlyphs.glyph("cycle_lure")
 
+# Lure cycling is a global deck hotkey (X / Tab), not a focusable control. We
+# handle it in _input and consume the event so Tab does not also move UI focus.
+func _input(event: InputEvent) -> void:
+	if not is_visible_in_tree():
+		return
+	if event.is_action_pressed("cycle_lure"):
+		cycle_lure()
+		get_viewport().set_input_as_handled()
+
+# Rig is now a read-only readout - no focus stops (lure cycles via hotkey).
 func focus_targets() -> Array[Control]:
-	return [_switch_btn, _lure_button]
-
-func _on_switch_pressed() -> void:
-	UIController.navigate_to("workshop")
+	return []

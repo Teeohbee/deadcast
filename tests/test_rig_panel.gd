@@ -59,9 +59,17 @@ func test_rod_name_and_damage_use_body_tier() -> void:
 	assert_eq(p._rod_name.get_theme_font_size("font_size"), DeckStyle.SIZE_BODY)
 	assert_eq(p._rod_damage.get_theme_font_size("font_size"), DeckStyle.SIZE_BODY)
 
-func test_focus_targets_are_switch_then_lure() -> void:
+func test_rig_has_no_focus_targets() -> void:
+	# Rig is a read-only readout now: no Switch button, lure cycles via hotkey.
 	var p := _make_panel()
-	var targets: Array = p.focus_targets()
-	assert_eq(targets.size(), 2)
-	assert_eq(targets[0], p._switch_btn)
-	assert_eq(targets[1], p._lure_button)
+	assert_eq(p.focus_targets(), [])
+
+func test_lure_button_is_not_focusable() -> void:
+	var p := _make_panel()
+	assert_eq(p._lure_button.focus_mode, Control.FOCUS_NONE)
+
+func test_cycle_hint_shows_cycle_lure_glyph() -> void:
+	InputGlyphs.mode = InputGlyphs.Mode.PAD
+	var p := _make_panel()
+	assert_string_contains(p._cycle_hint.text, "[X]")
+	assert_string_contains(p._cycle_hint.text, "CYCLE LURE")

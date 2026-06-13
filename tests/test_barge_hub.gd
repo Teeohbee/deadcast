@@ -78,13 +78,15 @@ func test_sell_button_descends_to_dive() -> void:
 	assert_eq(sell.get_node(sell.focus_neighbor_bottom), hub._dive_button)
 
 func test_zone_card_reaches_right_column() -> void:
+	# Rig is no longer a focus stop, so the right column is just the freezer's
+	# Sell button - a zone card's right neighbour resolves to it.
 	var hub := HUB.instantiate()
 	add_child_autofree(hub)
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var zone := hub.get_node("Margin/VBox/MainGrid/LeftColumn/ZonePanel")
 	var first_card: Button = zone.focus_targets()[0]
-	var right: Button = hub.get_node("Margin/VBox/MainGrid/RightColumn/RigPanel").focus_targets()[0]
+	var right: Button = hub.get_node("Margin/VBox/MainGrid/RightColumn/FreezerPanel").focus_targets()[0]
 	assert_eq(first_card.get_node(first_card.focus_neighbor_right), right)
 
 func test_dive_button_shows_pad_glyph_and_verb() -> void:

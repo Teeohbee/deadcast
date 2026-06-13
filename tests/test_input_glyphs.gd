@@ -13,6 +13,12 @@ func test_glyph_returns_pad_token_in_pad_mode() -> void:
 	assert_eq(InputGlyphs.glyph("accept"), "[A]")
 	assert_eq(InputGlyphs.glyph("next"), "[R1]")
 
+func test_cycle_lure_glyph_per_mode() -> void:
+	InputGlyphs.mode = InputGlyphs.Mode.PAD
+	assert_eq(InputGlyphs.glyph("cycle_lure"), "[X]")
+	InputGlyphs.mode = InputGlyphs.Mode.KEY
+	assert_eq(InputGlyphs.glyph("cycle_lure"), "[TAB]")
+
 func test_unknown_action_returns_empty() -> void:
 	assert_eq(InputGlyphs.glyph("nope"), "")
 
