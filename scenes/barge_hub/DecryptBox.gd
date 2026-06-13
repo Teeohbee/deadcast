@@ -8,16 +8,13 @@ const LOAD_AMOUNT: int = 1000
 @onready var message_label: Label = $VBoxContainer/MessageLabel
 
 func _ready() -> void:
-	self.theme = UIStyle.get_theme()
 	for btn in [load_button]:
 		btn.focus_mode = Control.FOCUS_ALL
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		UIStyle.apply_button(btn)
+		DeckStyle.apply_action_button(btn)
 
-	$VBoxContainer/TitleLabel.text = "┌── [ DECRYPT BOX ] ───────────────────────────────────────────"
-	UIStyle.apply_label($VBoxContainer/TitleLabel, UIStyle.COL_DIM)
-	UIStyle.apply_label(status_label, UIStyle.COL_TEXT)
-	UIStyle.apply_label(message_label, UIStyle.COL_DIM)
+	DeckStyle.apply_label(status_label, DeckStyle.TEXT)
+	DeckStyle.apply_label(message_label, DeckStyle.DIM)
 
 	load_button.pressed.connect(_on_load_pressed)
 	_refresh()

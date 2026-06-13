@@ -7,35 +7,30 @@ extends Control
 @onready var story_beat_label: Label = $VBoxContainer/StoryBeatLabel
 
 func _ready() -> void:
-	self.theme = UIStyle.get_theme()
-
-	$VBoxContainer/TitleLabel.text = "┌── [ MARTA VOSS — ENCRYPTED TERMINAL ] ──────────────────────"
-	UIStyle.apply_label($VBoxContainer/TitleLabel, UIStyle.COL_DIM)
-
 	GameState.marta_last_seen_run = GameState.run_count
 	GameState.save()
 
 	var beat = _marta_story_beat(GameState.run_count)
 	story_beat_label.text = beat
 	story_beat_label.visible = beat != ""
-	UIStyle.apply_label(story_beat_label, UIStyle.COL_ACCENT)
+	DeckStyle.apply_label(story_beat_label, DeckStyle.SKY)
 
 	if GameState.victory:
 		debt_status_label.text = "debt: cleared"
-		UIStyle.apply_label(debt_status_label, UIStyle.COL_ACCENT)
+		DeckStyle.apply_label(debt_status_label, DeckStyle.SKY)
 		dialogue_label.text = "\"meridian is yours. don't make me regret it.\"\n— marta"
-		UIStyle.apply_label(dialogue_label, UIStyle.COL_TEXT)
+		DeckStyle.apply_label(dialogue_label, DeckStyle.TEXT)
 		payment_label.text = ""
 	else:
 		var runs_to_payment = 5 - GameState.runs_since_payment
 		debt_status_label.text = "outstanding debt: %d cr  ·  pressure %d/5" % [
 			GameState.debt, GameState.pressure_level]
-		UIStyle.apply_label(debt_status_label, UIStyle.COL_DEBT)
+		DeckStyle.apply_label(debt_status_label, DeckStyle.RED)
 		dialogue_label.text = _marta_dialogue(GameState.pressure_level)
-		UIStyle.apply_label(dialogue_label, UIStyle.COL_TEXT)
+		DeckStyle.apply_label(dialogue_label, DeckStyle.TEXT)
 		payment_label.text = "next payment: 10,000cr due in %d run%s." % [
 			runs_to_payment, "s" if runs_to_payment != 1 else ""]
-		UIStyle.apply_label(payment_label, UIStyle.COL_DIM)
+		DeckStyle.apply_label(payment_label, DeckStyle.DIM)
 
 func _marta_story_beat(run: int) -> String:
 	if run >= 12:
