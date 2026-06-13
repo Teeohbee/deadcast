@@ -3,26 +3,29 @@ extends Control
 
 enum Mode { JOURNAL, MANUAL, LOG }
 
-@onready var content_label: RichTextLabel = $VBoxContainer/ScrollContainer/JournalLabel
-@onready var scroll_container: ScrollContainer = $VBoxContainer/ScrollContainer
-@onready var page_up_btn: Button = $VBoxContainer/PageButtons/PageUpButton
-@onready var page_down_btn: Button = $VBoxContainer/PageButtons/PageDownButton
-@onready var journal_toggle: Button = $VBoxContainer/ToggleRow/JournalToggle
-@onready var manual_toggle: Button = $VBoxContainer/ToggleRow/ManualToggle
-@onready var log_toggle: Button = $VBoxContainer/ToggleRow/RunLogToggle
+@onready var content_label: RichTextLabel = $MarginContainer/VBoxContainer/ScrollContainer/JournalLabel
+@onready var scroll_container: ScrollContainer = $MarginContainer/VBoxContainer/ScrollContainer
+@onready var page_up_btn: Button = $MarginContainer/VBoxContainer/PageButtons/PageUpButton
+@onready var page_down_btn: Button = $MarginContainer/VBoxContainer/PageButtons/PageDownButton
+@onready var journal_toggle: Button = $MarginContainer/VBoxContainer/ToggleRow/JournalToggle
+@onready var manual_toggle: Button = $MarginContainer/VBoxContainer/ToggleRow/ManualToggle
+@onready var log_toggle: Button = $MarginContainer/VBoxContainer/ToggleRow/RunLogToggle
 
 var _mode: Mode = Mode.JOURNAL
 
 func _ready() -> void:
-	self.theme = UIStyle.get_theme()
-
-	$VBoxContainer/TitleLabel.text = "┌── [ THE BUNK ] ──────────────────────────────────────────────"
-	UIStyle.apply_label($VBoxContainer/TitleLabel, UIStyle.COL_DIM)
-
-	for btn in [page_up_btn, page_down_btn, journal_toggle, manual_toggle, log_toggle]:
+	for btn in [journal_toggle, manual_toggle, log_toggle]:
 		btn.focus_mode = Control.FOCUS_ALL
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		UIStyle.apply_button(btn)
+		DeckStyle.apply_function_key(btn)
+
+	for btn in [page_up_btn, page_down_btn]:
+		btn.focus_mode = Control.FOCUS_ALL
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		DeckStyle.apply_action_button(btn)
+
+	content_label.add_theme_color_override("default_color", DeckStyle.TEXT)
+	content_label.add_theme_font_size_override("normal_font_size", DeckStyle.SIZE_BODY)
 
 	page_up_btn.pressed.connect(_on_page_up)
 	page_down_btn.pressed.connect(_on_page_down)
@@ -37,6 +40,20 @@ func _ready() -> void:
 
 	await get_tree().process_frame
 	page_down_btn.grab_focus()
+	_wire_focus_graph()
+
+func _wire_focus_graph() -> void:
+	DeckNav.link(journal_toggle, manual_toggle, SIDE_RIGHT)
+	DeckNav.link(manual_toggle, journal_toggle, SIDE_LEFT)
+	DeckNav.link(manual_toggle, log_toggle, SIDE_RIGHT)
+	DeckNav.link(log_toggle, manual_toggle, SIDE_LEFT)
+	DeckNav.link(page_up_btn, page_down_btn, SIDE_RIGHT)
+	DeckNav.link(page_down_btn, page_up_btn, SIDE_LEFT)
+	DeckNav.link(journal_toggle, page_down_btn, SIDE_BOTTOM)
+	DeckNav.link(manual_toggle, page_down_btn, SIDE_BOTTOM)
+	DeckNav.link(log_toggle, page_down_btn, SIDE_BOTTOM)
+	DeckNav.link(page_up_btn, journal_toggle, SIDE_TOP)
+	DeckNav.link(page_down_btn, journal_toggle, SIDE_TOP)
 
 func _set_mode(mode: Mode) -> void:
 	_mode = mode
@@ -46,15 +63,14 @@ func _set_mode(mode: Mode) -> void:
 
 func _refresh_toggles() -> void:
 	var cols := {
-		Mode.JOURNAL: UIStyle.COL_ACCENT if _mode == Mode.JOURNAL else UIStyle.COL_DIM,
-		Mode.MANUAL: UIStyle.COL_ACCENT if _mode == Mode.MANUAL else UIStyle.COL_DIM,
-		Mode.LOG: UIStyle.COL_ACCENT if _mode == Mode.LOG else UIStyle.COL_DIM,
+		Mode.JOURNAL: DeckStyle.GREEN if _mode == Mode.JOURNAL else DeckStyle.DIM,
+		Mode.MANUAL: DeckStyle.GREEN if _mode == Mode.MANUAL else DeckStyle.DIM,
+		Mode.LOG: DeckStyle.GREEN if _mode == Mode.LOG else DeckStyle.DIM,
 	}
 	for pair in [[journal_toggle, cols[Mode.JOURNAL]], [manual_toggle, cols[Mode.MANUAL]], [log_toggle, cols[Mode.LOG]]]:
 		var btn := pair[0] as Button
 		var col := pair[1] as Color
 		btn.add_theme_color_override("font_color", col)
-		btn.add_theme_color_override("font_hover_color", col)
 		btn.add_theme_color_override("font_focus_color", col)
 
 func _refresh_content() -> void:
