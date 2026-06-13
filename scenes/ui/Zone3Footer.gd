@@ -25,10 +25,18 @@ func _ready() -> void:
 	DeckStyle.apply_label(_prev_hint, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 	tab_row.add_child(_prev_hint)
 
-	for tab in _TABS:
+	for i in _TABS.size():
+		var tab := _TABS[i]
+		if i > 0:
+			# Diegetic terminal column divider between menu entries.
+			var sep := Label.new()
+			sep.text = "│"
+			DeckStyle.apply_label(sep, DeckStyle.DIM, DeckStyle.SIZE_BODY)
+			tab_row.add_child(sep)
 		var btn := Button.new()
 		btn.focus_mode = Control.FOCUS_NONE
 		DeckStyle.apply_function_key(btn)
+		btn.add_theme_font_size_override("font_size", DeckStyle.SIZE_BODY)
 		btn.text = tab["label"]
 		var id: String = tab["id"]
 		btn.pressed.connect(func() -> void: UIController.navigate_to(id))
