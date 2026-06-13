@@ -27,7 +27,7 @@ func _ready() -> void:
 	_rtl.fit_content = false
 	_rtl.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_rtl.add_theme_color_override("default_color", DeckStyle.DIM)
-	_rtl.add_theme_font_size_override("normal_font_size", DeckStyle.FONT_SIZE_TINY)
+	_rtl.add_theme_font_size_override("normal_font_size", DeckStyle.SIZE_AMBIENT)
 	add_child(_rtl)
 
 	_timer = Timer.new()

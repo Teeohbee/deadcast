@@ -35,3 +35,7 @@ func test_zone_change_logs_realignment() -> void:
 	EventBus.zone_changed.emit("axiom")
 	assert_eq(p._lines.size(), before + 1)
 	assert_string_contains(p._lines[p._lines.size() - 1], "AXIOM")
+
+func test_feed_uses_ambient_floor() -> void:
+	var p := _make_panel()
+	assert_eq(p._rtl.get_theme_font_size("normal_font_size"), DeckStyle.SIZE_AMBIENT)
