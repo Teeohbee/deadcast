@@ -251,19 +251,9 @@ Currently pressure 5 = instant game over on next deck visit. Expand the ramp:
 - **Pressure 5:** 3-run countdown before forced surrender (not instant). Player sees "marta's people arrive in 3 runs" - creates a desperate final push
 - Wire up `debt_collector_triggered` (currently dead) to trigger a one-time event where Marta takes a percentage of your credits
 
-### 3.12 Run log
+### 3.12 Run log ✓
 
-Auto-generate a text log after each dive:
-```
-RUN 7 - DISTRICT 7 RUINS
-slot 1: corrupted finance archive - reel in (+800cr, +15T)
-slot 2: tenant echo - unit 2214 - listen (+0cr, +0T)
-slot 3: salvage drone - strip for parts - RESISTED (+0cr, +20T)
-slot 4: [CONNECTION TERMINATED]
-yield: 800cr (forfeited - line snap)
-```
-
-Store in GameState, viewable from the bunk alongside journal entries. Gives the player a sense of their own history and helps them learn which catches/options are worth the risk.
+Auto-generate a text log after each dive. Stored in GameState (capped at 20), persisted to save, viewable from the bunk [RUN LOG] tab. Format: RUN_NNN.LOG header, [S1] slot entries with echo/result, [CP] checkpoint choices, lure lines, outcome footer.
 
 ---
 
