@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scenes/barge_hub/BargeHub.gd" id="1_hub"]
 [ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/SonarPanel.tscn" id="2_snp"]
@@ -7,11 +7,6 @@
 [ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/LedgerPanel.tscn" id="5_lgp"]
 [ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/RigPanel.tscn" id="6_rgp"]
 [ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/FreezerPanel.tscn" id="7_fzp"]
-[ext_resource type="Shader" path="res://scenes/barge_hub/deck_crt.gdshader" id="8_crt"]
-
-[sub_resource type="ShaderMaterial" id="crt_mat"]
-shader = ExtResource("8_crt")
-
 [node name="BargeHub" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -79,11 +74,3 @@ text = "SELECTED RUIN:"
 text = ""
 
 [node name="DiveButton" type="Button" parent="Margin/VBox/DiveBanner/BannerRow"]
-
-[node name="CRTOverlay" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-material = SubResource("crt_mat")
-mouse_filter = 2
