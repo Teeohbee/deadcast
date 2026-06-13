@@ -47,3 +47,9 @@ func test_focus_selected_grabs_selected_card() -> void:
 func test_zone_name_uses_value_tier() -> void:
 	var p := _make_panel()
 	assert_eq(p._names["district7"].get_theme_font_size("font_size"), DeckStyle.SIZE_VALUE)
+
+func test_focus_targets_are_the_three_cards_in_order() -> void:
+	var p := _make_panel()
+	var targets: Array = p.focus_targets()
+	assert_eq(targets.size(), 3)
+	assert_eq(targets[0], p._cards["district7"])

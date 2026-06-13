@@ -6,6 +6,7 @@ const ZONE_IDS: Array[String] = ["district7", "exchange", "axiom"]
 var _cards: Dictionary = {}       # zone_id -> Button
 var _indicators: Dictionary = {}  # zone_id -> Label
 var _names: Dictionary = {}       # zone_id -> Label
+var _nav_hint: Label
 
 func _ready() -> void:
 	title = "available_zones"
@@ -21,11 +22,12 @@ func _build() -> void:
 	add_child(root)
 
 	var header := HBoxContainer.new()
-	var hint := Label.new()
-	hint.text = "SELECT TARGET DESTINATION [▲/▼]"
-	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	DeckStyle.apply_label(hint, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
-	header.add_child(hint)
+	_nav_hint = Label.new()
+	_nav_hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	DeckStyle.apply_label(_nav_hint, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
+	header.add_child(_nav_hint)
+	InputGlyphs.device_changed.connect(_refresh_nav_hint)
+	_refresh_nav_hint()
 	var hosts := Label.new()
 	hosts.text = "%d LOCAL HOSTS CONNECTED" % ZONE_IDS.size()
 	DeckStyle.apply_label(hosts, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
@@ -129,7 +131,16 @@ func _on_zone_changed(zone_id: String) -> void:
 		(_names[id] as Label).add_theme_color_override(
 			"font_color", DeckStyle.GREEN if selected else DeckStyle.TEXT)
 
+func _refresh_nav_hint(_mode: int = 0) -> void:
+	_nav_hint.text = "%s SELECT DESTINATION" % InputGlyphs.glyph("navigate")
+
 func focus_selected() -> void:
 	var btn: Button = _cards.get(GameState.selected_zone)
 	if btn:
 		btn.grab_focus()
+
+func focus_targets() -> Array[Control]:
+	var out: Array[Control] = []
+	for id in ZONE_IDS:
+		out.append(_cards[id])
+	return out

@@ -110,6 +110,9 @@ func _apply_chip() -> void:
 	_chip.add_theme_font_size_override("font_size", DeckStyle.SIZE_AMBIENT)
 	styled.free()
 
+func focus_targets() -> Array[Control]:
+	return [_sell_btn]
+
 func _on_sell() -> void:
 	var v := GameState.freezer_value
 	GameState.add_credits(v)

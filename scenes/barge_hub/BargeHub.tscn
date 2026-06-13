@@ -79,7 +79,6 @@ text = "SELECTED RUIN:"
 text = ""
 
 [node name="DiveButton" type="Button" parent="Margin/VBox/DiveBanner/BannerRow"]
-text = "[ ENTER ] READY TO DIVE"
 
 [node name="CRTOverlay" type="ColorRect" parent="."]
 layout_mode = 1
