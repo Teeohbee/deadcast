@@ -26,6 +26,9 @@ text = "[JOURNAL]"
 [node name="ManualToggle" type="Button" parent="VBoxContainer/ToggleRow"]
 text = "[MANUAL]"
 
+[node name="RunLogToggle" type="Button" parent="VBoxContainer/ToggleRow"]
+text = "[RUN LOG]"
+
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
