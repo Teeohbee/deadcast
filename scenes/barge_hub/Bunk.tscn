@@ -9,41 +9,52 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+color = Color(0.0196, 0.0314, 0.0235, 1)
+mouse_filter = 2
 
-[node name="TitleLabel" type="Label" parent="VBoxContainer"]
-text = "THE BUNK"
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
 
-[node name="ToggleRow" type="HBoxContainer" parent="VBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
 
-[node name="JournalToggle" type="Button" parent="VBoxContainer/ToggleRow"]
+[node name="ToggleRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+
+[node name="JournalToggle" type="Button" parent="MarginContainer/VBoxContainer/ToggleRow"]
 text = "[JOURNAL]"
 
-[node name="ManualToggle" type="Button" parent="VBoxContainer/ToggleRow"]
+[node name="ManualToggle" type="Button" parent="MarginContainer/VBoxContainer/ToggleRow"]
 text = "[MANUAL]"
 
-[node name="RunLogToggle" type="Button" parent="VBoxContainer/ToggleRow"]
+[node name="RunLogToggle" type="Button" parent="MarginContainer/VBoxContainer/ToggleRow"]
 text = "[RUN LOG]"
 
-[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer"]
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 vertical_scroll_mode = 3
 
-[node name="JournalLabel" type="RichTextLabel" parent="VBoxContainer/ScrollContainer"]
+[node name="JournalLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer/ScrollContainer"]
 size_flags_horizontal = 3
 fit_content = true
 scroll_active = false
 bbcode_enabled = false
 
-[node name="PageButtons" type="HBoxContainer" parent="VBoxContainer"]
+[node name="PageButtons" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 
-[node name="PageUpButton" type="Button" parent="VBoxContainer/PageButtons"]
+[node name="PageUpButton" type="Button" parent="MarginContainer/VBoxContainer/PageButtons"]
 text = "[PAGE UP]"
 
-[node name="PageDownButton" type="Button" parent="VBoxContainer/PageButtons"]
+[node name="PageDownButton" type="Button" parent="MarginContainer/VBoxContainer/PageButtons"]
 text = "[PAGE DOWN]"
