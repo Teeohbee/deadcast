@@ -2,26 +2,32 @@
 extends Control
 
 const _TABS: Array[Dictionary] = [
-	{"id": "deck",     "label": "[F1] DECK"},
-	{"id": "workshop", "label": "[F2] WORKSHOP"},
-	{"id": "decrypt",  "label": "[F3] DECRYPT"},
-	{"id": "bunk",     "label": "[F4] BUNK"},
-	{"id": "marta",    "label": "[F5] MARTA"},
-	{"id": "vendors",  "label": "[F6] VENDORS"},
+	{"id": "deck",     "label": "DECK"},
+	{"id": "workshop", "label": "WORKSHOP"},
+	{"id": "decrypt",  "label": "DECRYPT"},
+	{"id": "bunk",     "label": "BUNK"},
+	{"id": "marta",    "label": "MARTA"},
+	{"id": "vendors",  "label": "VENDORS"},
 ]
 
 @onready var tab_row: HBoxContainer = $VBoxContainer/TabRow
 @onready var sep_label: Label = $VBoxContainer/SepLabel
 
 var _tab_buttons: Array[Button] = []
+var _prev_hint: Label
+var _next_hint: Label
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
 	DeckStyle.apply_label(sep_label, DeckStyle.BORDER)
 
+	_prev_hint = Label.new()
+	DeckStyle.apply_label(_prev_hint, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
+	tab_row.add_child(_prev_hint)
+
 	for tab in _TABS:
 		var btn := Button.new()
-		btn.focus_mode = Control.FOCUS_ALL
+		btn.focus_mode = Control.FOCUS_NONE
 		DeckStyle.apply_function_key(btn)
 		btn.text = tab["label"]
 		var id: String = tab["id"]
@@ -29,7 +35,19 @@ func _ready() -> void:
 		tab_row.add_child(btn)
 		_tab_buttons.append(btn)
 
+	_next_hint = Label.new()
+	DeckStyle.apply_label(_next_hint, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
+	tab_row.add_child(_next_hint)
+
 	UIController.screen_changed.connect(_on_screen_changed)
+	InputGlyphs.device_changed.connect(_refresh_hints)
+	_refresh_hints()
+
+# Named method so Godot auto-disconnects when this node frees.
+# Accepts the optional mode arg the signal passes; defaulted for direct calls.
+func _refresh_hints(_mode: int = 0) -> void:
+	_prev_hint.text = "< %s " % InputGlyphs.glyph("prev")
+	_next_hint.text = " %s >" % InputGlyphs.glyph("next")
 
 func _on_screen_changed(id: String) -> void:
 	visible = _TABS.any(func(t: Dictionary) -> bool: return t["id"] == id)
@@ -48,4 +66,3 @@ func _on_screen_changed(id: String) -> void:
 		else:
 			btn.text = base_label
 			btn.add_theme_color_override("font_color", DeckStyle.DIM)
-
