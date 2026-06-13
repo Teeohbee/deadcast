@@ -22,11 +22,11 @@ func _build() -> void:
 	var rod_row := HBoxContainer.new()
 	rod_row.add_theme_constant_override("separation", 8)
 	_rod_name = Label.new()
-	DeckStyle.apply_label(_rod_name, DeckStyle.GREEN, DeckStyle.FONT_SIZE_BODY)
+	DeckStyle.apply_label(_rod_name, DeckStyle.GREEN, DeckStyle.SIZE_BODY)
 	rod_row.add_child(_rod_name)
 	_rod_damage = Label.new()
 	_rod_damage.text = "[DAMAGED]"
-	DeckStyle.apply_label(_rod_damage, DeckStyle.RED, DeckStyle.FONT_SIZE_TINY)
+	DeckStyle.apply_label(_rod_damage, DeckStyle.RED, DeckStyle.SIZE_BODY)
 	rod_row.add_child(_rod_damage)
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -40,7 +40,7 @@ func _build() -> void:
 	root.add_child(rod_row)
 
 	_rod_meta = Label.new()
-	DeckStyle.apply_label(_rod_meta, DeckStyle.DIM, DeckStyle.FONT_SIZE_TINY)
+	DeckStyle.apply_label(_rod_meta, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 	root.add_child(_rod_meta)
 
 	_lure_button = Button.new()
@@ -52,7 +52,7 @@ func _build() -> void:
 
 	var hint := Label.new()
 	hint.text = "[PRESS TO CYCLE LURE MODULE]"
-	DeckStyle.apply_label(hint, DeckStyle.DIM, 9)
+	DeckStyle.apply_label(hint, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 	root.add_child(hint)
 
 	var cells := HBoxContainer.new()
@@ -75,10 +75,10 @@ func _add_cell(parent: Container, caption: String) -> Label:
 	var box := VBoxContainer.new()
 	var cap := Label.new()
 	cap.text = caption
-	DeckStyle.apply_label(cap, DeckStyle.DIM, 9)
+	DeckStyle.apply_label(cap, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 	box.add_child(cap)
 	var val := Label.new()
-	DeckStyle.apply_label(val, DeckStyle.TEXT, DeckStyle.FONT_SIZE_TINY)
+	DeckStyle.apply_label(val, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
 	box.add_child(val)
 	cell.add_child(box)
 	parent.add_child(cell)

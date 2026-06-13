@@ -52,3 +52,9 @@ func test_lure_button_shows_name_and_stock() -> void:
 	var p := _make_panel()
 	assert_string_contains(p._lure_button.text, "BASIC HOOK")
 	assert_string_contains(p._lure_button.text, "∞")
+
+func test_rod_name_and_damage_use_body_tier() -> void:
+	GameState.rod_damaged = true
+	var p := _make_panel()
+	assert_eq(p._rod_name.get_theme_font_size("font_size"), DeckStyle.SIZE_BODY)
+	assert_eq(p._rod_damage.get_theme_font_size("font_size"), DeckStyle.SIZE_BODY)
