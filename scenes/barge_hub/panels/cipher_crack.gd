@@ -50,6 +50,7 @@ func _ready() -> void:
 	_timer.start()
 
 	set_state(false, 0.0)
+	_tick()  # initialise hex text immediately on first frame
 
 # active: a payload is queued and decrypting. progress: 0..1 toward the threshold.
 func set_state(active: bool, progress: float) -> void:
@@ -58,7 +59,6 @@ func set_state(active: bool, progress: float) -> void:
 	_wave.line_color = DeckStyle.GREEN if active else DeckStyle.BORDER
 	_wave.amplitude = 18.0 if active else 4.0
 	_render_bar()
-	_tick()
 
 func _render_bar() -> void:
 	var filled := int(round(_progress * 16.0))
