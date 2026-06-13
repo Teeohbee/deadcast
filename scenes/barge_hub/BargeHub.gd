@@ -15,7 +15,7 @@ func _ready() -> void:
 	banner_sb.border_color = Color("#14291c")
 	_banner.add_theme_stylebox_override("panel", banner_sb)
 	DeckStyle.apply_label(_banner_caption, DeckStyle.DIM)
-	DeckStyle.apply_label(_banner_zone, Color.WHITE, DeckStyle.FONT_SIZE_BODY)
+	DeckStyle.apply_label(_banner_zone, Color.WHITE, DeckStyle.SIZE_VALUE)
 	DeckStyle.apply_action_button(_dive_button)
 	_dive_button.focus_mode = Control.FOCUS_ALL
 	_dive_button.pressed.connect(_on_dive_pressed)

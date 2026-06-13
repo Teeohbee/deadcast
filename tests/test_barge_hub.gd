@@ -26,6 +26,12 @@ func test_banner_shows_selected_zone() -> void:
 	GameState.select_zone("axiom")
 	assert_string_contains(hub._banner_zone.text, "AXIOM TOWER SUB-BASEMENT")
 
+func test_banner_zone_uses_value_tier() -> void:
+	var hub := HUB.instantiate()
+	add_child_autofree(hub)
+	await get_tree().process_frame
+	assert_eq(hub._banner_zone.get_theme_font_size("font_size"), DeckStyle.SIZE_VALUE)
+
 func test_default_focus_on_selected_zone_card() -> void:
 	var hub := HUB.instantiate()
 	add_child_autofree(hub)
