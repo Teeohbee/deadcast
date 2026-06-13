@@ -39,3 +39,20 @@ func test_default_focus_on_selected_zone_card() -> void:
 	await get_tree().process_frame
 	var zone_panel := hub.get_node("Margin/VBox/MainGrid/LeftColumn/ZonePanel")
 	assert_true((zone_panel._cards["district7"] as Button).has_focus())
+
+func test_crt_disabled_zeroes_scan_alpha() -> void:
+	Settings.crt_enabled = false
+	var hub := HUB.instantiate()
+	add_child_autofree(hub)
+	await get_tree().process_frame
+	var overlay := hub.get_node("CRTOverlay") as ColorRect
+	assert_eq(overlay.material.get_shader_parameter("scan_alpha"), 0.0)
+	Settings.crt_enabled = true
+
+func test_crt_enabled_uses_default_intensity() -> void:
+	Settings.crt_enabled = true
+	var hub := HUB.instantiate()
+	add_child_autofree(hub)
+	await get_tree().process_frame
+	var overlay := hub.get_node("CRTOverlay") as ColorRect
+	assert_almost_eq(overlay.material.get_shader_parameter("scan_alpha"), 0.05, 0.0001)
