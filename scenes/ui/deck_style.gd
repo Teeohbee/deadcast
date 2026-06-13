@@ -1,4 +1,4 @@
-# scenes/barge_hub/deck_style.gd
+# scenes/ui/deck_style.gd
 class_name DeckStyle
 
 # Prototype palette (see planning/prototype.html)
