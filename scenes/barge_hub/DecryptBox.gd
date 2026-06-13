@@ -6,8 +6,8 @@ const LOAD_AMOUNT: int = 1000
 @onready var status_label: Label = $MarginContainer/HBox/LeftColumn/DecryptPanel/VBox/StatusLabel
 @onready var load_button: Button = $MarginContainer/HBox/LeftColumn/DecryptPanel/VBox/LoadButton
 @onready var message_label: Label = $MarginContainer/HBox/LeftColumn/DecryptPanel/VBox/MessageLabel
-@onready var _cipher_crack: Node = $MarginContainer/HBox/RightColumn/CipherCrackPanel
-@onready var _cipher_log: Node = $MarginContainer/HBox/RightColumn/CipherLogPanel
+@onready var _cipher_crack: CipherCrackPanel = $MarginContainer/HBox/RightColumn/CipherCrackPanel
+@onready var _cipher_log: CipherLogPanel = $MarginContainer/HBox/RightColumn/CipherLogPanel
 
 func _ready() -> void:
 	for btn in [load_button]:
