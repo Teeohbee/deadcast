@@ -60,6 +60,10 @@ func _show_next_catch() -> void:
 	if _snapped:
 		return
 	if _column.layer_cleared():
+		# Mark the just-cleared layer's slots resolved on the depth rail; the early
+		# return below otherwise skips the slot_changed emit and the last slot stays
+		# shown as current (">") through the checkpoint/surface screen.
+		EventBus.slot_changed.emit(_column.global_slot_index() + 1, _column.total_reachable_slots())
 		if _column.can_descend():
 			_show_checkpoint()
 		else:
