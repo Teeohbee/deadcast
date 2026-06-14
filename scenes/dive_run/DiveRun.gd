@@ -5,8 +5,9 @@ const ROD_DAMAGE_TENSION_PENALTY: int = 25
 const BEAT_PAUSE := 0.5
 
 @onready var line_system: LineSystem = $LineSystem
-@onready var dive_hud: DiveHUD = $VBoxContainer/DiveHUD
-@onready var session_log: SessionLog = $VBoxContainer/SessionLog
+@onready var depth_column: DepthColumnPanel = $Margin/MainRow/Rail/DepthColumn
+@onready var status_strip: DiveStatusStrip = $Margin/MainRow/LogPanel/LogVBox/StatusStrip
+@onready var session_log: SessionLog = $Margin/MainRow/LogPanel/LogVBox/SessionLog
 
 var _column: DiveColumn = null
 var _zone_data: ZoneData = null
@@ -42,7 +43,8 @@ func _ready() -> void:
 	_column = DiveColumn.new(zone_id, max_depth)
 	_column.generate_current_layer(line_system.corruption)
 
-	dive_hud.setup(line_system.max_tension, _column.reachable_layer_sizes(), _initial_lure_label())
+	depth_column.setup(_column.reachable_layer_sizes())
+	status_strip.setup(line_system.max_tension, _initial_lure_label())
 	EventBus.haul_changed.emit(0)
 	EventBus.tension_changed.emit(line_system.tension)
 	EventBus.corruption_changed.emit(line_system.corruption)

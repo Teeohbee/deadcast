@@ -1,23 +1,61 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scenes/dive_run/DiveRun.gd" id="1_DiveRun"]
 [ext_resource type="PackedScene" path="res://scenes/dive_run/LineSystem.tscn" id="2_LineSystem"]
-[ext_resource type="PackedScene" path="res://scenes/dive_run/DiveHUD.tscn" id="3_DiveHUD"]
-[ext_resource type="PackedScene" path="res://scenes/dive_run/SessionLog.tscn" id="4_SessionLog"]
+[ext_resource type="PackedScene" path="res://scenes/dive_run/SessionLog.tscn" id="3_SessionLog"]
+[ext_resource type="Script" path="res://scenes/dive_run/depth_column.gd" id="4_DepthColumn"]
+[ext_resource type="Script" path="res://scenes/barge_hub/panels/terminal_panel.gd" id="5_TerminalPanel"]
+[ext_resource type="Script" path="res://scenes/dive_run/dive_status_strip.gd" id="6_StatusStrip"]
 
 [node name="DiveRun" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 script = ExtResource("1_DiveRun")
 
 [node name="LineSystem" parent="." instance=ExtResource("2_LineSystem")]
 max_tension = 80
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="Margin" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
 
-[node name="DiveHUD" parent="VBoxContainer" instance=ExtResource("3_DiveHUD")]
+[node name="MainRow" type="HBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
 
-[node name="SessionLog" parent="VBoxContainer" instance=ExtResource("4_SessionLog")]
+[node name="Rail" type="VBoxContainer" parent="Margin/MainRow"]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="DepthColumn" type="PanelContainer" parent="Margin/MainRow/Rail"]
+layout_mode = 2
+size_flags_vertical = 3
+script = ExtResource("4_DepthColumn")
+
+[node name="LogPanel" type="PanelContainer" parent="Margin/MainRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("5_TerminalPanel")
+title = "dive_feed"
+
+[node name="LogVBox" type="VBoxContainer" parent="Margin/MainRow/LogPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="StatusStrip" type="Label" parent="Margin/MainRow/LogPanel/LogVBox"]
+layout_mode = 2
+text = "T 0/80  ·  HAUL 0cr  ·  SIG 100%  ·  LURE —"
+script = ExtResource("6_StatusStrip")
+
+[node name="SessionLog" parent="Margin/MainRow/LogPanel/LogVBox" instance=ExtResource("3_SessionLog")]
+layout_mode = 2
 size_flags_vertical = 3
