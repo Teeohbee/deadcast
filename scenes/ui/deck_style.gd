@@ -16,6 +16,20 @@ const SIZE_VALUE   := 18  # headline readouts - the btop "big number"
 const SIZE_BODY    := 14  # readable labels, instructions, secondary values
 const SIZE_AMBIENT := 12  # telemetry, chatter, chrome, captions
 
+static var _theme: Theme = null
+
+static func get_theme() -> Theme:
+	if _theme:
+		return _theme
+	var font := load("res://fonts/IBMPlexMono-Regular.otf") as FontFile
+	_theme = Theme.new()
+	_theme.set_font("font", "Label", font)
+	_theme.set_font("font", "Button", font)
+	_theme.set_font("normal_font", "RichTextLabel", font)
+	_theme.set_color("font_color", "Label", TEXT)
+	_theme.set_color("default_color", "RichTextLabel", TEXT)
+	return _theme
+
 static func panel_style(active: bool = false) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = PANEL_BG

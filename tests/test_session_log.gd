@@ -9,7 +9,7 @@ func _make_log() -> SessionLog:
 
 func test_log_line_renders_brackets_literally() -> void:
 	var sl := _make_log()
-	sl.log_line("contact [DATA_CONTAINER] found", UIStyle.COL_TEXT)
+	sl.log_line("contact [DATA_CONTAINER] found", DeckStyle.TEXT)
 	assert_string_contains(sl.log_text.get_parsed_text(), "[DATA_CONTAINER]")
 
 func test_present_choices_returns_index_and_echoes() -> void:
