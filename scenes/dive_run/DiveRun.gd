@@ -5,6 +5,8 @@ const ROD_DAMAGE_TENSION_PENALTY: int = 25
 const BEAT_PAUSE := 0.5
 
 @onready var line_system: LineSystem = $LineSystem
+@onready var biosign: BiosignPanel = $Margin/MainRow/Rail/Biosign
+@onready var hydrophone: HydrophonePanel = $Margin/MainRow/Rail/Hydrophone
 @onready var depth_column: DepthColumnPanel = $Margin/MainRow/Rail/DepthColumn
 @onready var status_strip: DiveStatusStrip = $Margin/MainRow/LogPanel/LogVBox/StatusStrip
 @onready var session_log: SessionLog = $Margin/MainRow/LogPanel/LogVBox/SessionLog
@@ -45,6 +47,9 @@ func _ready() -> void:
 
 	depth_column.setup(_column.reachable_layer_sizes())
 	status_strip.setup(line_system.max_tension, _initial_lure_label())
+	var bloom := RailBloom.new()
+	add_child(bloom)
+	bloom.track([biosign, depth_column, hydrophone, $Margin/MainRow/LogPanel])
 	EventBus.haul_changed.emit(0)
 	EventBus.tension_changed.emit(line_system.tension)
 	EventBus.corruption_changed.emit(line_system.corruption)
