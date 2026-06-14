@@ -13,7 +13,7 @@ const GLYPH_CURRENT := ">"
 const GLYPH_UNKNOWN := "?"
 
 # Returns one entry per reachable slot, top->bottom:
-#   {"glyph": "✓"|"▶"|"?"|<marker>, "first_in_layer": bool}
+#   {"glyph": "✓"|">"|"?"|<marker>, "first_in_layer": bool}
 static func column_cells(layer_sizes: Array, current_slot: int, markers: Dictionary) -> Array:
 	var cells: Array = []
 	var idx := 0
