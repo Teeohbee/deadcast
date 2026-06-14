@@ -13,17 +13,17 @@ const LURE_PATHS: Array[String] = [
 	"res://resources/lures/deep_pulse.tres",
 	"res://resources/lures/ghost_bait.tres",
 ]
-@onready var header_label: Label = $VBoxContainer/HeaderLabel
-@onready var okeke_btn: Button = $VBoxContainer/VendorButtons/OkekeBtn
-@onready var vendor_btn: Button = $VBoxContainer/VendorButtons/VendorBtn
-@onready var stock_container: VBoxContainer = $VBoxContainer/StockContainer
-@onready var message_label: Label = $VBoxContainer/MessageLabel
+@onready var okeke_btn: Button = $MarginContainer/VBoxContainer/VendorButtons/OkekeBtn
+@onready var vendor_btn: Button = $MarginContainer/VBoxContainer/VendorButtons/VendorBtn
+@onready var stock_container: VBoxContainer = $MarginContainer/VBoxContainer/StockRow/StockContainer
+@onready var message_label: Label = $MarginContainer/VBoxContainer/MessageLabel
+@onready var _ticker: MarketTicker = $MarginContainer/VBoxContainer/MarketTicker
+@onready var _vendor_link: VendorLink = $MarginContainer/VBoxContainer/StockRow/VendorLink
 
 var _active: String = "vendor"
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
-	UIStyle.apply_label(header_label, UIStyle.COL_DIM)
 	UIStyle.apply_label(message_label, UIStyle.COL_DIM)
 
 	for btn in [okeke_btn, vendor_btn]:
@@ -37,6 +37,7 @@ func _ready() -> void:
 	vendor_btn.pressed.connect(func(): _select("vendor"))
 
 	_refresh_vendor_tabs()
+	_vendor_link.refresh(_active)
 	_build_stock()
 	okeke_btn.grab_focus()
 
@@ -44,6 +45,7 @@ func _select(vendor: String) -> void:
 	_active = vendor
 	message_label.text = ""
 	_refresh_vendor_tabs()
+	_vendor_link.refresh(vendor)
 	_build_stock()
 
 func _refresh_vendor_tabs() -> void:
