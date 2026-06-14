@@ -5,7 +5,6 @@ const SYSTEM_DELAY := 0.5
 const NARRATIVE_DELAY := 0.8
 const CHAR_DELAY_MIN := 0.010
 const CHAR_DELAY_MAX := 0.030
-const _CRT_SCAN_ALPHA := 0.03
 const _LEGIBLE_FONT_SIZE := 16
 
 @onready var output_label: RichTextLabel = $MarginContainer/BootPanel/OutputLabel
@@ -20,7 +19,8 @@ var _max_visible_lines: int = 20
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
 	var crt_mat := (_crt_overlay.material as ShaderMaterial).duplicate() as ShaderMaterial
-	crt_mat.set_shader_parameter("scan_alpha", _CRT_SCAN_ALPHA if Settings.crt_enabled else 0.0)
+	if not Settings.crt_enabled:
+		crt_mat.set_shader_parameter("scan_alpha", 0.0)
 	_crt_overlay.material = crt_mat
 
 	output_label.add_theme_color_override("default_color", DeckStyle.GREEN)
@@ -114,7 +114,12 @@ func _append_text(text: String) -> void:
 			_render_lines.append("")
 		else:
 			_render_lines[_render_lines.size() - 1] += ch
+	_trim_render_buffer()
 	_render_to_label()
+
+func _trim_render_buffer() -> void:
+	while _render_lines.size() > _max_visible_lines:
+		_render_lines.remove_at(0)
 
 func _render_to_label() -> void:
 	var start: int = max(0, _render_lines.size() - _max_visible_lines)

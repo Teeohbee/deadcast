@@ -20,12 +20,12 @@ func test_crt_disabled_zeroes_scan_alpha() -> void:
 	assert_eq(overlay.material.get_shader_parameter("scan_alpha"), 0.0)
 	Settings.crt_enabled = true
 
-func test_crt_enabled_uses_legible_scan_alpha() -> void:
+func test_crt_enabled_keeps_shader_default_scan_alpha() -> void:
 	Settings.crt_enabled = true
 	var boot := _instantiate_boot()
 	await get_tree().process_frame
 	var overlay := boot.get_node("CRTOverlay") as ColorRect
-	assert_eq(overlay.material.get_shader_parameter("scan_alpha"), 0.03)
+	assert_null(overlay.material.get_shader_parameter("scan_alpha"))
 
 func test_rollup_keeps_recent_lines_visible() -> void:
 	var boot := _instantiate_boot()

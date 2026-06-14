@@ -13,12 +13,12 @@ extends Control
 @onready var _crt_overlay: ColorRect = $CRTOverlay
 
 var _cursor_visible := true
-const _CRT_SCAN_ALPHA := 0.03
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
 	var crt_mat := (_crt_overlay.material as ShaderMaterial).duplicate() as ShaderMaterial
-	crt_mat.set_shader_parameter("scan_alpha", _CRT_SCAN_ALPHA if Settings.crt_enabled else 0.0)
+	if not Settings.crt_enabled:
+		crt_mat.set_shader_parameter("scan_alpha", 0.0)
 	_crt_overlay.material = crt_mat
 
 	var save_exists := FileAccess.file_exists(GameState.SAVE_PATH)
