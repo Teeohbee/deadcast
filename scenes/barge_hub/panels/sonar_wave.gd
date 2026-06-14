@@ -4,13 +4,15 @@ extends Control
 
 var amplitude := 15.0
 var frequency := 0.02
+var line_color := DeckStyle.GREEN
+var speed := 3.0
 var _offset := 0.0
 
 func _ready() -> void:
 	clip_contents = true
 
 func _process(delta: float) -> void:
-	_offset += delta * 3.0
+	_offset += delta * speed
 	queue_redraw()
 
 func _draw() -> void:
@@ -32,7 +34,7 @@ func _draw() -> void:
 		var y := h / 2.0 + sin(x * frequency + _offset) * amp + sin(x * 0.08 - _offset) * (amp / 3.0)
 		points.append(Vector2(x, y))
 	if points.size() >= 2:
-		draw_polyline(points, DeckStyle.GREEN, 1.5, true)
+		draw_polyline(points, line_color, 1.5, true)
 
 	var ty := h / 2.0 + sin(_offset) * 5.0
 	draw_dashed_line(Vector2(0, ty), Vector2(w, ty),

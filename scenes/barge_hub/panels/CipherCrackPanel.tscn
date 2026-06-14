@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/barge_hub/panels/cipher_crack.gd" id="1_cc"]
+
+[node name="CipherCrackPanel" type="PanelContainer"]
+script = ExtResource("1_cc")

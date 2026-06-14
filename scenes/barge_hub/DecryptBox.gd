@@ -3,9 +3,11 @@ extends Control
 
 const LOAD_AMOUNT: int = 1000
 
-@onready var status_label: Label = $VBoxContainer/StatusLabel
-@onready var load_button: Button = $VBoxContainer/LoadButton
-@onready var message_label: Label = $VBoxContainer/MessageLabel
+@onready var status_label: Label = $MarginContainer/HBox/LeftColumn/DecryptPanel/VBox/StatusLabel
+@onready var load_button: Button = $MarginContainer/HBox/LeftColumn/DecryptPanel/VBox/LoadButton
+@onready var message_label: Label = $MarginContainer/HBox/LeftColumn/DecryptPanel/VBox/MessageLabel
+@onready var _cipher_crack: CipherCrackPanel = $MarginContainer/HBox/RightColumn/CipherCrackPanel
+@onready var _cipher_log: CipherLogPanel = $MarginContainer/HBox/RightColumn/CipherLogPanel
 
 func _ready() -> void:
 	for btn in [load_button]:
@@ -49,6 +51,15 @@ func _refresh() -> void:
 		load_button.text = "load %dcr of data" % LOAD_AMOUNT
 		load_button.disabled = GameState.credits < LOAD_AMOUNT
 
+	_update_crack()
+
+func _update_crack() -> void:
+	var active := GameState.decrypt_box_queue > 0
+	var progress := 0.0
+	if active and GameState.DECRYPT_THRESHOLD > 0:
+		progress = float(GameState.decrypt_box_runs) / float(GameState.DECRYPT_THRESHOLD)
+	_cipher_crack.set_state(active, progress)
+
 func _on_load_pressed() -> void:
 	if GameState.spend_credits(LOAD_AMOUNT):
 		GameState.decrypt_box_queue += LOAD_AMOUNT
@@ -56,6 +67,7 @@ func _on_load_pressed() -> void:
 			GameState.decrypt_box_runs = 0
 		GameState.save()
 		message_label.text = "%dcr loaded into decrypt queue." % LOAD_AMOUNT
+		_cipher_log.append_line("PAYLOAD: %dcr block queued for decryption." % LOAD_AMOUNT)
 		_refresh()
 	else:
 		message_label.text = "not enough credits."
