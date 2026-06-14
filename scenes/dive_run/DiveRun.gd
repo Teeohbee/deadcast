@@ -5,8 +5,9 @@ const ROD_DAMAGE_TENSION_PENALTY: int = 25
 const BEAT_PAUSE := 0.5
 
 @onready var line_system: LineSystem = $LineSystem
-@onready var dive_hud: DiveHUD = $VBoxContainer/DiveHUD
-@onready var session_log: SessionLog = $VBoxContainer/SessionLog
+@onready var depth_column: DepthColumnPanel = $Margin/MainRow/Rail/DepthColumn
+@onready var status_strip: DiveStatusStrip = $Margin/MainRow/LogPanel/LogVBox/StatusStrip
+@onready var session_log: SessionLog = $Margin/MainRow/LogPanel/LogVBox/SessionLog
 
 var _column: DiveColumn = null
 var _zone_data: ZoneData = null
@@ -16,7 +17,6 @@ var _bio_credits: int = 0
 var _snapped: bool = false
 
 func _ready() -> void:
-	UIStyle.apply_background(self)
 	line_system.snapped.connect(_on_line_snapped)
 	line_system.tension_updated.connect(func(v: float) -> void: EventBus.tension_changed.emit(v))
 	line_system.corruption_updated.connect(func(v: float) -> void:
@@ -43,26 +43,31 @@ func _ready() -> void:
 	_column = DiveColumn.new(zone_id, max_depth)
 	_column.generate_current_layer(line_system.corruption)
 
-	dive_hud.setup(line_system.max_tension, _column.reachable_layer_sizes(), _initial_lure_label())
+	depth_column.setup(_column.reachable_layer_sizes())
+	status_strip.setup(line_system.max_tension, _initial_lure_label())
 	EventBus.haul_changed.emit(0)
 	EventBus.tension_changed.emit(line_system.tension)
 	EventBus.corruption_changed.emit(line_system.corruption)
 
 	await get_tree().process_frame
-	session_log.log_line("> cast — %s" % _zone_data.display_name.to_lower(), UIStyle.COL_DIM)
+	session_log.log_line("> cast — %s" % _zone_data.display_name.to_lower(), DeckStyle.DIM)
 	if GameState.current_rod and GameState.rod_damaged:
 		session_log.log_line(">>> rod damaged — tension cap reduced to %d" % line_system.max_tension,
-			UIStyle.COL_WARNING)
+			DeckStyle.AMBER)
 	_show_next_catch()
 
 func _show_next_catch() -> void:
 	if _snapped:
 		return
 	if _column.layer_cleared():
+		# Mark the just-cleared layer's slots resolved on the depth rail; the early
+		# return below otherwise skips the slot_changed emit and the last slot stays
+		# shown as current (">") through the checkpoint/surface screen.
+		EventBus.slot_changed.emit(_column.global_slot_index() + 1, _column.total_reachable_slots())
 		if _column.can_descend():
 			_show_checkpoint()
 		else:
-			session_log.log_line("\n>>> column cleared  ·  surfacing", UIStyle.COL_TEXT)
+			session_log.log_line("\n>>> column cleared  ·  surfacing", DeckStyle.TEXT)
 			await _beat()
 			_end_run(false)
 		return
@@ -77,13 +82,13 @@ func _show_next_catch() -> void:
 
 func _show_checkpoint() -> void:
 	var ghost_bait_armed := false
-	session_log.log_line("\n─── DEPTH CHECKPOINT ──────────────────────────", UIStyle.COL_ACCENT)
+	session_log.log_line("\n─── DEPTH CHECKPOINT ──────────────────────────", DeckStyle.SKY)
 	session_log.log_line("│  %s cleared  ·  haul: %dcr  ·  tension %d/%d  ·  SIG %d%%" % [
 		DiveColumn.LAYER_NAMES[_column.current_layer()], _run_credits,
 		int(line_system.tension), line_system.max_tension,
-		int(100.0 - line_system.corruption)], UIStyle.COL_TEXT)
+		int(100.0 - line_system.corruption)], DeckStyle.TEXT)
 	session_log.log_line("│  %s scan: %d contacts  ·  draws weighted by current SIG" % [
-		_column.next_layer_name(), _column.next_layer_slot_count()], UIStyle.COL_DIM)
+		_column.next_layer_name(), _column.next_layer_slot_count()], DeckStyle.DIM)
 
 	while true:
 		var labels: Array[String] = [
@@ -110,7 +115,7 @@ func _show_checkpoint() -> void:
 			ghost_bait_armed = true
 			_run_record.entries.append({"kind": "lure", "text": "ghost bait armed"})
 			session_log.log_line(">>> ghost bait armed — the next layer will draw what's listening",
-				UIStyle.COL_ACCENT)
+				DeckStyle.SKY)
 			continue
 
 		var layer_name: String = DiveColumn.LAYER_NAMES[_column.current_layer()]
@@ -118,7 +123,7 @@ func _show_checkpoint() -> void:
 			_run_record.entries.append({
 				"kind": "checkpoint", "layer": layer_name,
 				"haul": _run_credits, "choice": "surface"})
-			session_log.log_line(">>> surfacing  ·  haul banked", UIStyle.COL_TEXT)
+			session_log.log_line(">>> surfacing  ·  haul banked", DeckStyle.TEXT)
 			await _beat()
 			_end_run(false)
 			return
@@ -142,7 +147,7 @@ func _present_catch(catch_data: CatchData) -> void:
 			augmented = _inject_shock_option(current)
 
 		if need_card:
-			session_log.log_line(DiveFormat.contact_card(augmented), UIStyle.COL_TEXT)
+			session_log.log_line(DiveFormat.contact_card(augmented), DeckStyle.TEXT)
 			need_card = false
 
 		var labels: Array[String] = []
@@ -164,7 +169,7 @@ func _present_catch(catch_data: CatchData) -> void:
 			match lure_action.effect:
 				LureData.LureEffect.DECOY:
 					GameState.consume_lure_use()
-					session_log.log_line(">>> decoy deployed — contact slipped", UIStyle.COL_ACCENT)
+					session_log.log_line(">>> decoy deployed — contact slipped", DeckStyle.SKY)
 					_run_record.entries.append({"kind": "lure", "text": "decoy deployed — contact slipped"})
 					current = CatchPool.draw_replacement(
 						_column.zone_id, _column.current_layer(), line_system.corruption)
@@ -184,7 +189,7 @@ func _present_catch(catch_data: CatchData) -> void:
 
 		if option.narrative_text != "":
 			session_log.log_line(DiveFormat.narrative_entry(augmented.catch_name, option.narrative_text),
-				UIStyle.COL_DIM)
+				DeckStyle.DIM)
 			GameState.journal_entries.append("[%s]\n\n%s" % [augmented.catch_name, option.narrative_text])
 			GameState.save()
 			await session_log.present_continue()
@@ -201,7 +206,7 @@ func _present_catch(catch_data: CatchData) -> void:
 			line_system.add_corruption(10)
 			_record_slot(augmented, echo, "connection cut", 0, 0, 10, option.sets_entity_flag)
 			session_log.log_line(">>> connection cut — tension vented to %d/%d  ·  SIG -10%%" % [
-				vented, line_system.max_tension], UIStyle.COL_WARNING)
+				vented, line_system.max_tension], DeckStyle.AMBER)
 			await _beat()
 			_advance_slot()
 			return
@@ -218,7 +223,7 @@ func _present_catch(catch_data: CatchData) -> void:
 					option.sets_entity_flag)
 				session_log.log_line(
 					DiveFormat.result_line(option.credit_value, option.tension_delta, augmented.corruption_gain),
-					UIStyle.COL_TEXT)
+					DeckStyle.TEXT)
 				await _beat()
 				if _snapped:
 					return
@@ -266,7 +271,7 @@ func _fire_deep_pulse() -> void:
 		tags.append(tag)
 	var summary := "deep_pulse: %d contacts ahead — %s" % [tags.size(), " ".join(tags)]
 	_run_record.entries.append({"kind": "lure", "text": summary})
-	session_log.log_line(">>> %s" % summary, UIStyle.COL_ACCENT)
+	session_log.log_line(">>> %s" % summary, DeckStyle.SKY)
 
 func _resolve_resistant(option: CatchOption, catch_data: CatchData, echo: String) -> void:
 	if option.resist_chance > 0.0 and randf() < option.resist_chance:
@@ -274,16 +279,16 @@ func _resolve_resistant(option: CatchOption, catch_data: CatchData, echo: String
 		line_system.add_corruption(catch_data.corruption_gain)
 		_record_slot(catch_data, echo, "resisted",
 			0, option.resist_tension_penalty, catch_data.corruption_gain, option.sets_entity_flag)
-		session_log.log_line(">>> [!!! COUNTERMEASURE TRIGGERED !!!]", UIStyle.COL_WARNING)
+		session_log.log_line(">>> [!!! COUNTERMEASURE TRIGGERED !!!]", DeckStyle.AMBER)
 		session_log.log_line(">>> resisted  ·  +%dT  ·  no reward" % option.resist_tension_penalty,
-			UIStyle.COL_DEBT)
+			DeckStyle.RED)
 	else:
 		_apply_and_record(option, catch_data)
 		_record_slot(catch_data, echo, "",
 			option.credit_value, option.tension_delta, catch_data.corruption_gain, option.sets_entity_flag)
 		session_log.log_line(
 			DiveFormat.result_line(option.credit_value, option.tension_delta, catch_data.corruption_gain),
-			UIStyle.COL_TEXT)
+			DeckStyle.TEXT)
 	await _beat()
 	if _snapped:
 		return
@@ -300,18 +305,18 @@ func _resolve_negotiating(option: CatchOption, catch_data: CatchData, echo: Stri
 		_record_slot(catch_data, echo, "negotiation failed",
 			option.fail_credit_value, option.fail_tension_delta, catch_data.corruption_gain,
 			option.sets_entity_flag)
-		session_log.log_line(">>> [!!! COUNTERMEASURE TRIGGERED !!!]", UIStyle.COL_WARNING)
+		session_log.log_line(">>> [!!! COUNTERMEASURE TRIGGERED !!!]", DeckStyle.AMBER)
 		session_log.log_line(
 			">>> negotiation failed  ·  " + DiveFormat.result_line(
 				option.fail_credit_value, option.fail_tension_delta, catch_data.corruption_gain).trim_prefix(">>> "),
-			UIStyle.COL_DEBT)
+			DeckStyle.RED)
 	else:
 		_apply_and_record(option, catch_data)
 		_record_slot(catch_data, echo, "",
 			option.credit_value, option.tension_delta, catch_data.corruption_gain, option.sets_entity_flag)
 		session_log.log_line(
 			DiveFormat.result_line(option.credit_value, option.tension_delta, catch_data.corruption_gain),
-			UIStyle.COL_TEXT)
+			DeckStyle.TEXT)
 	await _beat()
 	if _snapped:
 		return
@@ -323,21 +328,21 @@ func _run_overload(catch_data: CatchData) -> void:
 		catch_data.anchor_strength, line_system.corruption, shock_ready)
 	var reward: CatchOption = catch_data.options[0]
 
-	session_log.log_line(DiveFormat.contact_card(catch_data), UIStyle.COL_DEBT)
-	session_log.log_line("│  est. yield: ~%dcr" % reward.credit_value, UIStyle.COL_DIM)
+	session_log.log_line(DiveFormat.contact_card(catch_data), DeckStyle.RED)
+	session_log.log_line("│  est. yield: ~%dcr" % reward.credit_value, DeckStyle.DIM)
 
 	var last_echo := ""
 	while true:
 		var backlash := fight.apply_backlash()
 		line_system.sync_tension(fight.tension)
-		session_log.log_line(">>> backlash: +%dT" % backlash, UIStyle.COL_WARNING)
+		session_log.log_line(">>> backlash: +%dT" % backlash, DeckStyle.AMBER)
 		if fight.is_snapped():
 			_record_slot(catch_data, "overload", "tension exceeded", 0, backlash, 0, false)
 			_on_line_snapped()
 			return
 		session_log.log_line(
 			DiveFormat.overload_status(fight.anchor, catch_data.anchor_strength, fight.threat, fight.turn),
-			UIStyle.COL_DIM)
+			DeckStyle.DIM)
 
 		var commands := fight.pick_commands()
 		var labels: Array[String] = []
@@ -354,7 +359,7 @@ func _run_overload(catch_data: CatchData) -> void:
 		if cmd.id == "ISOLATE_FEED":
 			line_system.sync_tension(fight.tension)
 			session_log.log_line(">>> feed isolated  ·  catch lost  ·  tension holds at %dT" % fight.tension,
-				UIStyle.COL_DIM)
+				DeckStyle.DIM)
 			_run_record.entries.append({"kind": "lure", "text": "feed isolated — catch lost"})
 			await _beat()
 			_advance_slot()
@@ -366,10 +371,10 @@ func _run_overload(catch_data: CatchData) -> void:
 		var result: Dictionary = fight.execute(cmd)
 		line_system.sync_tension(fight.tension)
 		if result.succeeded:
-			session_log.log_line(">>> %s — EXECUTED" % cmd.id, UIStyle.COL_TEXT)
+			session_log.log_line(">>> %s — EXECUTED" % cmd.id, DeckStyle.TEXT)
 		else:
 			session_log.log_line(">>> %s — FAILED  ·  +%dT backlash" % [cmd.id, int(cmd.fail_t)],
-				UIStyle.COL_DEBT)
+				DeckStyle.RED)
 
 		if fight.is_snapped():
 			_record_slot(catch_data, last_echo, "tension exceeded", 0, 0, 0, false)
@@ -382,10 +387,10 @@ func _run_overload(catch_data: CatchData) -> void:
 			EventBus.haul_changed.emit(_run_credits)
 			line_system.add_corruption(catch_data.corruption_gain)
 			_record_slot(catch_data, last_echo, "", reward.credit_value, 0, catch_data.corruption_gain, false)
-			session_log.log_line(">>> %s captured" % catch_data.catch_name, UIStyle.COL_TEXT)
+			session_log.log_line(">>> %s captured" % catch_data.catch_name, DeckStyle.TEXT)
 			session_log.log_line(
 				DiveFormat.result_line(reward.credit_value, 0, catch_data.corruption_gain),
-				UIStyle.COL_TEXT)
+				DeckStyle.TEXT)
 			await _beat()
 			_advance_slot()
 			return
@@ -435,7 +440,7 @@ func _advance_slot() -> void:
 		if _snapped:
 			return
 		session_log.log_line(">>> zone interference: +%dT" % _zone_data.zone_interference,
-			UIStyle.COL_WARNING)
+			DeckStyle.AMBER)
 	_column.advance()
 	_show_next_catch()
 
@@ -468,11 +473,11 @@ func _on_line_snapped() -> void:
 	_bio_credits = 0
 	EventBus.haul_changed.emit(0)
 	session_log.clear_live()
-	session_log.log_line("\n[!!! TENSION EXCEEDED !!!]", UIStyle.COL_DEBT)
+	session_log.log_line("\n[!!! TENSION EXCEEDED !!!]", DeckStyle.RED)
 	await get_tree().create_timer(0.5).timeout
-	session_log.log_line(TextFX.corrupt("[LINE SNAPPED — SIGNAL LOST]", 0.2), UIStyle.COL_DEBT)
+	session_log.log_line(TextFX.corrupt("[LINE SNAPPED — SIGNAL LOST]", 0.2), DeckStyle.RED)
 	await get_tree().create_timer(0.6).timeout
-	session_log.log_line(">>> haul forfeited: %dcr" % forfeited, UIStyle.COL_DEBT)
+	session_log.log_line(">>> haul forfeited: %dcr" % forfeited, DeckStyle.RED)
 	await get_tree().create_timer(0.9).timeout
 	_end_run(true)
 
