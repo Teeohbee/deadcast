@@ -23,9 +23,13 @@ static func load_state(load_ratio: float) -> String:
 
 var _trace: Control
 var _readout: Label
+var _max_tension: int = 80
 var _load: float = 0.0
 var _flatline: bool = false
 var _scroll: float = 0.0
+
+func setup(max_tension: int) -> void:
+	_max_tension = max_tension
 
 func _ready() -> void:
 	title = "biosign"
@@ -54,9 +58,7 @@ func _process(delta: float) -> void:
 	_trace.queue_redraw()
 
 func _on_tension_changed(value: float) -> void:
-	# TODO: extract the rod tension cap (80) and pass via setup(max_tension); it is
-	# assumed here (float divisor) and in _update_readout (int arg to bpm_for).
-	_load = clampf(value / 80.0, 0.0, 1.0)
+	_load = clampf(value / float(_max_tension), 0.0, 1.0)
 	_update_readout(int(value))
 
 func _on_run_ended(result: Dictionary) -> void:
@@ -68,7 +70,7 @@ func _on_run_ended(result: Dictionary) -> void:
 func _update_readout(tension: int) -> void:
 	if _flatline:
 		return
-	var bpm := bpm_for(tension, 80)
+	var bpm := bpm_for(tension, _max_tension)
 	var state := load_state(_load)
 	_readout.text = "%d BPM  ·  [%s]" % [bpm, state]
 	var col := DeckStyle.TEXT.lerp(DeckStyle.RED, _load)

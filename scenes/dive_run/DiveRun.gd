@@ -47,6 +47,7 @@ func _ready() -> void:
 
 	depth_column.setup(_column.reachable_layer_sizes())
 	status_strip.setup(line_system.max_tension, _initial_lure_label())
+	biosign.setup(line_system.max_tension)
 	var bloom := RailBloom.new()
 	add_child(bloom)
 	bloom.track([biosign, depth_column, hydrophone, $Margin/MainRow/LogPanel])
