@@ -20,8 +20,12 @@ func test_ok_state_is_green() -> void:
 func test_damaged_state_is_red() -> void:
 	assert_eq(_make().gauge_state(true).color, DeckStyle.RED)
 
-func test_refresh_damaged_tints_wave_red() -> void:
+func test_damaged_state_drives_load_past_redline() -> void:
+	assert_gt(_make().gauge_state(true).load, 0.85)
+
+func test_refresh_damaged_tints_meter_red() -> void:
 	var p := _make()
 	GameState.rod_damaged = true
 	p.refresh()
-	assert_eq(p._wave.line_color, DeckStyle.RED)
+	assert_eq(p._meter.fill_color, DeckStyle.RED)
+	assert_almost_eq(p._meter.target, 0.96, 0.001)

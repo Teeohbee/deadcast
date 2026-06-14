@@ -18,7 +18,8 @@ const LURE_PATHS: Array[String] = [
 @onready var stock_container: VBoxContainer = $MarginContainer/VBoxContainer/StockRow/StockContainer
 @onready var message_label: Label = $MarginContainer/VBoxContainer/MessageLabel
 @onready var _ticker: MarketTicker = $MarginContainer/VBoxContainer/MarketTicker
-@onready var _vendor_link: VendorLink = $MarginContainer/VBoxContainer/StockRow/VendorLink
+@onready var _vendor_link: VendorLink = $MarginContainer/VBoxContainer/StockRow/RightColumn/VendorLink
+@onready var _schematic: ItemSchematic = $MarginContainer/VBoxContainer/StockRow/RightColumn/ItemSchematic
 
 var _active: String = "vendor"
 
@@ -55,6 +56,7 @@ func _refresh_vendor_tabs() -> void:
 func _build_stock() -> void:
 	for child in stock_container.get_children():
 		child.queue_free()
+	_schematic.clear()
 	await get_tree().process_frame
 
 	if _active == "okeke":
@@ -81,6 +83,7 @@ func _build_okeke_stock() -> void:
 			GameState.credits < price)
 		var lure_ref := lure
 		btn.pressed.connect(func(): _buy_lure(lure_ref, price))
+		_wire_inspect(btn, "lure", lure.effect, lure.lure_name)
 		stock_container.add_child(btn)
 
 func _build_vendor_stock() -> void:
@@ -104,6 +107,7 @@ func _build_vendor_stock() -> void:
 		var btn := _make_stock_btn(label, equipped or price == 0 or GameState.credits < price)
 		var rod_ref := rod
 		btn.pressed.connect(func(): _buy_rod(rod_ref, price))
+		_wire_inspect(btn, "rod", ROD_PATHS.find(path), rod.rod_name)
 		stock_container.add_child(btn)
 		if rod.description != "":
 			_add_dim_label("  " + rod.description.to_lower())
@@ -119,9 +123,14 @@ func _build_vendor_stock() -> void:
 			price == 0 or GameState.credits < price)
 		var lure_ref := lure
 		btn.pressed.connect(func(): _buy_lure(lure_ref, price))
+		_wire_inspect(btn, "lure", lure.effect, lure.lure_name)
 		stock_container.add_child(btn)
 		if lure.description != "":
 			_add_dim_label("  " + lure.description.to_lower())
+
+func _wire_inspect(btn: Button, kind: String, variant: int, item_name: String) -> void:
+	btn.focus_entered.connect(func(): _schematic.show_item(kind, variant, item_name))
+	btn.mouse_entered.connect(func(): _schematic.show_item(kind, variant, item_name))
 
 func _make_stock_btn(text: String, disabled: bool) -> Button:
 	var btn := Button.new()

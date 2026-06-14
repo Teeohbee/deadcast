@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scenes/barge_hub/VendorsLayout.gd" id="1_vl"]
 [ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/MarketTicker.tscn" id="2_mt"]
 [ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/VendorLink.tscn" id="3_vk"]
+[ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/ItemSchematic.tscn" id="4_is"]
 
 [node name="VendorsLayout" type="Control"]
 script = ExtResource("1_vl")
@@ -49,8 +50,13 @@ theme_override_constants/separation = 8
 [node name="StockContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/StockRow"]
 size_flags_horizontal = 3
 
-[node name="VendorLink" parent="MarginContainer/VBoxContainer/StockRow" instance=ExtResource("3_vk")]
+[node name="RightColumn" type="VBoxContainer" parent="MarginContainer/VBoxContainer/StockRow"]
 size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="ItemSchematic" parent="MarginContainer/VBoxContainer/StockRow/RightColumn" instance=ExtResource("4_is")]
+
+[node name="VendorLink" parent="MarginContainer/VBoxContainer/StockRow/RightColumn" instance=ExtResource("3_vk")]
 
 [node name="MessageLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 text = ""

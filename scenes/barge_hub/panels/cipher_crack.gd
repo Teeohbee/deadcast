@@ -7,7 +7,7 @@ const STREAM_ROWS := 3
 
 var _active := false
 var _progress := 0.0
-var _wave: SonarWave
+var _graph: HistoryGraph
 var _hex: RichTextLabel
 var _bar: Label
 var _timer: Timer
@@ -21,16 +21,14 @@ func _ready() -> void:
 	root.add_theme_constant_override("separation", 4)
 	add_child(root)
 
-	var wave_holder := Control.new()
-	wave_holder.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	wave_holder.custom_minimum_size = Vector2(0, 56)
-	root.add_child(wave_holder)
+	var graph_holder := Control.new()
+	graph_holder.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	graph_holder.custom_minimum_size = Vector2(0, 56)
+	root.add_child(graph_holder)
 
-	_wave = SonarWave.new()
-	_wave.amplitude = 18.0
-	_wave.frequency = 0.06
-	_wave.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	wave_holder.add_child(_wave)
+	_graph = HistoryGraph.new()
+	_graph.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	graph_holder.add_child(_graph)
 
 	_hex = RichTextLabel.new()
 	_hex.bbcode_enabled = true
@@ -56,8 +54,8 @@ func _ready() -> void:
 func set_state(active: bool, progress: float) -> void:
 	_active = active
 	_progress = clampf(progress, 0.0, 1.0)
-	_wave.line_color = DeckStyle.GREEN if active else DeckStyle.BORDER
-	_wave.amplitude = 18.0 if active else 4.0
+	# graph throughput climbs as the crack nears completion
+	_graph.set_source(active, 0.4 + 0.6 * _progress)
 	_render_bar()
 
 func _render_bar() -> void:
