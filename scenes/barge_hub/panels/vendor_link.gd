@@ -13,23 +13,17 @@ func _ready() -> void:
 	DeckStyle.apply_label(_body, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 	add_child(_body)
 
-	refresh("okeke")
+	refresh()
 
-# Pure per-vendor channel descriptor. Tested directly.
-func link_info(vendor: String) -> Dictionary:
-	if vendor == "okeke":
-		return {
-			"dealer": "okeke",
-			"trust": "████░",
-			"channel": "open / warm",
-		}
+# Okeke channel descriptor. Tested directly.
+func link_info() -> Dictionary:
 	return {
-		"dealer": "the vendor",
-		"trust": "██░░░",
-		"channel": "encrypted / cold",
+		"dealer": "okeke",
+		"trust": "████░",
+		"channel": "open / warm",
 	}
 
-func refresh(vendor: String) -> void:
-	var info := link_info(vendor)
+func refresh() -> void:
+	var info := link_info()
 	_body.text = "DEALER   %s\nTRUST    %s\nCHANNEL  %s" % [
 		info.dealer, info.trust, info.channel]

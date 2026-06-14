@@ -4,7 +4,7 @@ class_name IncomingTransmission
 
 var _bars: SignalBars
 var _link_label: Label
-var _wave: SonarWave
+var _spectrum: BounceBars
 
 func _ready() -> void:
 	title = "incoming_transmission"
@@ -36,18 +36,15 @@ func _ready() -> void:
 	DeckStyle.apply_label(src, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 	root.add_child(src)
 
-	var wave_holder := Control.new()
-	wave_holder.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	wave_holder.custom_minimum_size = Vector2(0, 48)
-	root.add_child(wave_holder)
+	var spectrum_holder := Control.new()
+	spectrum_holder.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	spectrum_holder.custom_minimum_size = Vector2(0, 48)
+	root.add_child(spectrum_holder)
 
-	_wave = SonarWave.new()
-	_wave.amplitude = 12.0
-	_wave.frequency = 0.07
-	_wave.line_color = DeckStyle.SKY
-	_wave.speed = 2.0
-	_wave.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	wave_holder.add_child(_wave)
+	_spectrum = BounceBars.new()
+	_spectrum.bar_color = DeckStyle.SKY
+	_spectrum.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	spectrum_holder.add_child(_spectrum)
 
 	refresh(GameState.pressure_level)
 
