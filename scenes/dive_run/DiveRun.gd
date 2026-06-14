@@ -46,7 +46,7 @@ func _ready() -> void:
 	_column.generate_current_layer(line_system.corruption)
 
 	depth_column.setup(_column.reachable_layer_sizes())
-	status_strip.setup(line_system.max_tension, _initial_lure_label())
+	status_strip.setup(_initial_lure_label())
 	biosign.setup(line_system.max_tension)
 	var bloom := RailBloom.new()
 	add_child(bloom)
