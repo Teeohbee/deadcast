@@ -3,6 +3,8 @@ extends Control
 
 const ROD_DAMAGE_TENSION_PENALTY: int = 25
 const BEAT_PAUSE := 0.5
+const _DEBRIEF_SEP := "────────────────────────────────────────────────────────────────"
+const _DEBRIEF_SEP_SHORT := "────────────────────────────────────────────────"
 
 @onready var line_system: LineSystem = $LineSystem
 @onready var biosign: BiosignPanel = $Margin/MainRow/Rail/Biosign
@@ -75,7 +77,7 @@ func _show_next_catch() -> void:
 		else:
 			session_log.log_line("\n>>> column cleared  ·  surfacing", DeckStyle.TEXT)
 			await _beat()
-			_end_run(false)
+			await _end_run(false)
 		return
 	var catch_data = _column.current_catch()
 	EventBus.slot_changed.emit(_column.global_slot_index() + 1, _column.total_reachable_slots())
@@ -131,7 +133,7 @@ func _show_checkpoint() -> void:
 				"haul": _run_credits, "choice": "surface"})
 			session_log.log_line(">>> surfacing  ·  haul banked", DeckStyle.TEXT)
 			await _beat()
-			_end_run(false)
+			await _end_run(false)
 			return
 
 		_run_record.entries.append({
@@ -485,7 +487,7 @@ func _on_line_snapped() -> void:
 	await get_tree().create_timer(0.6).timeout
 	session_log.log_line(">>> haul forfeited: %dcr" % forfeited, DeckStyle.RED)
 	await get_tree().create_timer(0.9).timeout
-	_end_run(true)
+	await _end_run(true)
 
 func _end_run(snapped: bool) -> void:
 	GameState.add_credits(_run_credits - _bio_credits)  # non-bio credits go directly to wallet
@@ -499,7 +501,57 @@ func _end_run(snapped: bool) -> void:
 	}
 	GameState.on_run_complete(snapped, _bio_credits)
 	EventBus.run_ended.emit(GameState.last_run_result)
-	UIController.navigate_to("debrief")
+	await _show_inline_debrief()
+	UIController.navigate_to("deck")
+
+func _show_inline_debrief() -> void:
+	session_log.clear_live()
+	var result := GameState.last_run_result
+	var snapped := result.get("snapped", false) as bool
+	var earned := result.get("credits", 0) as int
+	var bio := result.get("bio_credits", 0) as int
+
+	session_log.log_line("\n─── RUN_LOG " + _DEBRIEF_SEP, DeckStyle.DIM)
+	if snapped:
+		session_log.log_line("\n[!!! SIGNAL LOST !!!]\nCRITICAL: LINE TENSION EXCEEDED / SIGNAL LOST\n",
+			DeckStyle.RED)
+	else:
+		session_log.log_line("\n>>> connection closed  ·  run complete\n", DeckStyle.TEXT)
+
+	session_log.log_line(_DEBRIEF_SEP_SHORT, DeckStyle.DIM)
+
+	if snapped:
+		session_log.log_line("yield:    +0cr  (run forfeited)", DeckStyle.RED)
+	elif earned > 0:
+		session_log.log_line("yield:    +%dcr" % earned, DeckStyle.SKY)
+
+	session_log.log_line("wallet:   %dcr  ·  debt: %dcr" % [GameState.credits, GameState.debt], DeckStyle.TEXT)
+
+	if GameState.victory:
+		session_log.log_line("\ndebt cleared. the meridian is yours.", DeckStyle.SKY)
+	else:
+		var runs_to_payment := 5 - GameState.runs_since_payment
+		if GameState.pressure_level == 0:
+			session_log.log_line("next payment: 10,000cr in %d run%s" % [
+				runs_to_payment, "s" if runs_to_payment != 1 else ""], DeckStyle.DIM)
+		else:
+			session_log.log_line("pressure %d — %s" % [
+				GameState.pressure_level, _pressure_label(GameState.pressure_level)], DeckStyle.DIM)
+
+	if bio > 0:
+		session_log.log_line("bio cache: %dcr stored in freezer" % bio, DeckStyle.DIM)
+
+	session_log.log_line("", DeckStyle.DIM)
+	await session_log.present_action("[ RETURN TO DECK ]", "return to deck")
+
+func _pressure_label(level: int) -> String:
+	match level:
+		1: return "marta is watching."
+		2: return "vendor prices up 20%."
+		3: return "okeke won't deal with you."
+		4: return "debt collector is coming."
+		5: return "forced surrender."
+		_: return ""
 
 func _initial_lure_label() -> String:
 	if not GameState.current_lure:

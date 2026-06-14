@@ -24,5 +24,23 @@ func test_present_choices_returns_index_and_echoes() -> void:
 	assert_string_contains(sl.log_text.get_parsed_text(), "> release")
 	assert_eq(sl.live_block.get_child_count(), 0, "live block cleared after choice")
 
+func test_present_action_renders_custom_button_and_echo() -> void:
+	var sl := _make_log()
+	var state := {"done": false}
+	_run_action(sl, state)
+	await wait_frames(2)
+	assert_eq(sl.live_block.get_child_count(), 1, "one action button presented")
+	var btn := sl.live_block.get_child(0) as Button
+	assert_eq(btn.text, "[ RETURN TO DECK ]")
+	btn.pressed.emit()
+	await wait_frames(2)
+	assert_true(state.done)
+	assert_string_contains(sl.log_text.get_parsed_text(), "> return to deck")
+	assert_eq(sl.live_block.get_child_count(), 0, "live block cleared after action")
+
 func _run_choice(sl: SessionLog, state: Dictionary) -> void:
 	state.result = await sl.present_choices(["[1] reel_in", "[2] release"], ["reel_in", "release"])
+
+func _run_action(sl: SessionLog, state: Dictionary) -> void:
+	await sl.present_action("[ RETURN TO DECK ]", "return to deck")
+	state.done = true

@@ -12,7 +12,6 @@ const _REGISTRY: Dictionary = {
     "marta":    "res://scenes/barge_hub/MartaTerminal.tscn",
     "vendors":  "res://scenes/barge_hub/VendorsLayout.tscn",
     "dive":     "res://scenes/dive_run/DiveRun.tscn",
-    "debrief":  "res://scenes/ui/PostRun.tscn",
     "gameover": "res://scenes/barge_hub/GameOver.tscn",
 }
 
