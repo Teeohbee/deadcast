@@ -26,8 +26,17 @@ func _ready() -> void:
 
 	_meter = BarMeter.new()
 	_meter.redline = 0.85
-	_meter.set_anchors_and_offsets_preset(Control.PRESET_VCENTER_WIDE)
 	_meter.custom_minimum_size = Vector2(0, 22)
+	# Full width, 22px tall, vertically centred in the holder. Set explicitly rather
+	# than via a preset, which derives offsets from the (still-zero) size at call time.
+	_meter.anchor_left = 0.0
+	_meter.anchor_right = 1.0
+	_meter.anchor_top = 0.5
+	_meter.anchor_bottom = 0.5
+	_meter.offset_left = 0.0
+	_meter.offset_right = 0.0
+	_meter.offset_top = -11.0
+	_meter.offset_bottom = 11.0
 	meter_holder.add_child(_meter)
 
 	_readout = Label.new()

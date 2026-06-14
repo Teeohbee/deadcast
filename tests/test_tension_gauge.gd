@@ -29,3 +29,12 @@ func test_refresh_damaged_tints_meter_red() -> void:
 	p.refresh()
 	assert_eq(p._meter.fill_color, DeckStyle.RED)
 	assert_almost_eq(p._meter.target, 0.96, 0.001)
+
+func test_meter_has_drawable_size() -> void:
+	var p := _make()
+	await get_tree().process_frame
+	await get_tree().process_frame
+	# Regression: the meter must be full-width and 22px tall so BarMeter._draw
+	# actually paints (a zero-size meter renders nothing).
+	assert_gt(p._meter.size.x, 0.0, "meter should span the panel width")
+	assert_almost_eq(p._meter.size.y, 22.0, 0.001)
