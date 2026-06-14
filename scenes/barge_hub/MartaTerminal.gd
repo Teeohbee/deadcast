@@ -1,10 +1,11 @@
 # scenes/barge_hub/MartaTerminal.gd
 extends Control
 
-@onready var debt_status_label: Label = $VBoxContainer/DebtStatusLabel
-@onready var dialogue_label: Label = $VBoxContainer/DialogueLabel
-@onready var payment_label: Label = $VBoxContainer/PaymentLabel
-@onready var story_beat_label: Label = $VBoxContainer/StoryBeatLabel
+@onready var debt_status_label: Label = $MarginContainer/VBoxContainer/TopRow/LedgerPanel/LedgerVBox/DebtStatusLabel
+@onready var payment_label: Label = $MarginContainer/VBoxContainer/TopRow/LedgerPanel/LedgerVBox/PaymentLabel
+@onready var story_beat_label: Label = $MarginContainer/VBoxContainer/DialoguePanel/DialogueVBox/StoryBeatLabel
+@onready var dialogue_label: Label = $MarginContainer/VBoxContainer/DialoguePanel/DialogueVBox/DialogueLabel
+@onready var _transmission: IncomingTransmission = $MarginContainer/VBoxContainer/TopRow/IncomingTransmission
 
 func _ready() -> void:
 	GameState.marta_last_seen_run = GameState.run_count
@@ -31,6 +32,8 @@ func _ready() -> void:
 		payment_label.text = "next payment: 10,000cr due in %d run%s." % [
 			runs_to_payment, "s" if runs_to_payment != 1 else ""]
 		DeckStyle.apply_label(payment_label, DeckStyle.DIM)
+
+	_transmission.refresh(GameState.pressure_level)
 
 func _marta_story_beat(run: int) -> String:
 	if run >= 12:

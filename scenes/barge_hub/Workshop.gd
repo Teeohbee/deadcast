@@ -8,7 +8,7 @@ const DEPTH_UPGRADE_AMOUNT: int = 50
 @onready var repair_button: Button = $MarginContainer/HBox/LeftColumn/ControlPanel/VBox/RepairButton
 @onready var depth_upgrade_button: Button = $MarginContainer/HBox/LeftColumn/ControlPanel/VBox/DepthUpgradeButton
 @onready var message_label: Label = $MarginContainer/HBox/LeftColumn/ControlPanel/VBox/MessageLabel
-@onready var _diagnostics: RodDiagnosticsPanel = $MarginContainer/HBox/RightColumn/RodDiagnosticsPanel
+@onready var _tension_gauge: TensionGauge = $MarginContainer/HBox/RightColumn/TensionGauge
 @onready var _maintenance_log: MaintenanceLogPanel = $MarginContainer/HBox/RightColumn/MaintenanceLogPanel
 
 func _ready() -> void:
@@ -59,7 +59,7 @@ func _on_repair_pressed() -> void:
 		GameState.save()
 		message_label.text = "%s repaired." % rod.rod_name.to_lower()
 		_maintenance_log.append_line("REPAIR: %s serviced. Micro-fractures sealed." % rod.rod_name.to_lower())
-		_diagnostics.refresh()
+		_tension_gauge.refresh()
 		_refresh()
 	else:
 		message_label.text = "not enough credits."
@@ -75,7 +75,7 @@ func _on_depth_upgrade_pressed() -> void:
 		GameState.save()
 		message_label.text = "depth increased to %dft." % rod.max_depth
 		_maintenance_log.append_line("DEPTH MOD: Extension coil fitted. New ceiling: %dft." % rod.max_depth)
-		_diagnostics.refresh()
+		_tension_gauge.refresh()
 		_refresh()
 	else:
 		message_label.text = "not enough credits."
