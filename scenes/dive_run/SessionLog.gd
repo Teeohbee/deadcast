@@ -40,16 +40,22 @@ func present_choices(labels: Array[String], echoes: Array[String]) -> int:
 	return index
 
 func present_continue() -> void:
+	await present_action("[CONTINUE →]")
+
+func present_action(label: String, echo: String = "") -> void:
 	clear_live()
 	var btn := Button.new()
-	btn.text = "[CONTINUE →]"
+	btn.text = label
 	btn.focus_mode = Control.FOCUS_ALL
+	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	DeckStyle.apply_action_button(btn)
 	btn.pressed.connect(func() -> void: _choice_made.emit(0))
 	live_block.add_child(btn)
 	btn.grab_focus()
 	await _choice_made
 	clear_live()
+	if echo != "":
+		log_line("> %s" % echo, DeckStyle.DIM)
 
 func clear_live() -> void:
 	for child in live_block.get_children():
