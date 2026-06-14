@@ -6,8 +6,10 @@
 class_name DepthColumnPanel
 extends TerminalPanel
 
+# GLYPH_CURRENT is ASCII ">" not "▶": IBM Plex Mono lacks U+25B6, and ">" is the
+# established current/selected marker elsewhere in the deck UI (e.g. vendor tabs).
 const GLYPH_PAST := "✓"
-const GLYPH_CURRENT := "▶"
+const GLYPH_CURRENT := ">"
 const GLYPH_UNKNOWN := "?"
 
 # Returns one entry per reachable slot, top->bottom:
