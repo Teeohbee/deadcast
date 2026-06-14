@@ -12,7 +12,7 @@ signal _choice_made(index: int)
 var glitch_intensity: float = 0.0
 
 func _ready() -> void:
-	self.theme = UIStyle.get_theme()
+	pass
 
 func log_line(text: String, color: Color) -> void:
 	var display := TextFX.corrupt(text, glitch_intensity)
@@ -27,7 +27,7 @@ func present_choices(labels: Array[String], echoes: Array[String]) -> int:
 		btn.text = labels[i]
 		btn.focus_mode = Control.FOCUS_ALL
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		UIStyle.apply_button(btn)
+		DeckStyle.apply_action_button(btn)
 		var idx := i
 		btn.pressed.connect(func() -> void: _choice_made.emit(idx))
 		live_block.add_child(btn)
@@ -36,7 +36,7 @@ func present_choices(labels: Array[String], echoes: Array[String]) -> int:
 	var index: int = await _choice_made
 	clear_live()
 	if index < echoes.size() and echoes[index] != "":
-		log_line("> %s" % echoes[index], UIStyle.COL_DIM)
+		log_line("> %s" % echoes[index], DeckStyle.DIM)
 	return index
 
 func present_continue() -> void:
@@ -44,7 +44,7 @@ func present_continue() -> void:
 	var btn := Button.new()
 	btn.text = "[CONTINUE →]"
 	btn.focus_mode = Control.FOCUS_ALL
-	UIStyle.apply_button(btn)
+	DeckStyle.apply_action_button(btn)
 	btn.pressed.connect(func() -> void: _choice_made.emit(0))
 	live_block.add_child(btn)
 	btn.grab_focus()
