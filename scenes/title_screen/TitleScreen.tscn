@@ -1,6 +1,11 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scenes/title_screen/TitleScreen.gd" id="1_TitleScreen"]
+[ext_resource type="Script" path="res://scenes/barge_hub/panels/terminal_panel.gd" id="2_TerminalPanel"]
+[ext_resource type="Shader" path="res://scenes/barge_hub/deck_crt.gdshader" id="3_crt"]
+
+[sub_resource type="ShaderMaterial" id="crt_mat"]
+shader = ExtResource("3_crt")
 
 [node name="TitleScreen" type="Control"]
 layout_mode = 3
@@ -9,56 +14,81 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1_TitleScreen")
 
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.0196, 0.0314, 0.0235, 1)
+mouse_filter = 2
+
 [node name="OuterMargin" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme_override_constants/margin_left = 48
-theme_override_constants/margin_top = 24
-theme_override_constants/margin_right = 48
-theme_override_constants/margin_bottom = 24
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
 
-[node name="ContentAnchor" type="VBoxContainer" parent="OuterMargin"]
+[node name="MainPanel" type="PanelContainer" parent="OuterMargin"]
 layout_mode = 2
-alignment = 0
+script = ExtResource("2_TerminalPanel")
+title = "deadcast_bootstrap"
 
-[node name="HeaderLabel" type="Label" parent="OuterMargin/ContentAnchor"]
+[node name="ContentAnchor" type="VBoxContainer" parent="OuterMargin/MainPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderLabel" type="Label" parent="OuterMargin/MainPanel/ContentAnchor"]
 text = ""
 
-[node name="VBoxContainer" type="VBoxContainer" parent="OuterMargin/ContentAnchor"]
+[node name="TitleLabel" type="Label" parent="OuterMargin/MainPanel/ContentAnchor"]
 layout_mode = 2
-size_flags_horizontal = 0
-
-[node name="TitleLabel" type="Label" parent="OuterMargin/ContentAnchor/VBoxContainer"]
 text = "DEADCAST"
 
-[node name="SpacerLabel" type="Label" parent="OuterMargin/ContentAnchor/VBoxContainer"]
-text = ""
+[node name="ActionBlock" type="VBoxContainer" parent="OuterMargin/MainPanel/ContentAnchor"]
+layout_mode = 2
+theme_override_constants/separation = 6
 
-[node name="ContinueButton" type="Button" parent="OuterMargin/ContentAnchor/VBoxContainer"]
+[node name="ContinueButton" type="Button" parent="OuterMargin/MainPanel/ContentAnchor/ActionBlock"]
 text = "CONTINUE"
 
-[node name="NewGameButton" type="Button" parent="OuterMargin/ContentAnchor/VBoxContainer"]
+[node name="NewGameButton" type="Button" parent="OuterMargin/MainPanel/ContentAnchor/ActionBlock"]
 text = "NEW GAME"
 
-[node name="ConfirmPanel" type="VBoxContainer" parent="OuterMargin/ContentAnchor/VBoxContainer"]
+[node name="ConfirmPanel" type="VBoxContainer" parent="OuterMargin/MainPanel/ContentAnchor/ActionBlock"]
+layout_mode = 2
+theme_override_constants/separation = 6
 
-[node name="ConfirmLabel" type="Label" parent="OuterMargin/ContentAnchor/VBoxContainer/ConfirmPanel"]
+[node name="ConfirmLabel" type="Label" parent="OuterMargin/MainPanel/ContentAnchor/ActionBlock/ConfirmPanel"]
 text = "This will erase your progress. Are you sure?"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="OuterMargin/ContentAnchor/VBoxContainer/ConfirmPanel"]
+[node name="ConfirmButtons" type="HBoxContainer" parent="OuterMargin/MainPanel/ContentAnchor/ActionBlock/ConfirmPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
 
-[node name="YesButton" type="Button" parent="OuterMargin/ContentAnchor/VBoxContainer/ConfirmPanel/HBoxContainer"]
+[node name="YesButton" type="Button" parent="OuterMargin/MainPanel/ContentAnchor/ActionBlock/ConfirmPanel/ConfirmButtons"]
 text = "YES"
+size_flags_horizontal = 3
 
-[node name="NoButton" type="Button" parent="OuterMargin/ContentAnchor/VBoxContainer/ConfirmPanel/HBoxContainer"]
+[node name="NoButton" type="Button" parent="OuterMargin/MainPanel/ContentAnchor/ActionBlock/ConfirmPanel/ConfirmButtons"]
 text = "NO"
+size_flags_horizontal = 3
 
-[node name="Spacer" type="Control" parent="OuterMargin/ContentAnchor"]
+[node name="Spacer" type="Control" parent="OuterMargin/MainPanel/ContentAnchor"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="FooterLabel" type="Label" parent="OuterMargin/ContentAnchor"]
+[node name="FooterLabel" type="Label" parent="OuterMargin/MainPanel/ContentAnchor"]
 layout_mode = 2
 text = ""
+
+[node name="CRTOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+material = SubResource("crt_mat")
+mouse_filter = 2

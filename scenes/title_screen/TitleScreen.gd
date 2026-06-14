@@ -1,47 +1,58 @@
 # scenes/title_screen/TitleScreen.gd
 extends Control
 
-@onready var continue_button: Button = $OuterMargin/ContentAnchor/VBoxContainer/ContinueButton
-@onready var new_game_button: Button = $OuterMargin/ContentAnchor/VBoxContainer/NewGameButton
-@onready var confirm_panel: VBoxContainer = $OuterMargin/ContentAnchor/VBoxContainer/ConfirmPanel
-@onready var title_label: Label = $OuterMargin/ContentAnchor/VBoxContainer/TitleLabel
-@onready var confirm_label: Label = $OuterMargin/ContentAnchor/VBoxContainer/ConfirmPanel/ConfirmLabel
-@onready var header_label: Label = $OuterMargin/ContentAnchor/HeaderLabel
-@onready var footer_label: Label = $OuterMargin/ContentAnchor/FooterLabel
+@onready var continue_button: Button = $OuterMargin/MainPanel/ContentAnchor/ActionBlock/ContinueButton
+@onready var new_game_button: Button = $OuterMargin/MainPanel/ContentAnchor/ActionBlock/NewGameButton
+@onready var confirm_panel: VBoxContainer = $OuterMargin/MainPanel/ContentAnchor/ActionBlock/ConfirmPanel
+@onready var title_label: Label = $OuterMargin/MainPanel/ContentAnchor/TitleLabel
+@onready var confirm_label: Label = $OuterMargin/MainPanel/ContentAnchor/ActionBlock/ConfirmPanel/ConfirmLabel
+@onready var header_label: Label = $OuterMargin/MainPanel/ContentAnchor/HeaderLabel
+@onready var footer_label: Label = $OuterMargin/MainPanel/ContentAnchor/FooterLabel
+@onready var yes_button: Button = $OuterMargin/MainPanel/ContentAnchor/ActionBlock/ConfirmPanel/ConfirmButtons/YesButton
+@onready var no_button: Button = $OuterMargin/MainPanel/ContentAnchor/ActionBlock/ConfirmPanel/ConfirmButtons/NoButton
+@onready var _crt_overlay: ColorRect = $CRTOverlay
 
 var _cursor_visible := true
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
-	UIStyle.apply_background(self)
+	var crt_mat := (_crt_overlay.material as ShaderMaterial).duplicate() as ShaderMaterial
+	if not Settings.crt_enabled:
+		crt_mat.set_shader_parameter("scan_alpha", 0.0)
+	_crt_overlay.material = crt_mat
 
 	var save_exists := FileAccess.file_exists(GameState.SAVE_PATH)
 	continue_button.visible = save_exists
 	confirm_panel.visible = false
 
 	header_label.text = "deadcast_os %s" % GameState.OS_VERSION
-	UIStyle.apply_label(header_label, UIStyle.COL_DIM)
+	DeckStyle.apply_label(header_label, DeckStyle.DIM, 13)
 
-	title_label.text = "┌ deadcast ──────────┐\n└────────────────────┘"
-	UIStyle.apply_label(title_label, UIStyle.COL_TEXT)
-	UIStyle.apply_label(confirm_label, UIStyle.COL_WARNING)
+	title_label.text = "┌ deadcast ─────────────────────────────┐\n└────────────────────────────────────────┘"
+	DeckStyle.apply_label(title_label, DeckStyle.TEXT, DeckStyle.SIZE_VALUE)
+	DeckStyle.apply_label(confirm_label, DeckStyle.AMBER, DeckStyle.SIZE_BODY)
+	DeckStyle.apply_label(footer_label, DeckStyle.DIM, 13)
 
-	for btn in [continue_button, new_game_button,
-			$OuterMargin/ContentAnchor/VBoxContainer/ConfirmPanel/HBoxContainer/YesButton,
-			$OuterMargin/ContentAnchor/VBoxContainer/ConfirmPanel/HBoxContainer/NoButton]:
+	for btn in [continue_button, new_game_button]:
 		btn.focus_mode = Control.FOCUS_ALL
-		UIStyle.apply_button(btn)
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		DeckStyle.apply_action_button(btn)
+	for btn in [yes_button, no_button]:
+		btn.focus_mode = Control.FOCUS_ALL
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	DeckStyle.apply_action_button(yes_button, DeckStyle.RED)
+	DeckStyle.apply_action_button(no_button, DeckStyle.AMBER)
 
-	continue_button.text = "continue"
-	new_game_button.text = "new game"
-	$OuterMargin/ContentAnchor/VBoxContainer/ConfirmPanel/HBoxContainer/YesButton.text = "yes"
-	$OuterMargin/ContentAnchor/VBoxContainer/ConfirmPanel/HBoxContainer/NoButton.text = "no"
+	continue_button.text = "[ CONTINUE ]"
+	new_game_button.text = "[ NEW GAME ]"
+	yes_button.text = "[ CONFIRM ERASE ]"
+	no_button.text = "[ CANCEL ]"
 	confirm_label.text = "this will erase your progress. are you sure?"
 
 	continue_button.pressed.connect(_on_continue_pressed)
 	new_game_button.pressed.connect(_on_new_game_pressed)
-	$OuterMargin/ContentAnchor/VBoxContainer/ConfirmPanel/HBoxContainer/YesButton.pressed.connect(_on_confirm_yes)
-	$OuterMargin/ContentAnchor/VBoxContainer/ConfirmPanel/HBoxContainer/NoButton.pressed.connect(_on_confirm_no)
+	yes_button.pressed.connect(_on_confirm_yes)
+	no_button.pressed.connect(_on_confirm_no)
 
 	if save_exists:
 		continue_button.grab_focus()
@@ -53,7 +64,6 @@ func _ready() -> void:
 func _blink_cursor() -> void:
 	while is_instance_valid(self):
 		footer_label.text = "root@meridian_deck:~# " + ("█" if _cursor_visible else " ")
-		UIStyle.apply_label(footer_label, UIStyle.COL_DIM)
 		_cursor_visible = not _cursor_visible
 		await get_tree().create_timer(0.5).timeout
 
@@ -65,7 +75,7 @@ func _on_new_game_pressed() -> void:
 		continue_button.visible = false
 		new_game_button.visible = false
 		confirm_panel.visible = true
-		$OuterMargin/ContentAnchor/VBoxContainer/ConfirmPanel/HBoxContainer/YesButton.grab_focus()
+		yes_button.grab_focus()
 	else:
 		GameState.new_game()
 		get_tree().change_scene_to_file("res://scenes/boot/BootSequence.tscn")
