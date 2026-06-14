@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scenes/barge_hub/Workshop.gd" id="1_ws"]
 [ext_resource type="Script" path="res://scenes/barge_hub/panels/terminal_panel.gd" id="2_tp"]
-[ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/RodDiagnosticsPanel.tscn" id="3_rdp"]
+[ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/TensionGauge.tscn" id="3_tg"]
 [ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/MaintenanceLogPanel.tscn" id="4_mlp"]
 
 [node name="Workshop" type="Control"]
@@ -60,7 +60,7 @@ text = ""
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
-[node name="RodDiagnosticsPanel" parent="MarginContainer/HBox/RightColumn" instance=ExtResource("3_rdp")]
+[node name="TensionGauge" parent="MarginContainer/HBox/RightColumn" instance=ExtResource("3_tg")]
 size_flags_vertical = 3
 
 [node name="MaintenanceLogPanel" parent="MarginContainer/HBox/RightColumn" instance=ExtResource("4_mlp")]
