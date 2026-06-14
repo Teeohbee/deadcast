@@ -42,3 +42,17 @@ func test_size_tiers_are_job_named_and_legible() -> void:
 
 func test_dim_clears_contrast_floor_on_panel() -> void:
 	assert_gt(_contrast(DeckStyle.DIM, DeckStyle.PANEL_BG), 4.5)
+
+func test_get_theme_sets_default_text_colours_to_palette() -> void:
+	var theme := DeckStyle.get_theme()
+	assert_eq(theme.get_color("font_color", "Label"), DeckStyle.TEXT)
+	assert_eq(theme.get_color("default_color", "RichTextLabel"), DeckStyle.TEXT)
+
+func test_get_theme_provides_mono_font() -> void:
+	var theme := DeckStyle.get_theme()
+	assert_not_null(theme.get_font("font", "Label"))
+	assert_not_null(theme.get_font("normal_font", "RichTextLabel"))
+
+func test_get_theme_is_cached() -> void:
+	assert_same(DeckStyle.get_theme(), DeckStyle.get_theme())
+

@@ -10,7 +10,7 @@ extends Control
 @onready var _dive_button: Button = $Margin/VBox/DiveBanner/BannerRow/DiveButton
 
 func _ready() -> void:
-	self.theme = UIStyle.get_theme()
+	self.theme = DeckStyle.get_theme()
 
 	var banner_sb := DeckStyle.panel_style(false)
 	banner_sb.bg_color = Color("#09110d")

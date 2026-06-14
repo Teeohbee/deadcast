@@ -5,7 +5,7 @@ extends Control
 @onready var _crt_overlay: ColorRect = $CRTOverlay
 
 func _ready() -> void:
-	self.theme = UIStyle.get_theme()
+	self.theme = DeckStyle.get_theme()
 	var crt_mat := (_crt_overlay.material as ShaderMaterial).duplicate() as ShaderMaterial
 	if not Settings.crt_enabled:
 		crt_mat.set_shader_parameter("scan_alpha", 0.0)
