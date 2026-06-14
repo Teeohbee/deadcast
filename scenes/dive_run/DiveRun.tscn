@@ -1,9 +1,11 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scenes/dive_run/DiveRun.gd" id="1_DiveRun"]
 [ext_resource type="PackedScene" path="res://scenes/dive_run/LineSystem.tscn" id="2_LineSystem"]
 [ext_resource type="PackedScene" path="res://scenes/dive_run/SessionLog.tscn" id="3_SessionLog"]
 [ext_resource type="Script" path="res://scenes/dive_run/depth_column.gd" id="4_DepthColumn"]
+[ext_resource type="Script" path="res://scenes/dive_run/biosign.gd" id="7_Biosign"]
+[ext_resource type="Script" path="res://scenes/dive_run/hydrophone.gd" id="8_Hydrophone"]
 [ext_resource type="Script" path="res://scenes/barge_hub/panels/terminal_panel.gd" id="5_TerminalPanel"]
 [ext_resource type="Script" path="res://scenes/dive_run/dive_status_strip.gd" id="6_StatusStrip"]
 
@@ -36,10 +38,18 @@ custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
 theme_override_constants/separation = 12
 
+[node name="Biosign" type="PanelContainer" parent="Margin/MainRow/Rail"]
+layout_mode = 2
+script = ExtResource("7_Biosign")
+
 [node name="DepthColumn" type="PanelContainer" parent="Margin/MainRow/Rail"]
 layout_mode = 2
-size_flags_vertical = 3
 script = ExtResource("4_DepthColumn")
+
+[node name="Hydrophone" type="PanelContainer" parent="Margin/MainRow/Rail"]
+layout_mode = 2
+size_flags_vertical = 3
+script = ExtResource("8_Hydrophone")
 
 [node name="LogPanel" type="PanelContainer" parent="Margin/MainRow"]
 layout_mode = 2

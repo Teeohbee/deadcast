@@ -40,7 +40,6 @@ var _markers: Dictionary = {}
 
 func _ready() -> void:
 	title = "depth_column"
-	size_flags_vertical = Control.SIZE_EXPAND_FILL
 
 	var root := VBoxContainer.new()
 	root.add_theme_constant_override("separation", 4)
