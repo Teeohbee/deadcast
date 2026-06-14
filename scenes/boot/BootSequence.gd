@@ -5,18 +5,30 @@ const SYSTEM_DELAY := 0.5
 const NARRATIVE_DELAY := 0.8
 const CHAR_DELAY_MIN := 0.010
 const CHAR_DELAY_MAX := 0.030
+const _CRT_SCAN_ALPHA := 0.03
+const _LEGIBLE_FONT_SIZE := 16
 
-@onready var output_label: RichTextLabel = $MarginContainer/OutputLabel
+@onready var output_label: RichTextLabel = $MarginContainer/BootPanel/OutputLabel
+@onready var _crt_overlay: ColorRect = $CRTOverlay
 
 var _groups: Array[Dictionary] = []
 var _finished := false
 var _waiting_for_key := false
+var _render_lines: Array[String] = [""]
+var _max_visible_lines: int = 20
 
 func _ready() -> void:
 	self.theme = UIStyle.get_theme()
-	UIStyle.apply_background(self)
-	output_label.add_theme_color_override("default_color", UIStyle.COL_COST)
+	var crt_mat := (_crt_overlay.material as ShaderMaterial).duplicate() as ShaderMaterial
+	crt_mat.set_shader_parameter("scan_alpha", _CRT_SCAN_ALPHA if Settings.crt_enabled else 0.0)
+	_crt_overlay.material = crt_mat
 
+	output_label.add_theme_color_override("default_color", DeckStyle.GREEN)
+	output_label.add_theme_font_size_override("normal_font_size", _LEGIBLE_FONT_SIZE)
+	output_label.add_theme_constant_override("line_separation", 4)
+	output_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	await get_tree().process_frame
+	_max_visible_lines = _estimate_visible_lines()
 	_groups = [
 		{"lines": "DEADCAST_OS %s\nBOOT SEQUENCE INITIATED..." % GameState.OS_VERSION, "delay": SYSTEM_DELAY},
 		{"lines": "> SCANNING HARDWARE...\n  VESSEL:      THE MERIDIAN (deep-sea data trawler, class IV)\n  MOORING:     DISTRICT 7 DOCKS, THE SUMP\n  OPERATOR:    [NOT REGISTERED]\n  ROD SYSTEM:  SCRAP ROD Mk.I (salvage-grade, low depth)\n  HULL STATUS: pressure-rated to 200m. last survey: OVERDUE", "delay": SYSTEM_DELAY},
@@ -39,7 +51,7 @@ func _run_sequence() -> void:
 			return
 
 		if i > 0:
-			output_label.text += "\n\n"
+			_append_text("\n\n")
 		await _typewrite(group.lines)
 
 		if not is_instance_valid(self) or _finished:
@@ -53,8 +65,8 @@ func _run_sequence() -> void:
 
 func _show_prompt() -> void:
 	_waiting_for_key = true
-	output_label.text += "\n\n"
-	output_label.text += "[ PRESS ANY KEY TO BEGIN ]"
+	_append_text("\n\n")
+	_append_text("[ PRESS ANY KEY TO BEGIN ]")
 	_blink_prompt()
 
 func _blink_prompt() -> void:
@@ -70,22 +82,48 @@ func _blink_prompt() -> void:
 
 func _skip_to_end() -> void:
 	_finished = true
-	output_label.text = ""
+	_clear_render_buffer()
 	for i in _groups.size():
 		if i > 0:
-			output_label.text += "\n\n"
-		output_label.text += _groups[i].lines
+			_append_text("\n\n")
+		_append_text(_groups[i].lines)
 	_show_prompt()
 
 func _typewrite(text: String) -> void:
 	for ch in text:
 		if _finished:
 			return
-		output_label.text += ch
+		_append_text(ch)
 		var delay := randf_range(0.08, 0.18) if ch == "\n" else randf_range(CHAR_DELAY_MIN, CHAR_DELAY_MAX)
 		await get_tree().create_timer(delay).timeout
 		if not is_instance_valid(self):
 			return
+
+func _estimate_visible_lines() -> int:
+	var font := output_label.get_theme_font("normal_font", "RichTextLabel")
+	var font_size := output_label.get_theme_font_size("normal_font_size", "RichTextLabel")
+	var line_sep := output_label.get_theme_constant("line_separation", "RichTextLabel")
+	var line_height := font.get_height(font_size) + float(line_sep)
+	return max(8, int(floor(output_label.size.y / max(1.0, line_height))) - 1)
+
+func _append_text(text: String) -> void:
+	for ch in text:
+		if _render_lines.is_empty():
+			_render_lines.append("")
+		if ch == "\n":
+			_render_lines.append("")
+		else:
+			_render_lines[_render_lines.size() - 1] += ch
+	_render_to_label()
+
+func _render_to_label() -> void:
+	var start: int = max(0, _render_lines.size() - _max_visible_lines)
+	output_label.text = "\n".join(_render_lines.slice(start, _render_lines.size()))
+
+func _clear_render_buffer() -> void:
+	_render_lines.clear()
+	_render_lines.append("")
+	_render_to_label()
 
 func _transition_to_game() -> void:
 	var tween := create_tween()
