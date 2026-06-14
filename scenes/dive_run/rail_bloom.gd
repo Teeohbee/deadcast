@@ -30,6 +30,8 @@ func _on_corruption_changed(value: float) -> void:
 			continue
 		var sb: StyleBox = panel.get_theme_stylebox("panel")
 		if sb is StyleBoxFlat:
-			var dup := (sb as StyleBoxFlat).duplicate() as StyleBoxFlat
-			dup.border_color = border
-			panel.add_theme_stylebox_override("panel", dup)
+			var panel_sb := sb as StyleBoxFlat
+			if not panel.has_theme_stylebox_override("panel"):
+				panel_sb = panel_sb.duplicate() as StyleBoxFlat
+				panel.add_theme_stylebox_override("panel", panel_sb)
+			panel_sb.border_color = border

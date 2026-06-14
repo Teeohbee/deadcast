@@ -58,14 +58,20 @@ func _process(delta: float) -> void:
 	_trace.queue_redraw()
 
 func _on_tension_changed(value: float) -> void:
-	_load = clampf(value / float(_max_tension), 0.0, 1.0)
+	if _max_tension <= 0:
+		_load = 0.0
+	else:
+		_load = clampf(value / float(_max_tension), 0.0, 1.0)
 	_update_readout(int(value))
 
 func _on_run_ended(result: Dictionary) -> void:
-	if result.get("snapped", false):
-		_flatline = true
-		_readout.text = "FLATLINE  ·  0 BPM"
-		DeckStyle.apply_label(_readout, DeckStyle.RED, DeckStyle.SIZE_AMBIENT)
+	if not result.get("snapped", false) or _flatline:
+		return
+	_flatline = true
+	set_process(false)
+	_trace.queue_redraw()
+	_readout.text = "FLATLINE  ·  0 BPM"
+	DeckStyle.apply_label(_readout, DeckStyle.RED, DeckStyle.SIZE_AMBIENT)
 
 func _update_readout(tension: int) -> void:
 	if _flatline:

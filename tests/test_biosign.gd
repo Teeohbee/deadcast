@@ -8,6 +8,10 @@ func test_bpm_scales_with_load() -> void:
 func test_bpm_clamps_over_max() -> void:
 	assert_eq(BiosignPanel.bpm_for(120, 80), 130)
 
+func test_bpm_with_non_positive_max_returns_rest() -> void:
+	assert_eq(BiosignPanel.bpm_for(50, 0), 60)
+	assert_eq(BiosignPanel.bpm_for(50, -10), 60)
+
 func test_state_thresholds() -> void:
 	assert_eq(BiosignPanel.load_state(0.0), "NOMINAL")
 	assert_eq(BiosignPanel.load_state(0.5), "NOMINAL")
