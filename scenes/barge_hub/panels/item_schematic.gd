@@ -7,6 +7,7 @@ class_name ItemSchematic
 
 var _view: WireframeView
 var _caption: Label
+var _description: Label
 
 func _ready() -> void:
 	title = "schematic"
@@ -27,12 +28,20 @@ func _ready() -> void:
 	DeckStyle.apply_label(_caption, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 	root.add_child(_caption)
 
+	_description = Label.new()
+	_description.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	DeckStyle.apply_label(_description, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
+	root.add_child(_description)
+
 	clear()
 
-func show_item(kind: String, item_variant: int, item_name: String) -> void:
+func show_item(kind: String, item_variant: int, item_name: String, description: String = "") -> void:
 	_view.set_item(kind, item_variant)
 	_caption.text = item_name.to_lower()
+	_description.text = description.to_lower()
 
 func clear() -> void:
 	_view.set_item("", 0)
 	_caption.text = "hover stock to inspect"
+	_description.text = ""

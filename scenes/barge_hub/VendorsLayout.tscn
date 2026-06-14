@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scenes/barge_hub/VendorsLayout.gd" id="1_vl"]
 [ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/MarketTicker.tscn" id="2_mt"]
 [ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/VendorLink.tscn" id="3_vk"]
 [ext_resource type="PackedScene" path="res://scenes/barge_hub/panels/ItemSchematic.tscn" id="4_is"]
+[ext_resource type="Script" path="res://scenes/barge_hub/panels/terminal_panel.gd" id="5_tp"]
 
 [node name="VendorsLayout" type="Control"]
 script = ExtResource("1_vl")
@@ -35,20 +36,25 @@ theme_override_constants/separation = 8
 
 [node name="MarketTicker" parent="MarginContainer/VBoxContainer" instance=ExtResource("2_mt")]
 
-[node name="VendorButtons" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
-
-[node name="OkekeBtn" type="Button" parent="MarginContainer/VBoxContainer/VendorButtons"]
-text = ""
-
-[node name="VendorBtn" type="Button" parent="MarginContainer/VBoxContainer/VendorButtons"]
-text = ""
-
 [node name="StockRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 size_flags_vertical = 3
 theme_override_constants/separation = 8
 
-[node name="StockContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/StockRow"]
+[node name="LeftColumn" type="VBoxContainer" parent="MarginContainer/VBoxContainer/StockRow"]
 size_flags_horizontal = 3
+
+[node name="StockPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/StockRow/LeftColumn"]
+script = ExtResource("5_tp")
+size_flags_vertical = 3
+title = "vendor_stock"
+
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/StockRow/LeftColumn/StockPanel"]
+theme_override_constants/separation = 8
+
+[node name="StockContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/StockRow/LeftColumn/StockPanel/VBox"]
+
+[node name="MessageLabel" type="Label" parent="MarginContainer/VBoxContainer/StockRow/LeftColumn/StockPanel/VBox"]
+text = ""
 
 [node name="RightColumn" type="VBoxContainer" parent="MarginContainer/VBoxContainer/StockRow"]
 size_flags_horizontal = 3
@@ -57,6 +63,3 @@ theme_override_constants/separation = 8
 [node name="ItemSchematic" parent="MarginContainer/VBoxContainer/StockRow/RightColumn" instance=ExtResource("4_is")]
 
 [node name="VendorLink" parent="MarginContainer/VBoxContainer/StockRow/RightColumn" instance=ExtResource("3_vk")]
-
-[node name="MessageLabel" type="Label" parent="MarginContainer/VBoxContainer"]
-text = ""
