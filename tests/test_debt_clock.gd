@@ -14,6 +14,7 @@ func before_each() -> void:
 	GameState.decrypt_last_payout = 0
 	GameState.freezer_base = 0
 	GameState.freezer_runs = 0
+	GameState.freezer_multiplier = 1.0
 
 func test_run_count_increments_each_run() -> void:
 	GameState.on_run_complete(false, 0)
@@ -59,28 +60,32 @@ func test_decrypt_box_pays_out_after_3_runs() -> void:
 	assert_true(GameState.credits != credits_before or GameState.decrypt_last_outcome == "corruption",
 		"Credits should change unless corruption outcome")
 
-func test_freezer_spoils_after_3_runs() -> void:
+func test_freezer_force_dumps_at_floor_after_3_runs() -> void:
 	GameState.freezer_base = 2000
 	GameState.freezer_runs = 0
 	for i in 3:
 		GameState.on_run_complete(false, 0)
-	assert_eq(GameState.freezer_base, 1000, "Freezer spoils to 50% after 3 runs")
+	assert_eq(GameState.freezer_base, 0, "Pool emptied on force-dump")
+	assert_eq(GameState.freezer_runs, 0, "Clock reset after force-dump")
+	# 2000 * 0.3 = 600 credited; credits start at 50000, no debt payment (only 3 runs)
+	assert_eq(GameState.credits, 50600, "Floor proceeds added to credits")
 
-func test_freezer_spoils_again_after_another_3_runs() -> void:
+func test_freezer_stays_empty_after_force_dump() -> void:
 	GameState.freezer_base = 2000
 	GameState.freezer_runs = 0
 	for i in 6:
 		GameState.on_run_complete(false, 0)
-	assert_eq(GameState.freezer_base, 500, "Freezer spoils twice: 2000 -> 1000 -> 500")
+	# After dump on run 3, pool is empty. Runs 4-6 deposit nothing (bio=0), clock stays at 0.
+	assert_eq(GameState.freezer_base, 0, "Pool stays empty after force-dump with no new deposits")
+	assert_eq(GameState.freezer_runs, 0, "Clock stays at zero when pool is empty")
 
-func test_freezer_added_after_spoil_still_degrades() -> void:
+func test_freezer_deposit_after_dump_restarts_cycle() -> void:
 	GameState.freezer_base = 1000
 	GameState.freezer_runs = 0
 	for i in 3:
 		GameState.on_run_complete(false, 0)
-	assert_eq(GameState.freezer_base, 500, "First spoil")
+	assert_eq(GameState.freezer_base, 0, "Force-dump clears pool")
+	# Next run deposits 800 — pool non-empty, clock should start advancing again
 	GameState.on_run_complete(false, 800)
-	assert_eq(GameState.freezer_base, 1300, "Added 800 bio credits")
-	for i in 2:
-		GameState.on_run_complete(false, 0)
-	assert_eq(GameState.freezer_base, 650, "Second spoil after new bio added")
+	assert_eq(GameState.freezer_base, 800, "Deposit restarts pool after dump")
+	assert_eq(GameState.freezer_runs, 1, "Clock advances on first run with new stock")

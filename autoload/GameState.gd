@@ -84,9 +84,8 @@ func on_run_complete(snapped: bool, bio_credits: int) -> void:
 	if snapped:
 		rod_damaged = true
 
-	# Add bio catches to freezer
-	if bio_credits > 0:
-		freezer_base += bio_credits
+	# Freezer market: deposit, advance spoil clock, roll price or force-dump.
+	_update_freezer_market(snapped, bio_credits)
 
 	# Decrypt box: count down and release when ready
 	if decrypt_box_queue > 0:
@@ -98,13 +97,6 @@ func on_run_complete(snapped: bool, bio_credits: int) -> void:
 			add_credits(decrypt_last_payout)
 			decrypt_box_queue = 0
 			decrypt_box_runs = 0
-
-	# Freezer spoil check — recurring: halves every FREEZER_SPOIL_RUNS
-	if freezer_base > 0 and not snapped:
-		freezer_runs += 1
-		if freezer_runs >= FREEZER_SPOIL_RUNS:
-			freezer_base = freezer_base / 2
-			freezer_runs = 0
 
 	# Debt payment every 5 runs
 	if runs_since_payment >= 5:
@@ -120,6 +112,27 @@ func on_run_complete(snapped: bool, bio_credits: int) -> void:
 
 	_maybe_append_journal_entry()
 	save()
+
+func _update_freezer_market(snapped: bool, bio_credits: int) -> void:
+	# Deposits always happen — the freezer is the bio income pipeline.
+	if bio_credits > 0:
+		freezer_base += bio_credits
+	# On a snapped run, or when empty, the market does not move and the clock holds.
+	if snapped or freezer_base <= 0:
+		return
+	freezer_runs += 1
+	if freezer_runs >= FREEZER_SPOIL_RUNS:
+		_force_dump_freezer()
+		return
+	freezer_multiplier = randf_range(FREEZER_MIN_MULT, FREEZER_MAX_MULT)
+
+func _force_dump_freezer() -> void:
+	var proceeds := int(round(freezer_base * FREEZER_FLOOR_MULT))
+	add_credits(proceeds)
+	EventBus.deck_log.emit("FREEZER: Stock spoiled - forced liquidation at floor. +%d cr." % proceeds)
+	freezer_base = 0
+	freezer_runs = 0
+	freezer_multiplier = 1.0
 
 func _maybe_append_journal_entry() -> void:
 	match run_count:
