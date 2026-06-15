@@ -68,3 +68,15 @@ func test_bunk_reveal_picks_up_new_run_log() -> void:
 	}] as Array[Dictionary]
 	b.on_screen_shown()
 	assert_string_contains(b.content_label.text, "axiom")
+
+const MARTA := preload("res://scenes/barge_hub/MartaTerminal.tscn")
+
+func test_marta_reveal_updates_payment_countdown() -> void:
+	GameState.victory = false
+	GameState.runs_since_payment = 0
+	var m := _make(MARTA)
+	await get_tree().process_frame
+	assert_string_contains(m.payment_label.text, "5 run")
+	GameState.runs_since_payment = 4
+	m.on_screen_shown()
+	assert_string_contains(m.payment_label.text, "1 run")

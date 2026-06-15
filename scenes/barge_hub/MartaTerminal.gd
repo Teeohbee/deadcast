@@ -8,6 +8,9 @@ extends Control
 @onready var _transmission: IncomingTransmission = $MarginContainer/VBoxContainer/TopRow/IncomingTransmission
 
 func _ready() -> void:
+	_refresh()
+
+func _refresh() -> void:
 	GameState.marta_last_seen_run = GameState.run_count
 	GameState.save()
 
@@ -34,6 +37,9 @@ func _ready() -> void:
 		DeckStyle.apply_label(payment_label, DeckStyle.AMBER)
 
 	_transmission.refresh(GameState.pressure_level)
+
+func on_screen_shown() -> void:
+	_refresh()
 
 func _marta_story_beat(run: int) -> String:
 	if run >= 12:
