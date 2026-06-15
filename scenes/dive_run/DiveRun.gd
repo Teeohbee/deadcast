@@ -197,7 +197,7 @@ func _present_catch(catch_data: CatchData) -> void:
 
 		if option.narrative_text != "":
 			session_log.log_line(DiveFormat.narrative_entry(augmented.catch_name, option.narrative_text),
-				DeckStyle.DIM)
+				DeckStyle.TEXT)
 			GameState.journal_entries.append("[%s]\n\n%s" % [augmented.catch_name, option.narrative_text])
 			GameState.save()
 			await session_log.present_continue()
@@ -337,7 +337,7 @@ func _run_overload(catch_data: CatchData) -> void:
 	var reward: CatchOption = catch_data.options[0]
 
 	session_log.log_line(DiveFormat.contact_card(catch_data), DeckStyle.RED)
-	session_log.log_line("│  est. yield: ~%dcr" % reward.credit_value, DeckStyle.DIM)
+	session_log.log_line("│  est. yield: ~%dcr" % reward.credit_value, DeckStyle.TEXT)
 
 	var last_echo := ""
 	while true:
@@ -350,7 +350,7 @@ func _run_overload(catch_data: CatchData) -> void:
 			return
 		session_log.log_line(
 			DiveFormat.overload_status(fight.anchor, catch_data.anchor_strength, fight.threat, fight.turn),
-			DeckStyle.DIM)
+			DeckStyle.TEXT)
 
 		var commands := fight.pick_commands()
 		var labels: Array[String] = []
@@ -367,7 +367,7 @@ func _run_overload(catch_data: CatchData) -> void:
 		if cmd.id == "ISOLATE_FEED":
 			line_system.sync_tension(fight.tension)
 			session_log.log_line(">>> feed isolated  ·  catch lost  ·  tension holds at %dT" % fight.tension,
-				DeckStyle.DIM)
+				DeckStyle.TEXT)
 			_run_record.entries.append({"kind": "lure", "text": "feed isolated — catch lost"})
 			await _beat()
 			_advance_slot()
@@ -533,10 +533,10 @@ func _show_inline_debrief() -> void:
 		var runs_to_payment := 5 - GameState.runs_since_payment
 		if GameState.pressure_level == 0:
 			session_log.log_line("next payment: 10,000cr in %d run%s" % [
-				runs_to_payment, "s" if runs_to_payment != 1 else ""], DeckStyle.DIM)
+				runs_to_payment, "s" if runs_to_payment != 1 else ""], DeckStyle.TEXT)
 		else:
 			session_log.log_line("pressure %d — %s" % [
-				GameState.pressure_level, _pressure_label(GameState.pressure_level)], DeckStyle.DIM)
+				GameState.pressure_level, _pressure_label(GameState.pressure_level)], DeckStyle.AMBER)
 
 	if bio > 0:
 		session_log.log_line("bio cache: %dcr stored in freezer" % bio, DeckStyle.DIM)

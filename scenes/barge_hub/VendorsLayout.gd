@@ -19,7 +19,7 @@ const LURE_PATHS: Array[String] = [
 @onready var _schematic: ItemSchematic = $MarginContainer/VBoxContainer/StockRow/RightColumn/ItemSchematic
 
 func _ready() -> void:
-	DeckStyle.apply_label(message_label, DeckStyle.DIM, DeckStyle.SIZE_BODY)
+	DeckStyle.apply_label(message_label, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
 	_vendor_link.refresh()
 	_build_stock()
 
@@ -101,9 +101,11 @@ func _buy_rod(rod: RodData, price: int) -> void:
 		GameState.equip_rod(rod)
 		GameState.save()
 		message_label.text = "%s equipped." % rod.rod_name.to_lower()
+		message_label.add_theme_color_override("font_color", DeckStyle.GREEN)
 		_build_stock()
 	else:
 		message_label.text = "not enough credits."
+		message_label.add_theme_color_override("font_color", DeckStyle.RED)
 
 func _buy_lure(lure: LureData, price: int) -> void:
 	if GameState.spend_credits(price):
@@ -111,6 +113,8 @@ func _buy_lure(lure: LureData, price: int) -> void:
 		GameState.lure_inventory[lure_id] = GameState.lure_inventory.get(lure_id, 0) + 1
 		GameState.save()
 		message_label.text = "%s purchased." % lure.lure_name.to_lower()
+		message_label.add_theme_color_override("font_color", DeckStyle.GREEN)
 		_build_stock()
 	else:
 		message_label.text = "not enough credits."
+		message_label.add_theme_color_override("font_color", DeckStyle.RED)

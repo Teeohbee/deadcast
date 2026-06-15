@@ -16,7 +16,7 @@ func _ready() -> void:
 		DeckStyle.apply_action_button(btn)
 
 	DeckStyle.apply_label(status_label, DeckStyle.TEXT)
-	DeckStyle.apply_label(message_label, DeckStyle.DIM)
+	DeckStyle.apply_label(message_label, DeckStyle.TEXT)
 
 	load_button.pressed.connect(_on_load_pressed)
 	_refresh()
@@ -67,7 +67,9 @@ func _on_load_pressed() -> void:
 			GameState.decrypt_box_runs = 0
 		GameState.save()
 		message_label.text = "%dcr loaded into decrypt queue." % LOAD_AMOUNT
+		message_label.add_theme_color_override("font_color", DeckStyle.GREEN)
 		_cipher_log.append_line("PAYLOAD: %dcr block queued for decryption." % LOAD_AMOUNT)
 		_refresh()
 	else:
 		message_label.text = "not enough credits."
+		message_label.add_theme_color_override("font_color", DeckStyle.RED)

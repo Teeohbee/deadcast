@@ -31,7 +31,7 @@ func _ready() -> void:
 		DeckStyle.apply_label(dialogue_label, DeckStyle.TEXT)
 		payment_label.text = "next payment: 10,000cr due in %d run%s." % [
 			runs_to_payment, "s" if runs_to_payment != 1 else ""]
-		DeckStyle.apply_label(payment_label, DeckStyle.DIM)
+		DeckStyle.apply_label(payment_label, DeckStyle.AMBER)
 
 	_transmission.refresh(GameState.pressure_level)
 

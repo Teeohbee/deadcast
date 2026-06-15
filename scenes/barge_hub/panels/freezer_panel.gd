@@ -27,7 +27,7 @@ func _build() -> void:
 	DeckStyle.apply_label(caption, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 	header.add_child(caption)
 	_count_label = Label.new()
-	DeckStyle.apply_label(_count_label, DeckStyle.DIM, DeckStyle.SIZE_BODY)
+	DeckStyle.apply_label(_count_label, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
 	header.add_child(_count_label)
 	root.add_child(header)
 
@@ -62,7 +62,7 @@ func _build() -> void:
 	DeckStyle.apply_label(fname, DeckStyle.TEXT, DeckStyle.SIZE_AMBIENT)
 	sleft.add_child(fname)
 	_value_label = Label.new()
-	DeckStyle.apply_label(_value_label, DeckStyle.DIM, DeckStyle.SIZE_BODY)
+	DeckStyle.apply_label(_value_label, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
 	sleft.add_child(_value_label)
 	srow.add_child(sleft)
 	_chip = Label.new()
