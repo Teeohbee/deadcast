@@ -18,7 +18,7 @@ func _ready() -> void:
 		DeckStyle.apply_action_button(btn)
 
 	DeckStyle.apply_label(rod_label, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
-	DeckStyle.apply_label(message_label, DeckStyle.DIM, DeckStyle.SIZE_BODY)
+	DeckStyle.apply_label(message_label, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
 
 	repair_button.pressed.connect(_on_repair_pressed)
 	depth_upgrade_button.pressed.connect(_on_depth_upgrade_pressed)
@@ -58,11 +58,13 @@ func _on_repair_pressed() -> void:
 		GameState.rod_damaged = false
 		GameState.save()
 		message_label.text = "%s repaired." % rod.rod_name.to_lower()
+		message_label.add_theme_color_override("font_color", DeckStyle.GREEN)
 		_maintenance_log.append_line("REPAIR: %s serviced. Micro-fractures sealed." % rod.rod_name.to_lower())
 		_tension_gauge.refresh()
 		_refresh()
 	else:
 		message_label.text = "not enough credits."
+		message_label.add_theme_color_override("font_color", DeckStyle.RED)
 
 func _on_depth_upgrade_pressed() -> void:
 	var cost := _depth_upgrade_cost()
@@ -74,11 +76,13 @@ func _on_depth_upgrade_pressed() -> void:
 		GameState.current_rod = rod
 		GameState.save()
 		message_label.text = "depth increased to %dft." % rod.max_depth
+		message_label.add_theme_color_override("font_color", DeckStyle.GREEN)
 		_maintenance_log.append_line("DEPTH MOD: Extension coil fitted. New ceiling: %dft." % rod.max_depth)
 		_tension_gauge.refresh()
 		_refresh()
 	else:
 		message_label.text = "not enough credits."
+		message_label.add_theme_color_override("font_color", DeckStyle.RED)
 
 func _depth_upgrade_cost() -> int:
 	return DEPTH_UPGRADE_BASE_COST * (1 << GameState.depth_upgrade_count)

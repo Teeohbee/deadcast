@@ -51,7 +51,7 @@ static func apply_label(label: Label, color: Color, font_size: int = SIZE_BODY) 
 	label.add_theme_color_override("font_color", color)
 	label.add_theme_font_size_override("font_size", font_size)
 
-static func make_chip(text: String, tier: int) -> Label:
+static func make_chip(text: String, tier: int, font_size: int = SIZE_AMBIENT) -> Label:
 	var c := tier_color(tier)
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(c.r, c.g, c.b, 0.10)
@@ -64,7 +64,7 @@ static func make_chip(text: String, tier: int) -> Label:
 	var chip := Label.new()
 	chip.text = text
 	chip.add_theme_stylebox_override("normal", sb)
-	apply_label(chip, c, SIZE_AMBIENT)
+	apply_label(chip, c, font_size)
 	return chip
 
 static func apply_action_button(btn: Button, color: Color = GREEN) -> void:

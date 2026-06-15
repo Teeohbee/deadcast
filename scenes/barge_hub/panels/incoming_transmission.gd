@@ -59,4 +59,4 @@ func link_status(pressure: int) -> Dictionary:
 func refresh(pressure: int) -> void:
 	var status := link_status(pressure)
 	_link_label.text = "LINK  %s" % status.text
-	DeckStyle.apply_label(_link_label, status.color, DeckStyle.SIZE_AMBIENT)
+	DeckStyle.apply_label(_link_label, status.color, DeckStyle.SIZE_BODY)

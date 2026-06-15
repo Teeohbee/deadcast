@@ -1,4 +1,5 @@
 # scenes/barge_hub/panels/ledger_panel.gd
+class_name LedgerPanel
 extends TerminalPanel
 
 const SEGMENTS := 5

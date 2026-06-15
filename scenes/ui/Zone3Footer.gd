@@ -21,7 +21,7 @@ func _ready() -> void:
 	DeckStyle.apply_label(sep_label, DeckStyle.BORDER)
 
 	_prev_hint = Label.new()
-	DeckStyle.apply_label(_prev_hint, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
+	DeckStyle.apply_label(_prev_hint, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
 	tab_row.add_child(_prev_hint)
 
 	for i in _TABS.size():
@@ -43,7 +43,7 @@ func _ready() -> void:
 		_tab_buttons.append(btn)
 
 	_next_hint = Label.new()
-	DeckStyle.apply_label(_next_hint, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
+	DeckStyle.apply_label(_next_hint, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
 	tab_row.add_child(_next_hint)
 
 	UIController.screen_changed.connect(_on_screen_changed)

@@ -27,7 +27,7 @@ func _build() -> void:
 	DeckStyle.apply_label(caption, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 	header.add_child(caption)
 	_count_label = Label.new()
-	DeckStyle.apply_label(_count_label, DeckStyle.DIM, DeckStyle.SIZE_BODY)
+	DeckStyle.apply_label(_count_label, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
 	header.add_child(_count_label)
 	root.add_child(header)
 
@@ -62,7 +62,7 @@ func _build() -> void:
 	DeckStyle.apply_label(fname, DeckStyle.TEXT, DeckStyle.SIZE_AMBIENT)
 	sleft.add_child(fname)
 	_value_label = Label.new()
-	DeckStyle.apply_label(_value_label, DeckStyle.DIM, DeckStyle.SIZE_BODY)
+	DeckStyle.apply_label(_value_label, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
 	sleft.add_child(_value_label)
 	srow.add_child(sleft)
 	_chip = Label.new()
@@ -103,11 +103,11 @@ func _apply_chip() -> void:
 	var tier := 0
 	if GameState.freezer_runs > 0:
 		tier = 2 if runs_left <= 1 else 1
-	var styled := DeckStyle.make_chip(spoil_chip_text(), tier)
+	var styled := DeckStyle.make_chip(spoil_chip_text(), tier, DeckStyle.SIZE_BODY)
 	_chip.text = styled.text
 	_chip.add_theme_stylebox_override("normal", styled.get_theme_stylebox("normal"))
 	_chip.add_theme_color_override("font_color", styled.get_theme_color("font_color"))
-	_chip.add_theme_font_size_override("font_size", DeckStyle.SIZE_AMBIENT)
+	_chip.add_theme_font_size_override("font_size", DeckStyle.SIZE_BODY)
 	styled.free()
 
 func focus_targets() -> Array[Control]:

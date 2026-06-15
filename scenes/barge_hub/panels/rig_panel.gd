@@ -32,7 +32,7 @@ func _build() -> void:
 	root.add_child(rod_row)
 
 	_rod_meta = Label.new()
-	DeckStyle.apply_label(_rod_meta, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
+	DeckStyle.apply_label(_rod_meta, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
 	root.add_child(_rod_meta)
 
 	# Not focusable: lure cycling is a global hotkey (see _input), not a focus
