@@ -4,6 +4,7 @@ extends Control
 @onready var _zone_panel: Control = $Margin/VBox/MainGrid/LeftColumn/ZonePanel
 @onready var _rig_panel: Control = $Margin/VBox/MainGrid/RightColumn/RigPanel
 @onready var _freezer_panel: Control = $Margin/VBox/MainGrid/RightColumn/FreezerPanel
+@onready var _ledger_panel: Control = $Margin/VBox/MainGrid/RightColumn/LedgerPanel
 @onready var _banner: PanelContainer = $Margin/VBox/DiveBanner
 @onready var _banner_caption: Label = $Margin/VBox/DiveBanner/BannerRow/BannerCaption
 @onready var _banner_zone: Label = $Margin/VBox/DiveBanner/BannerRow/BannerZone
@@ -30,6 +31,16 @@ func _ready() -> void:
 	await get_tree().process_frame
 	_zone_panel.focus_selected()
 	_wire_focus_graph()
+
+func on_screen_shown() -> void:
+	# FreezerPanel and RigPanel don't listen to EventBus, so refresh them on
+	# reveal to reflect any dive/vendor changes; LedgerPanel is refreshed too
+	# for robustness. Re-grab controller focus on the selected zone card.
+	_ledger_panel.refresh()
+	_freezer_panel.refresh()
+	_rig_panel.refresh()
+	_on_zone_changed(GameState.selected_zone)
+	_zone_panel.focus_selected()
 
 func _wire_focus_graph() -> void:
 	var left: Array[Control] = _zone_panel.focus_targets()
