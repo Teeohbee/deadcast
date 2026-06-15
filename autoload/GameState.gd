@@ -348,6 +348,7 @@ func new_game() -> void:
 	decrypt_last_payout = 0
 	freezer_base = 0
 	freezer_runs = 0
+	freezer_multiplier = 1.0
 	selected_zone = "district7"
 	marta_last_seen_run = -1
 	encountered_entities = {}
