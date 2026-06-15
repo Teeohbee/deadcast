@@ -83,7 +83,7 @@ func _build() -> void:
 	root.add_child(_sell_btn)
 
 func refresh() -> void:
-	var v := GameState.freezer_value
+	var v := GameState.freezer_base
 	_count_label.text = "%s cr STORED" % _fmt(v)
 	_vacant.visible = v == 0
 	_strip.visible = v > 0
@@ -114,9 +114,9 @@ func focus_targets() -> Array[Control]:
 	return [_sell_btn]
 
 func _on_sell() -> void:
-	var v := GameState.freezer_value
+	var v := GameState.freezer_base
 	GameState.add_credits(v)
-	GameState.freezer_value = 0
+	GameState.freezer_base = 0
 	GameState.freezer_runs = 0
 	GameState.save()
 	EventBus.deck_log.emit("COMMERCE: Disposed all cached archives. +%s cr." % _fmt(v))

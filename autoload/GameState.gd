@@ -46,7 +46,7 @@ var DECRYPT_OUTCOMES: Array = [
 ]
 
 # Freezer
-var freezer_value: int = 0
+var freezer_base: int = 0
 var freezer_runs: int = 0
 const FREEZER_SPOIL_RUNS: int = 3
 
@@ -79,7 +79,7 @@ func on_run_complete(snapped: bool, bio_credits: int) -> void:
 
 	# Add bio catches to freezer
 	if bio_credits > 0:
-		freezer_value += bio_credits
+		freezer_base += bio_credits
 
 	# Decrypt box: count down and release when ready
 	if decrypt_box_queue > 0:
@@ -93,10 +93,10 @@ func on_run_complete(snapped: bool, bio_credits: int) -> void:
 			decrypt_box_runs = 0
 
 	# Freezer spoil check — recurring: halves every FREEZER_SPOIL_RUNS
-	if freezer_value > 0 and not snapped:
+	if freezer_base > 0 and not snapped:
 		freezer_runs += 1
 		if freezer_runs >= FREEZER_SPOIL_RUNS:
-			freezer_value = freezer_value / 2
+			freezer_base = freezer_base / 2
 			freezer_runs = 0
 
 	# Debt payment every 5 runs
@@ -249,7 +249,7 @@ func _save_to(path: String) -> void:
 	cfg.set_value("decrypt", "box_runs", decrypt_box_runs)
 	cfg.set_value("decrypt", "last_outcome", decrypt_last_outcome)
 	cfg.set_value("decrypt", "last_payout", decrypt_last_payout)
-	cfg.set_value("freezer", "value", freezer_value)
+	cfg.set_value("freezer", "value", freezer_base)
 	cfg.set_value("freezer", "runs", freezer_runs)
 	cfg.set_value("narrative", "marta_last_seen_run", marta_last_seen_run)
 	cfg.set_value("narrative", "journal_entries", journal_entries)
@@ -296,7 +296,7 @@ func _load_from(path: String) -> void:
 	decrypt_box_runs = cfg.get_value("decrypt", "box_runs", 0)
 	decrypt_last_outcome = cfg.get_value("decrypt", "last_outcome", "")
 	decrypt_last_payout = cfg.get_value("decrypt", "last_payout", 0)
-	freezer_value = cfg.get_value("freezer", "value", 0)
+	freezer_base = cfg.get_value("freezer", "value", 0)
 	freezer_runs = cfg.get_value("freezer", "runs", 0)
 	marta_last_seen_run = cfg.get_value("narrative", "marta_last_seen_run", -1)
 	journal_entries = cfg.get_value("narrative", "journal_entries", [] as Array[String])
@@ -321,7 +321,7 @@ func new_game() -> void:
 	decrypt_box_runs = 0
 	decrypt_last_outcome = ""
 	decrypt_last_payout = 0
-	freezer_value = 0
+	freezer_base = 0
 	freezer_runs = 0
 	selected_zone = "district7"
 	marta_last_seen_run = -1

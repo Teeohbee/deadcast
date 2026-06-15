@@ -12,7 +12,7 @@ func before_each() -> void:
 	GameState.decrypt_box_runs = 0
 	GameState.decrypt_last_outcome = ""
 	GameState.decrypt_last_payout = 0
-	GameState.freezer_value = 0
+	GameState.freezer_base = 0
 	GameState.freezer_runs = 0
 
 func test_run_count_increments_each_run() -> void:
@@ -60,27 +60,27 @@ func test_decrypt_box_pays_out_after_3_runs() -> void:
 		"Credits should change unless corruption outcome")
 
 func test_freezer_spoils_after_3_runs() -> void:
-	GameState.freezer_value = 2000
+	GameState.freezer_base = 2000
 	GameState.freezer_runs = 0
 	for i in 3:
 		GameState.on_run_complete(false, 0)
-	assert_eq(GameState.freezer_value, 1000, "Freezer spoils to 50% after 3 runs")
+	assert_eq(GameState.freezer_base, 1000, "Freezer spoils to 50% after 3 runs")
 
 func test_freezer_spoils_again_after_another_3_runs() -> void:
-	GameState.freezer_value = 2000
+	GameState.freezer_base = 2000
 	GameState.freezer_runs = 0
 	for i in 6:
 		GameState.on_run_complete(false, 0)
-	assert_eq(GameState.freezer_value, 500, "Freezer spoils twice: 2000 -> 1000 -> 500")
+	assert_eq(GameState.freezer_base, 500, "Freezer spoils twice: 2000 -> 1000 -> 500")
 
 func test_freezer_added_after_spoil_still_degrades() -> void:
-	GameState.freezer_value = 1000
+	GameState.freezer_base = 1000
 	GameState.freezer_runs = 0
 	for i in 3:
 		GameState.on_run_complete(false, 0)
-	assert_eq(GameState.freezer_value, 500, "First spoil")
+	assert_eq(GameState.freezer_base, 500, "First spoil")
 	GameState.on_run_complete(false, 800)
-	assert_eq(GameState.freezer_value, 1300, "Added 800 bio credits")
+	assert_eq(GameState.freezer_base, 1300, "Added 800 bio credits")
 	for i in 2:
 		GameState.on_run_complete(false, 0)
-	assert_eq(GameState.freezer_value, 650, "Second spoil after new bio added")
+	assert_eq(GameState.freezer_base, 650, "Second spoil after new bio added")
