@@ -48,7 +48,14 @@ var DECRYPT_OUTCOMES: Array = [
 # Freezer
 var freezer_base: int = 0
 var freezer_runs: int = 0
+var freezer_multiplier: float = 1.0
 const FREEZER_SPOIL_RUNS: int = 3
+const FREEZER_MIN_MULT: float = 0.5
+const FREEZER_MAX_MULT: float = 1.5
+const FREEZER_FLOOR_MULT: float = 0.3
+
+func freezer_sale_value() -> int:
+	return int(round(freezer_base * freezer_multiplier))
 
 # Narrative
 var marta_last_seen_run: int = -1
