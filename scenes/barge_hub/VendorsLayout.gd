@@ -23,6 +23,10 @@ func _ready() -> void:
 	_vendor_link.refresh()
 	_build_stock()
 
+func on_screen_shown() -> void:
+	_vendor_link.refresh()
+	_build_stock()
+
 # Okeke is the deck's sole dealer: rods and lures, base price, always open.
 func _build_stock() -> void:
 	for child in stock_container.get_children():
