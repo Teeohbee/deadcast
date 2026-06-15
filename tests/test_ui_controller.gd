@@ -112,3 +112,8 @@ func test_initialize_clears_cache() -> void:
 	UIController.initialize(_zone2)
 	UIController.navigate_to("deck")
 	assert_true(UIController._current_node != first, "re-init must drop the cached instance")
+
+func test_navigate_to_deck_remaps_to_gameover_under_pressure() -> void:
+	GameState.pressure_level = 5
+	UIController.navigate_to("deck")
+	assert_eq(UIController.current_screen, "gameover")

@@ -11,8 +11,9 @@ func _ready() -> void:
 	_refresh()
 
 func _refresh() -> void:
-	GameState.marta_last_seen_run = GameState.run_count
-	GameState.save()
+	if GameState.has_new_marta_beat():
+		GameState.marta_last_seen_run = GameState.run_count
+		GameState.save()
 
 	var beat = _marta_story_beat(GameState.run_count)
 	story_beat_label.text = beat

@@ -94,3 +94,11 @@ func test_decrypt_reveal_reflects_queue() -> void:
 	GameState.decrypt_box_runs = 1
 	d.on_screen_shown()
 	assert_string_contains(d.status_label.text, "queued")
+
+func test_marta_visit_clears_new_beat_badge() -> void:
+	GameState.run_count = 1
+	GameState.marta_last_seen_run = -1
+	assert_true(GameState.has_new_marta_beat(), "precondition: a new beat is pending")
+	var m := _make(MARTA)
+	await get_tree().process_frame
+	assert_false(GameState.has_new_marta_beat(), "visiting marta should clear the new-beat badge")
