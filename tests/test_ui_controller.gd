@@ -23,6 +23,55 @@ func before_each() -> void:
 func after_each() -> void:
 	UIController._scene_factory = UIController._default_scene_factory
 
+# --- navigation behaviour (retained from the original test file) ---
+
+func test_navigate_to_sets_current_screen() -> void:
+	UIController.navigate_to("workshop")
+	assert_eq(UIController.current_screen, "workshop")
+
+func test_navigate_to_emits_screen_changed() -> void:
+	watch_signals(UIController)
+	UIController.navigate_to("bunk")
+	assert_signal_emitted_with_parameters(UIController, "screen_changed", ["bunk"])
+
+func test_navigate_to_dive_emits_dive_state_true() -> void:
+	watch_signals(UIController)
+	UIController.navigate_to("dive")
+	assert_signal_emitted_with_parameters(UIController, "dive_state_changed", [true])
+
+func test_navigate_to_deck_emits_dive_state_false() -> void:
+	watch_signals(UIController)
+	UIController.navigate_to("deck")
+	assert_signal_emitted_with_parameters(UIController, "dive_state_changed", [false])
+
+func test_only_one_screen_visible_at_a_time() -> void:
+	# Persistent screens stay in the container (hidden) instead of being freed,
+	# so the container accumulates children but only the current one is visible.
+	UIController.navigate_to("workshop")
+	UIController.navigate_to("bunk")
+	var visible_count := 0
+	for child in _zone2.get_children():
+		if (child as Control).visible:
+			visible_count += 1
+	assert_eq(visible_count, 1, "exactly one screen should be visible at a time")
+
+func test_cycle_tab_advances_from_deck_to_workshop() -> void:
+	UIController.navigate_to("deck")
+	UIController._cycle_tab(1)
+	assert_eq(UIController.current_screen, "workshop")
+
+func test_cycle_tab_wraps_from_vendors_to_deck() -> void:
+	UIController.navigate_to("vendors")
+	UIController._cycle_tab(1)
+	assert_eq(UIController.current_screen, "deck")
+
+func test_cycle_tab_wraps_backward_from_deck_to_vendors() -> void:
+	UIController.navigate_to("deck")
+	UIController._cycle_tab(-1)
+	assert_eq(UIController.current_screen, "vendors")
+
+# --- caching / lifecycle behaviour (new) ---
+
 func test_persistent_revisit_reuses_same_instance() -> void:
 	UIController.navigate_to("deck")
 	var first := UIController._current_node
