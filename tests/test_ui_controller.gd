@@ -2,7 +2,6 @@
 extends GutTest
 
 var _zone2: Control
-var _built: Array = []
 
 class FakeScreen:
 	extends Control
@@ -13,10 +12,8 @@ class FakeScreen:
 func before_each() -> void:
 	_zone2 = Control.new()
 	add_child_autofree(_zone2)
-	_built = []
 	GameState.pressure_level = 0
-	UIController._scene_factory = func(id: String) -> Node:
-		_built.append(id)
+	UIController._scene_factory = func(_id: String) -> Node:
 		return FakeScreen.new()
 	UIController.initialize(_zone2)
 
