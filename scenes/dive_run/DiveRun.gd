@@ -536,7 +536,8 @@ func _show_inline_debrief() -> void:
 				runs_to_payment, "s" if runs_to_payment != 1 else ""], DeckStyle.TEXT)
 		else:
 			session_log.log_line("pressure %d — %s" % [
-				GameState.pressure_level, _pressure_label(GameState.pressure_level)], DeckStyle.AMBER)
+				GameState.pressure_level, _pressure_label(GameState.pressure_level)],
+				LedgerPanel.pressure_fill_color(GameState.pressure_level))
 
 	if bio > 0:
 		session_log.log_line("bio cache: %dcr stored in freezer" % bio, DeckStyle.DIM)
