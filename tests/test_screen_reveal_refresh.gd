@@ -8,6 +8,7 @@ func before_each() -> void:
 	GameState.debt = 0
 	GameState.freezer_base = 0
 	GameState.freezer_runs = 0
+	GameState.freezer_multiplier = 1.0
 	GameState.pressure_level = 0
 	GameState.selected_zone = "district7"
 
