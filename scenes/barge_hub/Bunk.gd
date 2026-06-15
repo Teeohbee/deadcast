@@ -55,6 +55,11 @@ func _wire_focus_graph() -> void:
 	DeckNav.link(page_up_btn, journal_toggle, SIDE_TOP)
 	DeckNav.link(page_down_btn, journal_toggle, SIDE_TOP)
 
+func on_screen_shown() -> void:
+	# Keep the last-viewed mode; refresh its content for any new entries.
+	_refresh_content()
+	page_down_btn.grab_focus()
+
 func _set_mode(mode: Mode) -> void:
 	_mode = mode
 	scroll_container.scroll_vertical = 0

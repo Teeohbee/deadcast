@@ -53,6 +53,10 @@ func _refresh() -> void:
 
 	_update_crack()
 
+func on_screen_shown() -> void:
+	_refresh()
+	load_button.grab_focus()
+
 func _update_crack() -> void:
 	var active := GameState.decrypt_box_queue > 0
 	var progress := 0.0
