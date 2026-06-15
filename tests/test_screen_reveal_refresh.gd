@@ -53,3 +53,18 @@ func test_vendors_reveal_rebuilds_stock_for_credits() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	assert_true(_has_enabled_stock(v), "raising credits should enable at least one item")
+
+const BUNK := preload("res://scenes/barge_hub/Bunk.tscn")
+
+func test_bunk_reveal_picks_up_new_run_log() -> void:
+	GameState.run_logs = [] as Array[Dictionary]
+	var b := _make(BUNK)
+	await get_tree().process_frame
+	b._set_mode(b.Mode.LOG)
+	assert_string_contains(b.content_label.text, "no archived runs")
+	GameState.run_logs = [{
+		"run": 1, "zone": "axiom depths", "entries": [],
+		"banked": 250, "forfeited": 0, "outcome": "surfaced",
+	}] as Array[Dictionary]
+	b.on_screen_shown()
+	assert_string_contains(b.content_label.text, "axiom")
