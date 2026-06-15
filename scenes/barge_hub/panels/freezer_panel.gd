@@ -5,6 +5,7 @@ var _count_label: Label
 var _vacant: Label
 var _strip: PanelContainer
 var _value_label: Label
+var _market_chip: Label
 var _chip: Label
 var _sell_btn: Button
 
@@ -65,6 +66,9 @@ func _build() -> void:
 	DeckStyle.apply_label(_value_label, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
 	sleft.add_child(_value_label)
 	srow.add_child(sleft)
+	_market_chip = Label.new()
+	_market_chip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	srow.add_child(_market_chip)
 	_chip = Label.new()
 	_chip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	srow.add_child(_chip)
@@ -83,14 +87,17 @@ func _build() -> void:
 	root.add_child(_sell_btn)
 
 func refresh() -> void:
-	var v := GameState.freezer_base
-	_count_label.text = "%s cr STORED" % _fmt(v)
-	_vacant.visible = v == 0
-	_strip.visible = v > 0
-	_sell_btn.visible = v > 0
-	if v > 0:
-		_value_label.text = "%s cr" % _fmt(v)
+	var sale := GameState.freezer_sale_value()
+	var has_stock := GameState.freezer_base > 0
+	_count_label.text = "%s cr STORED" % _fmt(GameState.freezer_base)
+	_vacant.visible = not has_stock
+	_strip.visible = has_stock
+	_sell_btn.visible = has_stock
+	_market_chip.visible = has_stock
+	if has_stock:
+		_value_label.text = "%s cr" % _fmt(sale)
 		_apply_chip()
+		_apply_market_chip()
 
 func spoil_chip_text() -> String:
 	if GameState.freezer_runs == 0:
@@ -110,16 +117,28 @@ func _apply_chip() -> void:
 	_chip.add_theme_font_size_override("font_size", DeckStyle.SIZE_BODY)
 	styled.free()
 
+func _apply_market_chip() -> void:
+	var m := GameState.freezer_multiplier
+	var dir := "+" if m >= 1.0 else "-"
+	var tier := 0 if m >= 1.0 else 2
+	var styled := DeckStyle.make_chip("MARKET %s%.2fx" % [dir, m], tier, DeckStyle.SIZE_BODY)
+	_market_chip.text = styled.text
+	_market_chip.add_theme_stylebox_override("normal", styled.get_theme_stylebox("normal"))
+	_market_chip.add_theme_color_override("font_color", styled.get_theme_color("font_color"))
+	_market_chip.add_theme_font_size_override("font_size", DeckStyle.SIZE_BODY)
+	styled.free()
+
 func focus_targets() -> Array[Control]:
 	return [_sell_btn]
 
 func _on_sell() -> void:
-	var v := GameState.freezer_base
-	GameState.add_credits(v)
+	var sale := GameState.freezer_sale_value()
+	GameState.add_credits(sale)
 	GameState.freezer_base = 0
 	GameState.freezer_runs = 0
+	GameState.freezer_multiplier = 1.0
 	GameState.save()
-	EventBus.deck_log.emit("COMMERCE: Disposed all cached archives. +%s cr." % _fmt(v))
+	EventBus.deck_log.emit("COMMERCE: Disposed all cached archives. +%s cr." % _fmt(sale))
 	refresh()
 
 static func _fmt(n: int) -> String:
