@@ -22,3 +22,14 @@ func test_deck_reveal_refreshes_freezer() -> void:
 	GameState.freezer_value = 1400
 	deck.on_screen_shown()
 	assert_string_contains(deck._freezer_panel._value_label.text, "1,400")
+
+const WORKSHOP := preload("res://scenes/barge_hub/Workshop.tscn")
+
+func test_workshop_reveal_reflects_rod_damage() -> void:
+	GameState.current_rod = load("res://resources/rods/scrap_rod.tres")
+	GameState.rod_damaged = false
+	var w := _make(WORKSHOP)
+	await get_tree().process_frame
+	GameState.rod_damaged = true
+	w.on_screen_shown()
+	assert_string_contains(w.rod_label.text, "[damaged]")

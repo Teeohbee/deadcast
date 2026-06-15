@@ -29,6 +29,11 @@ func _ready() -> void:
 	repair_button.grab_focus()
 	DeckNav.chain_vertical([repair_button, depth_upgrade_button])
 
+func on_screen_shown() -> void:
+	_refresh()
+	_tension_gauge.refresh()
+	repair_button.grab_focus()
+
 func _refresh() -> void:
 	var rod = GameState.current_rod
 	if rod == null:
