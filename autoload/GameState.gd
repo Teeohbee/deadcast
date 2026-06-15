@@ -46,9 +46,16 @@ var DECRYPT_OUTCOMES: Array = [
 ]
 
 # Freezer
-var freezer_value: int = 0
+var freezer_base: int = 0
 var freezer_runs: int = 0
+var freezer_multiplier: float = 1.0
 const FREEZER_SPOIL_RUNS: int = 3
+const FREEZER_MIN_MULT: float = 0.5
+const FREEZER_MAX_MULT: float = 1.5
+const FREEZER_FLOOR_MULT: float = 0.3
+
+func freezer_sale_value() -> int:
+	return int(round(freezer_base * freezer_multiplier))
 
 # Narrative
 var marta_last_seen_run: int = -1
@@ -77,9 +84,8 @@ func on_run_complete(snapped: bool, bio_credits: int) -> void:
 	if snapped:
 		rod_damaged = true
 
-	# Add bio catches to freezer
-	if bio_credits > 0:
-		freezer_value += bio_credits
+	# Freezer market: deposit, advance spoil clock, roll price or force-dump.
+	_update_freezer_market(snapped, bio_credits)
 
 	# Decrypt box: count down and release when ready
 	if decrypt_box_queue > 0:
@@ -91,13 +97,6 @@ func on_run_complete(snapped: bool, bio_credits: int) -> void:
 			add_credits(decrypt_last_payout)
 			decrypt_box_queue = 0
 			decrypt_box_runs = 0
-
-	# Freezer spoil check — recurring: halves every FREEZER_SPOIL_RUNS
-	if freezer_value > 0 and not snapped:
-		freezer_runs += 1
-		if freezer_runs >= FREEZER_SPOIL_RUNS:
-			freezer_value = freezer_value / 2
-			freezer_runs = 0
 
 	# Debt payment every 5 runs
 	if runs_since_payment >= 5:
@@ -113,6 +112,27 @@ func on_run_complete(snapped: bool, bio_credits: int) -> void:
 
 	_maybe_append_journal_entry()
 	save()
+
+func _update_freezer_market(snapped: bool, bio_credits: int) -> void:
+	# Deposits always happen — the freezer is the bio income pipeline.
+	if bio_credits > 0:
+		freezer_base += bio_credits
+	# On a snapped run, or when empty, the market does not move and the clock holds.
+	if snapped or freezer_base <= 0:
+		return
+	freezer_runs += 1
+	if freezer_runs >= FREEZER_SPOIL_RUNS:
+		_force_dump_freezer()
+		return
+	freezer_multiplier = randf_range(FREEZER_MIN_MULT, FREEZER_MAX_MULT)
+
+func _force_dump_freezer() -> void:
+	var proceeds := int(round(freezer_base * FREEZER_FLOOR_MULT))
+	add_credits(proceeds)
+	EventBus.deck_log.emit("FREEZER: Stock spoiled - forced liquidation at floor. +%d cr." % proceeds)
+	freezer_base = 0
+	freezer_runs = 0
+	freezer_multiplier = 1.0
 
 func _maybe_append_journal_entry() -> void:
 	match run_count:
@@ -249,7 +269,8 @@ func _save_to(path: String) -> void:
 	cfg.set_value("decrypt", "box_runs", decrypt_box_runs)
 	cfg.set_value("decrypt", "last_outcome", decrypt_last_outcome)
 	cfg.set_value("decrypt", "last_payout", decrypt_last_payout)
-	cfg.set_value("freezer", "value", freezer_value)
+	cfg.set_value("freezer", "base", freezer_base)
+	cfg.set_value("freezer", "multiplier", freezer_multiplier)
 	cfg.set_value("freezer", "runs", freezer_runs)
 	cfg.set_value("narrative", "marta_last_seen_run", marta_last_seen_run)
 	cfg.set_value("narrative", "journal_entries", journal_entries)
@@ -296,7 +317,11 @@ func _load_from(path: String) -> void:
 	decrypt_box_runs = cfg.get_value("decrypt", "box_runs", 0)
 	decrypt_last_outcome = cfg.get_value("decrypt", "last_outcome", "")
 	decrypt_last_payout = cfg.get_value("decrypt", "last_payout", 0)
-	freezer_value = cfg.get_value("freezer", "value", 0)
+	if cfg.has_section_key("freezer", "base"):
+		freezer_base = cfg.get_value("freezer", "base", 0)
+	else:
+		freezer_base = cfg.get_value("freezer", "value", 0)  # legacy migration
+	freezer_multiplier = cfg.get_value("freezer", "multiplier", 1.0)
 	freezer_runs = cfg.get_value("freezer", "runs", 0)
 	marta_last_seen_run = cfg.get_value("narrative", "marta_last_seen_run", -1)
 	journal_entries = cfg.get_value("narrative", "journal_entries", [] as Array[String])
@@ -321,8 +346,9 @@ func new_game() -> void:
 	decrypt_box_runs = 0
 	decrypt_last_outcome = ""
 	decrypt_last_payout = 0
-	freezer_value = 0
+	freezer_base = 0
 	freezer_runs = 0
+	freezer_multiplier = 1.0
 	selected_zone = "district7"
 	marta_last_seen_run = -1
 	encountered_entities = {}

@@ -12,7 +12,7 @@ func before_each() -> void:
 	GameState.decrypt_box_runs = 0
 	GameState.decrypt_last_outcome = ""
 	GameState.decrypt_last_payout = 0
-	GameState.freezer_value = 0
+	GameState.freezer_base = 0
 	GameState.freezer_runs = 0
 
 func test_roll_returns_corruption_at_low_roll() -> void:

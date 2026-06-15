@@ -10,7 +10,7 @@ func before_each() -> void:
 	GameState.rod_damaged = false
 	GameState.decrypt_box_queue = 0
 	GameState.decrypt_box_runs = 0
-	GameState.freezer_value = 0
+	GameState.freezer_base = 0
 	GameState.freezer_runs = 0
 	GameState.marta_last_seen_run = -1
 	GameState.journal_entries = []

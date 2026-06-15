@@ -102,3 +102,27 @@ func test_depth_upgrade_count_inferred_from_old_save() -> void:
 	cfg.save("user://save_test.cfg")
 	GameState._load_from("user://save_test.cfg")
 	assert_eq(GameState.depth_upgrade_count, 2, "100 bonus / 50 per upgrade = 2")
+
+func test_freezer_base_and_multiplier_round_trip() -> void:
+	GameState.freezer_base = 1234
+	GameState.freezer_multiplier = 1.35
+	GameState.freezer_runs = 2
+	GameState._save_to("user://save_test.cfg")
+	GameState.freezer_base = 0
+	GameState.freezer_multiplier = 1.0
+	GameState.freezer_runs = 0
+	GameState._load_from("user://save_test.cfg")
+	assert_eq(GameState.freezer_base, 1234)
+	assert_almost_eq(GameState.freezer_multiplier, 1.35, 0.001)
+	assert_eq(GameState.freezer_runs, 2)
+
+func test_legacy_freezer_value_migrates_to_base() -> void:
+	var cfg := ConfigFile.new()
+	cfg.set_value("freezer", "value", 900)  # legacy key only
+	cfg.set_value("freezer", "runs", 1)
+	cfg.save("user://save_test.cfg")
+	GameState.freezer_base = 0
+	GameState.freezer_multiplier = 9.9
+	GameState._load_from("user://save_test.cfg")
+	assert_eq(GameState.freezer_base, 900, "legacy value -> base")
+	assert_almost_eq(GameState.freezer_multiplier, 1.0, 0.001, "absent multiplier defaults to 1.0")
