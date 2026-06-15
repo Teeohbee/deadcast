@@ -60,6 +60,15 @@ func test_force_dump_at_floor_on_deadline() -> void:
 	assert_eq(GameState.freezer_base, 0)
 	assert_eq(GameState.freezer_runs, 0)
 
+func test_deposit_on_force_dump_run_is_included_in_proceeds() -> void:
+	GameState.credits = 0
+	GameState.freezer_base = 1000
+	GameState.freezer_runs = GameState.FREEZER_SPOIL_RUNS - 1
+	GameState._update_freezer_market(false, 200)  # fresh catch on the spoil-deadline run
+	assert_eq(GameState.credits, 360, "(1000 + 200) * 0.3 floor")
+	assert_eq(GameState.freezer_base, 0)
+	assert_eq(GameState.freezer_runs, 0)
+
 func test_roll_stays_in_band() -> void:
 	for i in range(200):
 		GameState.freezer_base = 1000

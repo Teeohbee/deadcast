@@ -119,9 +119,9 @@ func _apply_chip() -> void:
 
 func _apply_market_chip() -> void:
 	var m := GameState.freezer_multiplier
-	var dir := "+" if m >= 1.0 else "-"
 	var tier := 0 if m >= 1.0 else 2
-	var styled := DeckStyle.make_chip("MARKET %s%.2fx" % [dir, m], tier, DeckStyle.SIZE_BODY)
+	# No +/- sign: it misreads as a delta on a multiplier; colour + magnitude carry direction.
+	var styled := DeckStyle.make_chip("MARKET %.2fx" % m, tier, DeckStyle.SIZE_BODY)
 	_market_chip.text = styled.text
 	_market_chip.add_theme_stylebox_override("normal", styled.get_theme_stylebox("normal"))
 	_market_chip.add_theme_color_override("font_color", styled.get_theme_color("font_color"))
