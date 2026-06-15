@@ -269,7 +269,8 @@ func _save_to(path: String) -> void:
 	cfg.set_value("decrypt", "box_runs", decrypt_box_runs)
 	cfg.set_value("decrypt", "last_outcome", decrypt_last_outcome)
 	cfg.set_value("decrypt", "last_payout", decrypt_last_payout)
-	cfg.set_value("freezer", "value", freezer_base)
+	cfg.set_value("freezer", "base", freezer_base)
+	cfg.set_value("freezer", "multiplier", freezer_multiplier)
 	cfg.set_value("freezer", "runs", freezer_runs)
 	cfg.set_value("narrative", "marta_last_seen_run", marta_last_seen_run)
 	cfg.set_value("narrative", "journal_entries", journal_entries)
@@ -316,7 +317,11 @@ func _load_from(path: String) -> void:
 	decrypt_box_runs = cfg.get_value("decrypt", "box_runs", 0)
 	decrypt_last_outcome = cfg.get_value("decrypt", "last_outcome", "")
 	decrypt_last_payout = cfg.get_value("decrypt", "last_payout", 0)
-	freezer_base = cfg.get_value("freezer", "value", 0)
+	if cfg.has_section_key("freezer", "base"):
+		freezer_base = cfg.get_value("freezer", "base", 0)
+	else:
+		freezer_base = cfg.get_value("freezer", "value", 0)  # legacy migration
+	freezer_multiplier = cfg.get_value("freezer", "multiplier", 1.0)
 	freezer_runs = cfg.get_value("freezer", "runs", 0)
 	marta_last_seen_run = cfg.get_value("narrative", "marta_last_seen_run", -1)
 	journal_entries = cfg.get_value("narrative", "journal_entries", [] as Array[String])
