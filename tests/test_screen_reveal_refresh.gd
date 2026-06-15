@@ -80,3 +80,17 @@ func test_marta_reveal_updates_payment_countdown() -> void:
 	GameState.runs_since_payment = 4
 	m.on_screen_shown()
 	assert_string_contains(m.payment_label.text, "1 run")
+
+const DECRYPT := preload("res://scenes/barge_hub/DecryptBox.tscn")
+
+func test_decrypt_reveal_reflects_queue() -> void:
+	GameState.credits = 50000
+	GameState.decrypt_box_queue = 0
+	GameState.decrypt_box_runs = 0
+	var d := _make(DECRYPT)
+	await get_tree().process_frame
+	assert_string_contains(d.status_label.text, "box is empty")
+	GameState.decrypt_box_queue = 1000
+	GameState.decrypt_box_runs = 1
+	d.on_screen_shown()
+	assert_string_contains(d.status_label.text, "queued")
