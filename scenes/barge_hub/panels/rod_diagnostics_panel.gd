@@ -42,12 +42,12 @@ func _add_row(field_name: String) -> Label:
 	var field_label := Label.new()
 	field_label.text = field_name
 	field_label.custom_minimum_size.x = 90
-	DeckStyle.apply_label(field_label, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
+	DeckStyle.apply_label(field_label, DeckStyle.DIM, DeckStyle.SIZE_BODY)
 	row.add_child(field_label)
 
 	var val_label := Label.new()
 	val_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	DeckStyle.apply_label(val_label, DeckStyle.TEXT, DeckStyle.SIZE_AMBIENT)
+	DeckStyle.apply_label(val_label, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
 	row.add_child(val_label)
 
 	return val_label

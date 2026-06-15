@@ -13,7 +13,7 @@ var _haul: int = 0
 var _lure_label: String = "—"
 
 func _ready() -> void:
-	DeckStyle.apply_label(self, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
+	DeckStyle.apply_label(self, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
 	EventBus.haul_changed.connect(_on_haul_changed)
 	EventBus.lure_stock_changed.connect(_on_lure_stock_changed)
 

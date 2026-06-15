@@ -16,7 +16,7 @@ func _ready() -> void:
 	add_child(root)
 
 	_status = Label.new()
-	DeckStyle.apply_label(_status, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
+	DeckStyle.apply_label(_status, DeckStyle.DIM, DeckStyle.SIZE_BODY)
 	root.add_child(_status)
 
 	var meter_holder := Control.new()
@@ -57,4 +57,4 @@ func refresh() -> void:
 	_meter.fill_color = state.color
 	_meter.target = state.load
 	_status.text = state.label
-	DeckStyle.apply_label(_status, state.color, DeckStyle.SIZE_AMBIENT)
+	DeckStyle.apply_label(_status, state.color, DeckStyle.SIZE_BODY)

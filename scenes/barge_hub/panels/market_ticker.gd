@@ -59,7 +59,7 @@ func _draw_ticker() -> void:
 		return
 
 	var font := get_theme_font("font", "Label")
-	var fsize := DeckStyle.SIZE_AMBIENT
+	var fsize := DeckStyle.SIZE_BODY
 	var ascent := font.get_ascent(fsize)
 	var baseline := (_view.size.y - ascent - font.get_descent(fsize)) / 2.0 + ascent
 
@@ -73,7 +73,7 @@ func _draw_ticker() -> void:
 	var x := -fmod(_scroll, unit_w)
 	while x < _view.size.x:
 		_view.draw_string(font, Vector2(x, baseline), unit,
-			HORIZONTAL_ALIGNMENT_LEFT, -1, fsize, DeckStyle.DIM)
+			HORIZONTAL_ALIGNMENT_LEFT, -1, fsize, DeckStyle.TEXT)
 		x += unit_w
 
 # Builds the scrolling string from live purchase costs interleaved with market

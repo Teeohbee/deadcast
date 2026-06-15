@@ -25,13 +25,13 @@ func _ready() -> void:
 
 	_caption = Label.new()
 	_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	DeckStyle.apply_label(_caption, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
+	DeckStyle.apply_label(_caption, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
 	root.add_child(_caption)
 
 	_description = Label.new()
 	_description.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	DeckStyle.apply_label(_description, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
+	DeckStyle.apply_label(_description, DeckStyle.DIM, DeckStyle.SIZE_BODY)
 	root.add_child(_description)
 
 	clear()

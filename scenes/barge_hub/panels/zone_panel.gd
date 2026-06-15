@@ -90,7 +90,7 @@ func _build_card(zone_id: String, zone: ZoneData) -> Button:
 	name_row.add_child(name_label)
 	_names[zone_id] = name_label
 
-	name_row.add_child(DeckStyle.make_chip(zone.tag_label, zone.tag_tier))
+	name_row.add_child(DeckStyle.make_chip(zone.tag_label, zone.tag_tier, DeckStyle.SIZE_BODY))
 
 	var desc := Label.new()
 	desc.text = zone.description.to_lower()
