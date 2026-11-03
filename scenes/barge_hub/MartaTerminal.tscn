@@ -67,6 +67,26 @@ autowrap_mode = 3
 text = ""
 autowrap_mode = 3
 
+[node name="JobPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+script = ExtResource("2_tp")
+title = "marta_job"
+
+[node name="JobVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/JobPanel"]
+theme_override_constants/separation = 8
+
+[node name="JobLabel" type="Label" parent="MarginContainer/VBoxContainer/JobPanel/JobVBox"]
+text = ""
+autowrap_mode = 3
+
+[node name="ButtonRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/JobPanel/JobVBox"]
+theme_override_constants/separation = 8
+
+[node name="AcceptButton" type="Button" parent="MarginContainer/VBoxContainer/JobPanel/JobVBox/ButtonRow"]
+text = "[ ACCEPT ]"
+
+[node name="DeclineButton" type="Button" parent="MarginContainer/VBoxContainer/JobPanel/JobVBox/ButtonRow"]
+text = "[ DECLINE ]"
+
 [node name="HistoryPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
 script = ExtResource("2_tp")
 size_flags_vertical = 3

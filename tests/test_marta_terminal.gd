@@ -56,3 +56,47 @@ func test_history_panel_says_when_empty() -> void:
 	var s := _make()
 	await get_tree().process_frame
 	assert_string_contains(s._history_label.text, "no earlier transmissions")
+
+# --- job panel ---
+
+func _reset_jobs() -> void:
+	GameState.active_job_id = ""
+	GameState.job_declined_run = -1
+
+func test_job_panel_offers_a_job_with_accept_and_decline() -> void:
+	_reset_jobs()
+	GameState.run_count = 3
+	var s := _make()
+	await get_tree().process_frame
+	var offer := MartaJobs.offer_for(3)
+	assert_string_contains(s._job_label.text, offer.title)
+	assert_true(s._accept_button.visible)
+	assert_true(s._decline_button.visible)
+
+func test_accept_button_activates_the_offered_job() -> void:
+	_reset_jobs()
+	GameState.run_count = 3
+	var s := _make()
+	await get_tree().process_frame
+	s._accept_button.pressed.emit()
+	assert_eq(GameState.active_job_id, MartaJobs.offer_for(3).id)
+	assert_false(s._accept_button.visible)
+	assert_string_contains(s._job_label.text, "active")
+	_reset_jobs()
+
+func test_decline_button_closes_the_offer() -> void:
+	_reset_jobs()
+	GameState.run_count = 3
+	var s := _make()
+	await get_tree().process_frame
+	s._decline_button.pressed.emit()
+	assert_eq(GameState.active_job_id, "")
+	assert_false(s._accept_button.visible)
+	_reset_jobs()
+
+func test_no_job_offered_before_first_run() -> void:
+	_reset_jobs()
+	GameState.run_count = 0
+	var s := _make()
+	await get_tree().process_frame
+	assert_false(s._accept_button.visible)
