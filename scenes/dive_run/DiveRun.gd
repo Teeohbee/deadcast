@@ -3,6 +3,10 @@ extends Control
 
 const ROD_DAMAGE_TENSION_PENALTY: int = 25
 const BEAT_PAUSE := 0.5
+const SNAP_SHAKE_STRENGTH := 10.0
+const SNAP_SHAKE_SECONDS := 0.4
+const SNAP_FLASH_SECONDS := 0.6
+const FAKE_SIGNAL_LOSS_SECONDS := 0.5
 const _DEBRIEF_SEP := "────────────────────────────────────────────────────────────────"
 const _DEBRIEF_SEP_SHORT := "────────────────────────────────────────────────"
 
@@ -157,6 +161,7 @@ func _present_catch(catch_data: CatchData) -> void:
 			augmented = _inject_shock_option(current)
 
 		if need_card:
+			await _maybe_fake_signal_loss()
 			session_log.log_line(DiveFormat.contact_card(augmented), DeckStyle.TEXT)
 			EventBus.contact_presented.emit(catch_data)
 			need_card = false
@@ -470,6 +475,13 @@ func _pacify_entities_in_layer() -> void:
 			dup.behavior = CatchData.BehaviorType.PASSIVE
 			_column.slots[i] = dup
 
+# Heavy corruption: the feed sometimes drops out before a contact resolves.
+func _maybe_fake_signal_loss() -> void:
+	if not DiveFormat.should_fake_signal_loss(line_system.corruption, randf()):
+		return
+	ScreenFX.message_flash(session_log, "[SIGNAL LOST]", DeckStyle.RED, FAKE_SIGNAL_LOSS_SECONDS)
+	await get_tree().create_timer(FAKE_SIGNAL_LOSS_SECONDS).timeout
+
 func _beat() -> void:
 	await get_tree().create_timer(BEAT_PAUSE).timeout
 
@@ -486,6 +498,8 @@ func _on_line_snapped() -> void:
 	_bio_credits = 0
 	EventBus.haul_changed.emit(0)
 	session_log.clear_live()
+	ScreenFX.shake($Margin, SNAP_SHAKE_STRENGTH, SNAP_SHAKE_SECONDS)
+	ScreenFX.flash(self, DeckStyle.RED, SNAP_FLASH_SECONDS)
 	session_log.log_line("\n[!!! TENSION EXCEEDED !!!]", DeckStyle.RED)
 	await get_tree().create_timer(0.5).timeout
 	session_log.log_line(TextFX.corrupt("[LINE SNAPPED — SIGNAL LOST]", 0.2), DeckStyle.RED)

@@ -7,6 +7,18 @@ extends TerminalPanel
 
 const BPM_REST := 60
 const BPM_MAX := 130
+# From 50 corruption the readout can't be trusted: it wanders around the true
+# value and keeps re-reading even when tension hasn't changed.
+const CORRUPT_READOUT_FROM := 50.0
+const CORRUPT_BPM_JITTER := 8
+const CORRUPT_REREAD_SECONDS := 0.4
+const TENSION_PULSE_MIN_RISE := 5.0
+const TENSION_PULSE_SECONDS := 0.35
+
+static func displayed_bpm(true_bpm: int, corruption: float, rng: RandomNumberGenerator) -> int:
+	if corruption < CORRUPT_READOUT_FROM:
+		return true_bpm
+	return true_bpm + rng.randi_range(-CORRUPT_BPM_JITTER, CORRUPT_BPM_JITTER)
 
 static func bpm_for(tension: int, max_tension: int) -> int:
 	if max_tension <= 0:
@@ -27,6 +39,10 @@ var _max_tension: int = 80
 var _load: float = 0.0
 var _flatline: bool = false
 var _scroll: float = 0.0
+var _tension: float = 0.0
+var _corruption: float = 0.0
+var _seconds_since_reread: float = 0.0
+var _readout_rng := RandomNumberGenerator.new()
 
 func setup(max_tension: int) -> void:
 	_max_tension = max_tension
@@ -50,19 +66,36 @@ func _ready() -> void:
 	root.add_child(_trace)
 
 	EventBus.tension_changed.connect(_on_tension_changed)
+	EventBus.corruption_changed.connect(_on_corruption_changed)
 	EventBus.run_ended.connect(_on_run_ended)
 	_update_readout(0)
 
 func _process(delta: float) -> void:
 	_scroll += delta * (1.0 + _load * 2.0)
 	_trace.queue_redraw()
+	if _corruption >= CORRUPT_READOUT_FROM:
+		_seconds_since_reread += delta
+		if _seconds_since_reread >= CORRUPT_REREAD_SECONDS:
+			_seconds_since_reread = 0.0
+			_update_readout(int(_tension))
 
 func _on_tension_changed(value: float) -> void:
+	if value - _tension >= TENSION_PULSE_MIN_RISE:
+		_pulse()
+	_tension = value
 	if _max_tension <= 0:
 		_load = 0.0
 	else:
 		_load = clampf(value / float(_max_tension), 0.0, 1.0)
 	_update_readout(int(value))
+
+func _on_corruption_changed(value: float) -> void:
+	_corruption = value
+
+# A real pull on the line: the panel flares red and settles.
+func _pulse() -> void:
+	modulate = Color(1.8, 0.6, 0.6)
+	create_tween().tween_property(self, "modulate", Color.WHITE, TENSION_PULSE_SECONDS)
 
 func _on_run_ended(result: Dictionary) -> void:
 	if not result.get("snapped", false) or _flatline:
@@ -76,7 +109,7 @@ func _on_run_ended(result: Dictionary) -> void:
 func _update_readout(tension: int) -> void:
 	if _flatline:
 		return
-	var bpm := bpm_for(tension, _max_tension)
+	var bpm := displayed_bpm(bpm_for(tension, _max_tension), _corruption, _readout_rng)
 	var state := load_state(_load)
 	_readout.text = "%d BPM  ·  [%s]" % [bpm, state]
 	var col := DeckStyle.TEXT.lerp(DeckStyle.RED, _load)

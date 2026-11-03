@@ -44,3 +44,24 @@ func _run_choice(sl: SessionLog, state: Dictionary) -> void:
 func _run_action(sl: SessionLog, state: Dictionary) -> void:
 	await sl.present_action("[ RETURN TO DECK ]", "return to deck")
 	state.done = true
+
+func test_heavy_corruption_scrambles_choice_labels_then_resolves_them() -> void:
+	var sl := _make_log()
+	sl.glitch_intensity = DiveFormat.glitch_intensity(75.0)
+	var state := {"result": -1}
+	_run_choice(sl, state)
+	await wait_frames(1)
+	var first_label := (sl.live_block.get_child(0) as Button).text
+	assert_ne(first_label, "[1] reel_in", "label should start scrambled")
+	await get_tree().create_timer(SessionLog.LABEL_SCRAMBLE_SECONDS + 0.1).timeout
+	assert_eq((sl.live_block.get_child(0) as Button).text, "[1] reel_in", "label should resolve")
+	(sl.live_block.get_child(0) as Button).pressed.emit()
+
+func test_light_corruption_leaves_choice_labels_alone() -> void:
+	var sl := _make_log()
+	sl.glitch_intensity = DiveFormat.glitch_intensity(55.0)
+	var state := {"result": -1}
+	_run_choice(sl, state)
+	await wait_frames(1)
+	assert_eq((sl.live_block.get_child(0) as Button).text, "[1] reel_in")
+	(sl.live_block.get_child(0) as Button).pressed.emit()

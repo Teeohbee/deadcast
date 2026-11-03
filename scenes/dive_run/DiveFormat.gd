@@ -131,6 +131,14 @@ static func run_log_text(record: Dictionary) -> String:
 			int(record.banked), contacts])
 	return "\n".join(lines)
 
+# At 90+ corruption a new contact sometimes blacks the feed out with a fake
+# [SIGNAL LOST] before the real card appears. roll is 0..1.
+const FAKE_SIGNAL_LOSS_CORRUPTION := 90.0
+const FAKE_SIGNAL_LOSS_CHANCE := 0.35
+
+static func should_fake_signal_loss(corruption: float, roll: float) -> bool:
+	return corruption >= FAKE_SIGNAL_LOSS_CORRUPTION and roll < FAKE_SIGNAL_LOSS_CHANCE
+
 static func glitch_intensity(corruption: float) -> float:
 	if corruption >= 90.0:
 		return 0.18
