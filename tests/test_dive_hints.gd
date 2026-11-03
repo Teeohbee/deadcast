@@ -3,21 +3,6 @@ extends GutTest
 
 var _saved_hints_done: bool
 var _saved_run_count: int
-# new_game() and on_run_complete() write the real save; keep the player's copy.
-var _real_save_existed: bool = false
-var _real_save_bytes: PackedByteArray = PackedByteArray()
-
-func before_all() -> void:
-	_real_save_existed = FileAccess.file_exists(GameState.SAVE_PATH)
-	if _real_save_existed:
-		_real_save_bytes = FileAccess.get_file_as_bytes(GameState.SAVE_PATH)
-
-func after_all() -> void:
-	if _real_save_existed:
-		var file := FileAccess.open(GameState.SAVE_PATH, FileAccess.WRITE)
-		file.store_buffer(_real_save_bytes)
-	else:
-		DirAccess.remove_absolute(GameState.SAVE_PATH)
 
 func before_each() -> void:
 	_saved_hints_done = GameState.first_dive_hints_done
