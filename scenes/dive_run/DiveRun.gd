@@ -23,6 +23,7 @@ var _run_record: Dictionary = {}
 var _run_credits: int = 0
 var _bio_credits: int = 0
 var _snapped: bool = false
+var _hints_shown: Dictionary = {}
 
 func _ready() -> void:
 	line_system.snapped.connect(_on_line_snapped)
@@ -67,7 +68,16 @@ func _ready() -> void:
 	if GameState.current_rod and GameState.rod_damaged:
 		session_log.log_line(">>> rod damaged — tension cap reduced to %d" % line_system.max_tension,
 			DeckStyle.AMBER)
+	_log_hint(DiveHints.CAST)
 	_show_next_catch()
+
+# Each first-dive hint shows once per run, at the first moment it applies.
+func _log_hint(moment: String) -> void:
+	if _hints_shown.has(moment):
+		return
+	_hints_shown[moment] = true
+	for line in DiveHints.lines_for(moment, GameState.first_dive_hints_done):
+		session_log.log_line(line, DeckStyle.GREEN)
 
 func _show_next_catch() -> void:
 	if _snapped:
@@ -103,6 +113,7 @@ func _show_checkpoint() -> void:
 		int(100.0 - line_system.corruption)], DeckStyle.TEXT)
 	session_log.log_line("│  %s scan: %d contacts  ·  draws weighted by current SIG" % [
 		_column.next_layer_name(), _column.next_layer_slot_count()], DeckStyle.DIM)
+	_log_hint(DiveHints.CHECKPOINT)
 
 	while true:
 		var labels: Array[String] = [
@@ -164,6 +175,7 @@ func _present_catch(catch_data: CatchData) -> void:
 			await _maybe_fake_signal_loss()
 			session_log.log_line(DiveFormat.contact_card(augmented), DeckStyle.TEXT)
 			EventBus.contact_presented.emit(catch_data)
+			_log_hint(DiveHints.CONTACT)
 			need_card = false
 
 		var labels: Array[String] = []
@@ -346,6 +358,7 @@ func _run_overload(catch_data: CatchData) -> void:
 
 	session_log.log_line(DiveFormat.contact_card(catch_data), DeckStyle.RED)
 	EventBus.contact_presented.emit(catch_data)
+	_log_hint(DiveHints.CONTACT)
 	session_log.log_line("│  est. yield: ~%dcr" % reward.credit_value, DeckStyle.TEXT)
 
 	var last_echo := ""

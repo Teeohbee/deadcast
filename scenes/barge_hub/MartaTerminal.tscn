@@ -54,7 +54,6 @@ text = ""
 
 [node name="DialoguePanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
 script = ExtResource("2_tp")
-size_flags_vertical = 3
 title = "marta"
 
 [node name="DialogueVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/DialoguePanel"]
@@ -65,5 +64,18 @@ text = ""
 autowrap_mode = 3
 
 [node name="DialogueLabel" type="Label" parent="MarginContainer/VBoxContainer/DialoguePanel/DialogueVBox"]
+text = ""
+autowrap_mode = 3
+
+[node name="HistoryPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+script = ExtResource("2_tp")
+size_flags_vertical = 3
+title = "transmission_log"
+
+[node name="HistoryScroll" type="ScrollContainer" parent="MarginContainer/VBoxContainer/HistoryPanel"]
+horizontal_scroll_mode = 0
+
+[node name="HistoryLabel" type="Label" parent="MarginContainer/VBoxContainer/HistoryPanel/HistoryScroll"]
+size_flags_horizontal = 3
 text = ""
 autowrap_mode = 3

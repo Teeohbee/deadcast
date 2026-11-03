@@ -3,6 +3,8 @@ extends Control
 
 const DEPTH_UPGRADE_BASE_COST: int = 2000
 const DEPTH_UPGRADE_AMOUNT: int = 50
+# The vendor's rod order doubles as the wireframe variant index.
+const VENDORS := preload("res://scenes/barge_hub/VendorsLayout.gd")
 
 @onready var rod_label: Label = $MarginContainer/HBox/LeftColumn/ControlPanel/VBox/RodLabel
 @onready var repair_button: Button = $MarginContainer/HBox/LeftColumn/ControlPanel/VBox/RepairButton
@@ -10,6 +12,7 @@ const DEPTH_UPGRADE_AMOUNT: int = 50
 @onready var message_label: Label = $MarginContainer/HBox/LeftColumn/ControlPanel/VBox/MessageLabel
 @onready var _tension_gauge: TensionGauge = $MarginContainer/HBox/RightColumn/TensionGauge
 @onready var _maintenance_log: MaintenanceLogPanel = $MarginContainer/HBox/RightColumn/MaintenanceLogPanel
+@onready var _schematic: ItemSchematic = $MarginContainer/HBox/LeftColumn/ItemSchematic
 
 func _ready() -> void:
 	for btn in [repair_button, depth_upgrade_button]:
@@ -39,9 +42,11 @@ func _refresh() -> void:
 	if rod == null:
 		rod_label.text = "no rod equipped."
 		repair_button.disabled = true
+		_schematic.clear()
 		return
 
 	var status = " [damaged]" if GameState.rod_damaged else " [ok]"
+	_schematic.show_item("rod", _rod_variant(rod), rod.rod_name + status, rod.description)
 	rod_label.text = "%s%s  ·  cap: %dT  ·  depth: %dft" % [
 		rod.rod_name.to_lower(), status, rod.tension_cap, rod.max_depth]
 
@@ -88,6 +93,14 @@ func _on_depth_upgrade_pressed() -> void:
 	else:
 		message_label.text = "not enough credits."
 		message_label.add_theme_color_override("font_color", DeckStyle.RED)
+
+# Upgraded rods are duplicates with no resource_path, so match on name.
+func _rod_variant(rod: RodData) -> int:
+	for index in VENDORS.ROD_PATHS.size():
+		var stock_rod: RodData = load(VENDORS.ROD_PATHS[index])
+		if stock_rod.rod_name == rod.rod_name:
+			return index
+	return 0
 
 func _depth_upgrade_cost() -> int:
 	return DEPTH_UPGRADE_BASE_COST * (1 << GameState.depth_upgrade_count)
