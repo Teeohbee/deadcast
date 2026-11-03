@@ -67,6 +67,9 @@ var first_listened_entity_id: String = ""
 const MAX_RUN_LOGS: int = 20
 var run_logs: Array[Dictionary] = []
 
+# Onboarding: first-dive hints in the session log until one run is finished.
+var first_dive_hints_done: bool = false
+
 func _ready() -> void:
 	call_deferred("_load_defaults")
 
@@ -110,6 +113,7 @@ func on_run_complete(snapped: bool, bio_credits: int) -> void:
 		else:
 			pressure_level = min(5, pressure_level + 1)
 
+	first_dive_hints_done = true
 	_maybe_append_journal_entry()
 	save()
 
@@ -258,6 +262,7 @@ func _save_to(path: String) -> void:
 	cfg.set_value("player", "pressure_level", pressure_level)
 	cfg.set_value("player", "run_count", run_count)
 	cfg.set_value("player", "runs_since_payment", runs_since_payment)
+	cfg.set_value("player", "first_dive_hints_done", first_dive_hints_done)
 	cfg.set_value("gear", "rod_damaged", rod_damaged)
 	cfg.set_value("gear", "max_depth_bonus", max_depth_bonus)
 	cfg.set_value("gear", "depth_upgrade_count", depth_upgrade_count)
@@ -290,6 +295,8 @@ func _load_from(path: String) -> void:
 	pressure_level = cfg.get_value("player", "pressure_level", 0)
 	run_count = cfg.get_value("player", "run_count", 0)
 	runs_since_payment = cfg.get_value("player", "runs_since_payment", 0)
+	# Saves from before onboarding existed: anyone who has dived has seen the ropes.
+	first_dive_hints_done = cfg.get_value("player", "first_dive_hints_done", run_count > 0)
 	rod_damaged = cfg.get_value("gear", "rod_damaged", false)
 	max_depth_bonus = cfg.get_value("gear", "max_depth_bonus", 0)
 	if cfg.has_section_key("gear", "depth_upgrade_count"):
@@ -338,6 +345,7 @@ func new_game() -> void:
 	pressure_level = 0
 	run_count = 0
 	runs_since_payment = 0
+	first_dive_hints_done = false
 	rod_damaged = false
 	max_depth_bonus = 0
 	depth_upgrade_count = 0
