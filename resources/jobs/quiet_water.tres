@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="JobData" format=3]
+
+[ext_resource type="Script" path="res://resources/job_data.gd" id="1_job"]
+
+[resource]
+script = ExtResource("1_job")
+id = "quiet_water"
+title = "quiet water"
+brief = "\"something's been talking back on the deep channels. leave it be.\"\n\"no entities this run. not one.\""
+condition = 3
+debt_relief = 2000
+min_run = 1
+

@@ -18,8 +18,16 @@ const BEATS: Array = [
 @onready var dialogue_label: Label = $MarginContainer/VBoxContainer/DialoguePanel/DialogueVBox/DialogueLabel
 @onready var _transmission: IncomingTransmission = $MarginContainer/VBoxContainer/TopRow/IncomingTransmission
 @onready var _history_label: Label = $MarginContainer/VBoxContainer/HistoryPanel/HistoryScroll/HistoryLabel
+@onready var _job_label: Label = $MarginContainer/VBoxContainer/JobPanel/JobVBox/JobLabel
+@onready var _accept_button: Button = $MarginContainer/VBoxContainer/JobPanel/JobVBox/ButtonRow/AcceptButton
+@onready var _decline_button: Button = $MarginContainer/VBoxContainer/JobPanel/JobVBox/ButtonRow/DeclineButton
 
 func _ready() -> void:
+	for button in [_accept_button, _decline_button]:
+		button.focus_mode = Control.FOCUS_ALL
+		DeckStyle.apply_action_button(button)
+	_accept_button.pressed.connect(_on_accept_pressed)
+	_decline_button.pressed.connect(_on_decline_pressed)
 	_refresh()
 
 func _refresh() -> void:
@@ -52,6 +60,40 @@ func _refresh() -> void:
 	_transmission.refresh(GameState.pressure_level)
 	_history_label.text = _history_text(GameState.run_count)
 	DeckStyle.apply_label(_history_label, DeckStyle.DIM)
+	_refresh_job()
+
+func _refresh_job() -> void:
+	var offer_open := GameState.job_offer_open() and MartaJobs.offer_for(GameState.run_count) != null
+	_accept_button.visible = offer_open
+	_decline_button.visible = offer_open
+	DeckStyle.apply_label(_job_label, DeckStyle.TEXT)
+	if offer_open:
+		var offer := MartaJobs.offer_for(GameState.run_count)
+		_job_label.text = "offer: %s  ·  debt relief %dcr\n%s" % [offer.title, offer.debt_relief, offer.brief]
+		_accept_button.grab_focus.call_deferred()
+		return
+	var active := MartaJobs.find(GameState.active_job_id)
+	if active:
+		_job_label.text = "job active: %s  ·  %dcr off the debt if it holds\n%s" % [
+			active.title, active.debt_relief, active.brief]
+		DeckStyle.apply_label(_job_label, DeckStyle.AMBER)
+	elif GameState.victory:
+		_job_label.text = "no more jobs. you don't owe me anything."
+		DeckStyle.apply_label(_job_label, DeckStyle.DIM)
+	elif GameState.run_count == 0:
+		_job_label.text = "\"finish a dive first. then we'll talk work.\""
+		DeckStyle.apply_label(_job_label, DeckStyle.DIM)
+	else:
+		_job_label.text = "no work today. check back after your next dive."
+		DeckStyle.apply_label(_job_label, DeckStyle.DIM)
+
+func _on_accept_pressed() -> void:
+	GameState.accept_job(MartaJobs.offer_for(GameState.run_count).id)
+	_refresh_job()
+
+func _on_decline_pressed() -> void:
+	GameState.decline_job()
+	_refresh_job()
 
 func on_screen_shown() -> void:
 	_refresh()
