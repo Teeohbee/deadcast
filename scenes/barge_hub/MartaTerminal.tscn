@@ -54,7 +54,6 @@ text = ""
 
 [node name="DialoguePanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
 script = ExtResource("2_tp")
-size_flags_vertical = 3
 title = "marta"
 
 [node name="DialogueVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/DialoguePanel"]
@@ -65,5 +64,38 @@ text = ""
 autowrap_mode = 3
 
 [node name="DialogueLabel" type="Label" parent="MarginContainer/VBoxContainer/DialoguePanel/DialogueVBox"]
+text = ""
+autowrap_mode = 3
+
+[node name="JobPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+script = ExtResource("2_tp")
+title = "marta_job"
+
+[node name="JobVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/JobPanel"]
+theme_override_constants/separation = 8
+
+[node name="JobLabel" type="Label" parent="MarginContainer/VBoxContainer/JobPanel/JobVBox"]
+text = ""
+autowrap_mode = 3
+
+[node name="ButtonRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer/JobPanel/JobVBox"]
+theme_override_constants/separation = 8
+
+[node name="AcceptButton" type="Button" parent="MarginContainer/VBoxContainer/JobPanel/JobVBox/ButtonRow"]
+text = "[ ACCEPT ]"
+
+[node name="DeclineButton" type="Button" parent="MarginContainer/VBoxContainer/JobPanel/JobVBox/ButtonRow"]
+text = "[ DECLINE ]"
+
+[node name="HistoryPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+script = ExtResource("2_tp")
+size_flags_vertical = 3
+title = "transmission_log"
+
+[node name="HistoryScroll" type="ScrollContainer" parent="MarginContainer/VBoxContainer/HistoryPanel"]
+horizontal_scroll_mode = 0
+
+[node name="HistoryLabel" type="Label" parent="MarginContainer/VBoxContainer/HistoryPanel/HistoryScroll"]
+size_flags_horizontal = 3
 text = ""
 autowrap_mode = 3

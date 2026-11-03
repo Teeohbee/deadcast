@@ -1,13 +1,33 @@
 # scenes/barge_hub/MartaTerminal.gd
 extends Control
 
+# Story beats from Marta's relay, newest threshold first: [first run seen, text].
+const BEATS: Array = [
+	[12, "\"keep working. i can make the debt go away faster.\"\n\"the price is reasonable. we'll discuss it.\"\n— marta"],
+	[10, "\"okeke's been quiet. probably just busy.\"\n\"focus on your runs.\"\n— marta"],
+	[8, "\"the meridian has a transponder. it was installed before i gave you the rig.\"\n\"axiom has been paying me for your dive coordinates since run one.\"\n\"this changes nothing between us. the debt is still real.\"\n— marta"],
+	[6, "\"that archive you pulled from the axiom sub-basement — the one with the bioweapon specs.\"\n\"good work. i've already moved it.\"\n— marta"],
+	[5, "\"eight runs without a snap. consistent.\"\n\"most people i stake don't make it this far.\"\n— marta"],
+	[3, "\"the shard from the exchange sub-level — i've seen that serial number before.\"\n\"don't worry about how.\"\n— marta"],
+	[1, "\"80,000 credits. the rig, the mooring fee, and the meridian's registration.\"\n\"10,000 every five runs. miss a payment and the terms change.\"\n\"questions?\"\n— marta"],
+]
+
 @onready var debt_status_label: Label = $MarginContainer/VBoxContainer/TopRow/LedgerPanel/LedgerVBox/DebtStatusLabel
 @onready var payment_label: Label = $MarginContainer/VBoxContainer/TopRow/LedgerPanel/LedgerVBox/PaymentLabel
 @onready var story_beat_label: Label = $MarginContainer/VBoxContainer/DialoguePanel/DialogueVBox/StoryBeatLabel
 @onready var dialogue_label: Label = $MarginContainer/VBoxContainer/DialoguePanel/DialogueVBox/DialogueLabel
 @onready var _transmission: IncomingTransmission = $MarginContainer/VBoxContainer/TopRow/IncomingTransmission
+@onready var _history_label: Label = $MarginContainer/VBoxContainer/HistoryPanel/HistoryScroll/HistoryLabel
+@onready var _job_label: Label = $MarginContainer/VBoxContainer/JobPanel/JobVBox/JobLabel
+@onready var _accept_button: Button = $MarginContainer/VBoxContainer/JobPanel/JobVBox/ButtonRow/AcceptButton
+@onready var _decline_button: Button = $MarginContainer/VBoxContainer/JobPanel/JobVBox/ButtonRow/DeclineButton
 
 func _ready() -> void:
+	for button in [_accept_button, _decline_button]:
+		button.focus_mode = Control.FOCUS_ALL
+		DeckStyle.apply_action_button(button)
+	_accept_button.pressed.connect(_on_accept_pressed)
+	_decline_button.pressed.connect(_on_decline_pressed)
 	_refresh()
 
 func _refresh() -> void:
@@ -38,26 +58,72 @@ func _refresh() -> void:
 		DeckStyle.apply_label(payment_label, DeckStyle.AMBER)
 
 	_transmission.refresh(GameState.pressure_level)
+	_history_label.text = _history_text(GameState.run_count)
+	DeckStyle.apply_label(_history_label, DeckStyle.DIM)
+	_refresh_job()
+
+func _refresh_job() -> void:
+	var offer_open := GameState.job_offer_open() and MartaJobs.offer_for(GameState.run_count) != null
+	_accept_button.visible = offer_open
+	_decline_button.visible = offer_open
+	DeckStyle.apply_label(_job_label, DeckStyle.TEXT)
+	if offer_open:
+		var offer := MartaJobs.offer_for(GameState.run_count)
+		_job_label.text = "offer: %s  ·  debt relief %dcr\n%s" % [offer.title, offer.debt_relief, offer.brief]
+		_accept_button.grab_focus.call_deferred()
+		return
+	var active := MartaJobs.find(GameState.active_job_id)
+	if active:
+		_job_label.text = "job active: %s  ·  %dcr off the debt if it holds\n%s" % [
+			active.title, active.debt_relief, active.brief]
+		DeckStyle.apply_label(_job_label, DeckStyle.AMBER)
+	elif GameState.victory:
+		_job_label.text = "no more jobs. you don't owe me anything."
+		DeckStyle.apply_label(_job_label, DeckStyle.DIM)
+	elif GameState.run_count == 0:
+		_job_label.text = "\"finish a dive first. then we'll talk work.\""
+		DeckStyle.apply_label(_job_label, DeckStyle.DIM)
+	else:
+		_job_label.text = "no work today. check back after your next dive."
+		DeckStyle.apply_label(_job_label, DeckStyle.DIM)
+
+func _on_accept_pressed() -> void:
+	GameState.accept_job(MartaJobs.offer_for(GameState.run_count).id)
+	_refresh_job()
+
+func _on_decline_pressed() -> void:
+	GameState.decline_job()
+	_refresh_job()
 
 func on_screen_shown() -> void:
 	_refresh()
 
 func _marta_story_beat(run: int) -> String:
-	if run >= 12:
-		return "\"keep working. i can make the debt go away faster.\"\n\"the price is reasonable. we'll discuss it.\"\n— marta"
-	if run >= 10:
-		return "\"okeke's been quiet. probably just busy.\"\n\"focus on your runs.\"\n— marta"
-	if run >= 8:
-		return "\"the meridian has a transponder. it was installed before i gave you the rig.\"\n\"axiom has been paying me for your dive coordinates since run one.\"\n\"this changes nothing between us. the debt is still real.\"\n— marta"
-	if run >= 6:
-		return "\"that archive you pulled from the axiom sub-basement — the one with the bioweapon specs.\"\n\"good work. i've already moved it.\"\n— marta"
-	if run >= 5:
-		return "\"eight runs without a snap. consistent.\"\n\"most people i stake don't make it this far.\"\n— marta"
-	if run >= 3:
-		return "\"the shard from the exchange sub-level — i've seen that serial number before.\"\n\"don't worry about how.\"\n— marta"
-	if run >= 1:
-		return "\"80,000 credits. the rig, the mooring fee, and the meridian's registration.\"\n\"10,000 every five runs. miss a payment and the terms change.\"\n\"questions?\"\n— marta"
-	return ""
+	var history := beat_history(run)
+	return history[0] if not history.is_empty() else ""
+
+# Every beat received by this run, newest first.
+func beat_history(run: int) -> Array[String]:
+	var received: Array[String] = []
+	for beat in BEATS:
+		if run >= beat[0]:
+			received.append(beat[1])
+	return received
+
+# Earlier beats only; the current one is already in the marta panel.
+func _history_text(run: int) -> String:
+	var entries: Array[String] = []
+	var skipped_current_beat := false
+	for beat in BEATS:
+		if run < beat[0]:
+			continue
+		if not skipped_current_beat:
+			skipped_current_beat = true
+			continue
+		entries.append("── relay · run %d ──\n%s" % [beat[0], beat[1]])
+	if entries.is_empty():
+		return "no earlier transmissions."
+	return "\n\n".join(entries)
 
 func _marta_dialogue(pressure: int) -> String:
 	match pressure:

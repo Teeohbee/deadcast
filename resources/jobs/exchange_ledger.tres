@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="JobData" format=3]
+
+[ext_resource type="Script" path="res://resources/job_data.gd" id="1_job"]
+
+[resource]
+script = ExtResource("1_job")
+id = "exchange_ledger"
+title = "exchange ledger"
+brief = "\"the voss exchange lost a ledger. i'd like it found.\"\n\"bring up any data container from the exchange.\""
+condition = 0
+debt_relief = 3000
+min_run = 2
+zone_id = "exchange"
+catch_type = 0

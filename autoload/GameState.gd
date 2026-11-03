@@ -2,6 +2,8 @@
 extends Node
 
 const SAVE_PATH = "user://save.cfg"
+# Where save()/load_save() read and write; the test pre-run hook redirects it.
+var save_path: String = SAVE_PATH
 const INFINITE_STOCK: int = -1
 const OS_VERSION := "v2.1.4"
 
@@ -67,6 +69,14 @@ var first_listened_entity_id: String = ""
 const MAX_RUN_LOGS: int = 20
 var run_logs: Array[Dictionary] = []
 
+# Marta's jobs (ROADMAP 3.2): the accepted job for the next dive, and the
+# run_count on which her offer was turned down.
+var active_job_id: String = ""
+var job_declined_run: int = -1
+
+# Onboarding: first-dive hints in the session log until one run is finished.
+var first_dive_hints_done: bool = false
+
 func _ready() -> void:
 	call_deferred("_load_defaults")
 
@@ -110,6 +120,7 @@ func on_run_complete(snapped: bool, bio_credits: int) -> void:
 		else:
 			pressure_level = min(5, pressure_level + 1)
 
+	first_dive_hints_done = true
 	_maybe_append_journal_entry()
 	save()
 
@@ -245,10 +256,10 @@ func get_vendor_price_multiplier() -> float:
 # --- Persistence ---
 
 func save() -> void:
-	_save_to(SAVE_PATH)
+	_save_to(save_path)
 
 func load_save() -> void:
-	_load_from(SAVE_PATH)
+	_load_from(save_path)
 
 func _save_to(path: String) -> void:
 	var cfg = ConfigFile.new()
@@ -258,6 +269,7 @@ func _save_to(path: String) -> void:
 	cfg.set_value("player", "pressure_level", pressure_level)
 	cfg.set_value("player", "run_count", run_count)
 	cfg.set_value("player", "runs_since_payment", runs_since_payment)
+	cfg.set_value("player", "first_dive_hints_done", first_dive_hints_done)
 	cfg.set_value("gear", "rod_damaged", rod_damaged)
 	cfg.set_value("gear", "max_depth_bonus", max_depth_bonus)
 	cfg.set_value("gear", "depth_upgrade_count", depth_upgrade_count)
@@ -278,6 +290,8 @@ func _save_to(path: String) -> void:
 	cfg.set_value("narrative", "triggered_journal_events", triggered_journal_events)
 	cfg.set_value("narrative", "first_listened_entity_id", first_listened_entity_id)
 	cfg.set_value("narrative", "run_logs", run_logs)
+	cfg.set_value("jobs", "active_job_id", active_job_id)
+	cfg.set_value("jobs", "declined_run", job_declined_run)
 	cfg.save(path)
 
 func _load_from(path: String) -> void:
@@ -290,6 +304,8 @@ func _load_from(path: String) -> void:
 	pressure_level = cfg.get_value("player", "pressure_level", 0)
 	run_count = cfg.get_value("player", "run_count", 0)
 	runs_since_payment = cfg.get_value("player", "runs_since_payment", 0)
+	# Saves from before onboarding existed: anyone who has dived has seen the ropes.
+	first_dive_hints_done = cfg.get_value("player", "first_dive_hints_done", run_count > 0)
 	rod_damaged = cfg.get_value("gear", "rod_damaged", false)
 	max_depth_bonus = cfg.get_value("gear", "max_depth_bonus", 0)
 	if cfg.has_section_key("gear", "depth_upgrade_count"):
@@ -329,6 +345,8 @@ func _load_from(path: String) -> void:
 	triggered_journal_events = cfg.get_value("narrative", "triggered_journal_events", [] as Array[String])
 	first_listened_entity_id = cfg.get_value("narrative", "first_listened_entity_id", "")
 	run_logs = cfg.get_value("narrative", "run_logs", [] as Array[Dictionary])
+	active_job_id = cfg.get_value("jobs", "active_job_id", "")
+	job_declined_run = cfg.get_value("jobs", "declined_run", -1)
 	EventBus.credits_changed.emit(credits)
 
 func new_game() -> void:
@@ -338,6 +356,7 @@ func new_game() -> void:
 	pressure_level = 0
 	run_count = 0
 	runs_since_payment = 0
+	first_dive_hints_done = false
 	rod_damaged = false
 	max_depth_bonus = 0
 	depth_upgrade_count = 0
@@ -356,10 +375,38 @@ func new_game() -> void:
 	first_listened_entity_id = ""
 	journal_entries = []
 	run_logs = []
+	active_job_id = ""
+	job_declined_run = -1
 	current_rod = load("res://resources/rods/scrap_rod.tres")
 	current_lure = load("res://resources/lures/basic_hook.tres")
 	save()
 	EventBus.credits_changed.emit(credits)
+
+# --- Marta's jobs ---
+
+func job_offer_open() -> bool:
+	return not victory and run_count > 0 and active_job_id == "" and job_declined_run != run_count
+
+func accept_job(job_id: String) -> void:
+	active_job_id = job_id
+	save()
+
+func decline_job() -> void:
+	job_declined_run = run_count
+	save()
+
+# Called by DiveRun as the run ends, before on_run_complete. Returns the debt
+# actually cleared (0 on failure). Jobs last one dive either way.
+func resolve_job(job: JobData, met: bool) -> int:
+	active_job_id = ""
+	if not met:
+		return 0
+	var relief: int = min(job.debt_relief, debt)
+	debt -= relief
+	if debt <= 0:
+		debt = 0
+		victory = true
+	return relief
 
 func has_new_marta_beat() -> bool:
 	return _beat_index(run_count) > _beat_index(marta_last_seen_run)

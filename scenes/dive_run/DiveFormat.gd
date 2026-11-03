@@ -103,6 +103,11 @@ static func archive_result(result: String, credits: int, tension: int, sig: int)
 		return base
 	return "%s  ·  %s" % [result, base]
 
+static func job_result(title: String, met: bool, relief: int) -> String:
+	if met:
+		return "marta job: %s  ·  complete  ·  debt -%dcr" % [title, relief]
+	return "marta job: %s  ·  failed" % title
+
 static func run_log_text(record: Dictionary) -> String:
 	var lines: Array[String] = []
 	lines.append("── RUN_%03d.LOG  ·  %s ──────────────────" % [int(record.run), str(record.zone)])
@@ -123,6 +128,8 @@ static func run_log_text(record: Dictionary) -> String:
 				lines.append("     >>> %s" % str(e.text))
 			"snapped":
 				lines.append("     [!!! TENSION EXCEEDED !!!]")
+			"job":
+				lines.append("[JOB] %s" % job_result(str(e.title), bool(e.met), int(e.relief)))
 	lines.append("")
 	if str(record.outcome) == "snapped":
 		lines.append(">>> session terminated  ·  haul forfeited: %dcr" % int(record.forfeited))

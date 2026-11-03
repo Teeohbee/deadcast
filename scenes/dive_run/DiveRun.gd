@@ -23,6 +23,9 @@ var _run_record: Dictionary = {}
 var _run_credits: int = 0
 var _bio_credits: int = 0
 var _snapped: bool = false
+var _hints_shown: Dictionary = {}
+var _facts: RunFacts = null
+var _job_outcome: Dictionary = {}
 
 func _ready() -> void:
 	line_system.snapped.connect(_on_line_snapped)
@@ -47,6 +50,8 @@ func _ready() -> void:
 		"outcome": "surfaced",
 	}
 
+	_facts = RunFacts.new(zone_id)
+
 	var max_depth = GameState.current_rod.max_depth if GameState.current_rod else 100
 	_column = DiveColumn.new(zone_id, max_depth)
 	_column.generate_current_layer(line_system.corruption)
@@ -67,7 +72,20 @@ func _ready() -> void:
 	if GameState.current_rod and GameState.rod_damaged:
 		session_log.log_line(">>> rod damaged — tension cap reduced to %d" % line_system.max_tension,
 			DeckStyle.AMBER)
+	var job := MartaJobs.find(GameState.active_job_id)
+	if job:
+		session_log.log_line(">>> marta job: %s  ·  %dcr off the debt if it holds" % [
+			job.title, job.debt_relief], DeckStyle.SKY)
+	_log_hint(DiveHints.CAST)
 	_show_next_catch()
+
+# Each first-dive hint shows once per run, at the first moment it applies.
+func _log_hint(moment: String) -> void:
+	if _hints_shown.has(moment):
+		return
+	_hints_shown[moment] = true
+	for line in DiveHints.lines_for(moment, GameState.first_dive_hints_done):
+		session_log.log_line(line, DeckStyle.GREEN)
 
 func _show_next_catch() -> void:
 	if _snapped:
@@ -103,6 +121,7 @@ func _show_checkpoint() -> void:
 		int(100.0 - line_system.corruption)], DeckStyle.TEXT)
 	session_log.log_line("│  %s scan: %d contacts  ·  draws weighted by current SIG" % [
 		_column.next_layer_name(), _column.next_layer_slot_count()], DeckStyle.DIM)
+	_log_hint(DiveHints.CHECKPOINT)
 
 	while true:
 		var labels: Array[String] = [
@@ -164,6 +183,7 @@ func _present_catch(catch_data: CatchData) -> void:
 			await _maybe_fake_signal_loss()
 			session_log.log_line(DiveFormat.contact_card(augmented), DeckStyle.TEXT)
 			EventBus.contact_presented.emit(catch_data)
+			_log_hint(DiveHints.CONTACT)
 			need_card = false
 
 		var labels: Array[String] = []
@@ -217,6 +237,7 @@ func _present_catch(catch_data: CatchData) -> void:
 			GameState.set_entity_encountered(augmented.entity_id)
 
 		if option.cuts_line:
+			_facts.cut_line = true
 			var vented := int(line_system.tension) / 2
 			line_system.sync_tension(vented)
 			line_system.add_corruption(10)
@@ -346,6 +367,7 @@ func _run_overload(catch_data: CatchData) -> void:
 
 	session_log.log_line(DiveFormat.contact_card(catch_data), DeckStyle.RED)
 	EventBus.contact_presented.emit(catch_data)
+	_log_hint(DiveHints.CONTACT)
 	session_log.log_line("│  est. yield: ~%dcr" % reward.credit_value, DeckStyle.TEXT)
 
 	var last_echo := ""
@@ -437,6 +459,7 @@ func _apply_and_record(option: CatchOption, catch_data: CatchData) -> void:
 
 func _record_slot(catch_data: CatchData, echo: String, result: String,
 		credits: int, tension: int, sig: int, engaged: bool = false) -> void:
+	_facts.note_slot(catch_data.catch_type, credits, engaged, line_system.corruption)
 	_run_record.entries.append({
 		"kind": "slot",
 		"slot": _column.global_slot_index() + 1,
@@ -508,7 +531,24 @@ func _on_line_snapped() -> void:
 	await get_tree().create_timer(0.9).timeout
 	await _end_run(true)
 
+# Settles the accepted job against this run, before the record is saved.
+# Returns the run-log entry, or {} when no job was taken.
+func _resolve_active_job(snapped: bool) -> Dictionary:
+	if GameState.active_job_id == "":
+		return {}
+	var job := MartaJobs.find(GameState.active_job_id)
+	if job == null:
+		GameState.active_job_id = ""
+		return {}
+	_facts.snapped = snapped
+	var met := MartaJobs.is_met(job, _facts)
+	var relief := GameState.resolve_job(job, met)
+	var entry := {"kind": "job", "title": job.title, "met": met, "relief": relief}
+	_run_record.entries.append(entry)
+	return entry
+
 func _end_run(snapped: bool) -> void:
+	_job_outcome = _resolve_active_job(snapped)
 	GameState.add_credits(_run_credits - _bio_credits)  # non-bio credits go directly to wallet
 	if not snapped:
 		_run_record.banked = _run_credits
@@ -545,6 +585,9 @@ func _show_inline_debrief() -> void:
 		session_log.log_line("yield:    +%dcr" % earned, DeckStyle.SKY)
 
 	session_log.log_line("wallet:   %dcr  ·  debt: %dcr" % [GameState.credits, GameState.debt], DeckStyle.TEXT)
+	if not _job_outcome.is_empty():
+		session_log.log_line(DiveFormat.job_result(_job_outcome.title, _job_outcome.met, _job_outcome.relief),
+			DeckStyle.SKY if _job_outcome.met else DeckStyle.AMBER)
 
 	if GameState.victory:
 		session_log.log_line("\ndebt cleared. the meridian is yours.", DeckStyle.SKY)
