@@ -141,3 +141,11 @@ func test_run_log_text_snapped() -> void:
 	assert_string_contains(text, ">>> resisted  ·  +35T")
 	assert_string_contains(text, "[!!! TENSION EXCEEDED !!!]")
 	assert_string_contains(text, ">>> session terminated  ·  haul forfeited: 450cr")
+
+func test_fake_signal_loss_only_at_ninety_corruption_and_above() -> void:
+	assert_false(DiveFormat.should_fake_signal_loss(89.0, 0.0))
+	assert_true(DiveFormat.should_fake_signal_loss(90.0, 0.0))
+
+func test_fake_signal_loss_is_a_chance_not_a_certainty() -> void:
+	assert_true(DiveFormat.should_fake_signal_loss(95.0, DiveFormat.FAKE_SIGNAL_LOSS_CHANCE - 0.01))
+	assert_false(DiveFormat.should_fake_signal_loss(95.0, DiveFormat.FAKE_SIGNAL_LOSS_CHANCE + 0.01))
