@@ -78,6 +78,8 @@ func navigate_to(id: String) -> void:
 
 	if node.has_method("on_screen_shown"):
 		node.on_screen_shown()
+	if node is Control:
+		ScreenFX.wipe_in(node as Control)
 
 	screen_changed.emit(id)
 	dive_state_changed.emit(id == "dive")
