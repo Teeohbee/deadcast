@@ -59,6 +59,7 @@ func _ready() -> void:
 
 	await get_tree().process_frame
 	session_log.log_line("> cast — %s" % _zone_data.display_name.to_lower(), DeckStyle.DIM)
+	EventBus.dive_cast.emit()
 	if GameState.current_rod and GameState.rod_damaged:
 		session_log.log_line(">>> rod damaged — tension cap reduced to %d" % line_system.max_tension,
 			DeckStyle.AMBER)
@@ -91,6 +92,7 @@ func _show_next_catch() -> void:
 func _show_checkpoint() -> void:
 	var ghost_bait_armed := false
 	session_log.log_line("\n─── DEPTH CHECKPOINT ──────────────────────────", DeckStyle.SKY)
+	EventBus.checkpoint_reached.emit()
 	session_log.log_line("│  %s cleared  ·  haul: %dcr  ·  tension %d/%d  ·  SIG %d%%" % [
 		DiveColumn.LAYER_NAMES[_column.current_layer()], _run_credits,
 		int(line_system.tension), line_system.max_tension,
@@ -156,6 +158,7 @@ func _present_catch(catch_data: CatchData) -> void:
 
 		if need_card:
 			session_log.log_line(DiveFormat.contact_card(augmented), DeckStyle.TEXT)
+			EventBus.contact_presented.emit(catch_data)
 			need_card = false
 
 		var labels: Array[String] = []
@@ -337,6 +340,7 @@ func _run_overload(catch_data: CatchData) -> void:
 	var reward: CatchOption = catch_data.options[0]
 
 	session_log.log_line(DiveFormat.contact_card(catch_data), DeckStyle.RED)
+	EventBus.contact_presented.emit(catch_data)
 	session_log.log_line("│  est. yield: ~%dcr" % reward.credit_value, DeckStyle.TEXT)
 
 	var last_echo := ""
@@ -473,6 +477,7 @@ func _on_line_snapped() -> void:
 	if _snapped:
 		return
 	_snapped = true
+	EventBus.line_snapped.emit()
 	var forfeited := _run_credits
 	_run_record.entries.append({"kind": "snapped"})
 	_run_record.outcome = "snapped"

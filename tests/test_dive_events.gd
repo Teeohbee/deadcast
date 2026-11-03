@@ -29,3 +29,13 @@ func test_consume_infinite_lure_does_not_emit() -> void:
 	watch_signals(EventBus)
 	GameState.consume_lure_use()
 	assert_signal_not_emitted(EventBus, "lure_stock_changed")
+
+func test_starting_a_dive_signals_the_cast_and_first_contact() -> void:
+	GameState.selected_zone = "district7"
+	watch_signals(EventBus)
+	var dive: Node = load("res://scenes/dive_run/DiveRun.tscn").instantiate()
+	add_child_autofree(dive)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	assert_signal_emitted(EventBus, "dive_cast")
+	assert_signal_emitted(EventBus, "contact_presented")
