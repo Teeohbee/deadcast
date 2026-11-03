@@ -147,7 +147,7 @@ Layer these on top of a game with solid content. Pick based on what excites you 
 
 Start with visual effects - they reinforce the diegetic framing without changing balance.
 
-### 3.2 Marta's jobs
+### 3.2 Marta's jobs ✓
 
 Optional side objectives offered at the Marta terminal before a dive. Success reduces debt directly (not via credits).
 
