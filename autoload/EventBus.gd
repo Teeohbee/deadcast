@@ -11,3 +11,7 @@ signal haul_changed(value: int)
 signal slot_revealed(index: int, marker: String)
 signal lure_stock_changed(lure_id: String, remaining: int)
 signal deck_log(text: String)
+signal dive_cast
+signal contact_presented(catch_data: CatchData)
+signal checkpoint_reached
+signal line_snapped
