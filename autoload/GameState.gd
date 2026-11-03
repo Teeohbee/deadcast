@@ -2,6 +2,8 @@
 extends Node
 
 const SAVE_PATH = "user://save.cfg"
+# Where save()/load_save() read and write; the test pre-run hook redirects it.
+var save_path: String = SAVE_PATH
 const INFINITE_STOCK: int = -1
 const OS_VERSION := "v2.1.4"
 
@@ -245,10 +247,10 @@ func get_vendor_price_multiplier() -> float:
 # --- Persistence ---
 
 func save() -> void:
-	_save_to(SAVE_PATH)
+	_save_to(save_path)
 
 func load_save() -> void:
-	_load_from(SAVE_PATH)
+	_load_from(save_path)
 
 func _save_to(path: String) -> void:
 	var cfg = ConfigFile.new()

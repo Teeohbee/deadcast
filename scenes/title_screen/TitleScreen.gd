@@ -35,7 +35,7 @@ func _ready() -> void:
 	_crt_overlay.material = crt_mat
 	_crt_material = crt_mat
 
-	var save_exists := FileAccess.file_exists(GameState.SAVE_PATH)
+	var save_exists := FileAccess.file_exists(GameState.save_path)
 	continue_button.visible = save_exists
 	confirm_panel.visible = false
 
@@ -170,7 +170,7 @@ func _on_continue_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/AppShell.tscn")
 
 func _on_new_game_pressed() -> void:
-	if FileAccess.file_exists(GameState.SAVE_PATH):
+	if FileAccess.file_exists(GameState.save_path):
 		_set_main_actions_visible(false, true)
 		confirm_panel.visible = true
 		yes_button.grab_focus()
