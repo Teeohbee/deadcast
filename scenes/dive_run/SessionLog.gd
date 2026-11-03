@@ -11,6 +11,12 @@ signal _choice_made(index: int)
 
 var glitch_intensity: float = 0.0
 
+# At 70+ corruption (glitch intensity 0.10) choice labels arrive garbled and
+# resolve a moment later, so the player has to wait to read their options.
+const LABEL_SCRAMBLE_MIN_INTENSITY := 0.10
+const LABEL_SCRAMBLE_SECONDS := 0.15
+const LABEL_SCRAMBLE_AMOUNT := 0.6
+
 func _ready() -> void:
 	pass
 
@@ -24,7 +30,7 @@ func present_choices(labels: Array[String], echoes: Array[String]) -> int:
 	clear_live()
 	for i in labels.size():
 		var btn := Button.new()
-		btn.text = labels[i]
+		_show_label_through_interference(btn, labels[i])
 		btn.focus_mode = Control.FOCUS_ALL
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		DeckStyle.apply_action_button(btn)
@@ -56,6 +62,15 @@ func present_action(label: String, echo: String = "") -> void:
 	clear_live()
 	if echo != "":
 		log_line("> %s" % echo, DeckStyle.DIM)
+
+func _show_label_through_interference(button: Button, label: String) -> void:
+	if glitch_intensity < LABEL_SCRAMBLE_MIN_INTENSITY:
+		button.text = label
+		return
+	button.text = TextFX.corrupt(label, LABEL_SCRAMBLE_AMOUNT)
+	get_tree().create_timer(LABEL_SCRAMBLE_SECONDS).timeout.connect(func() -> void:
+		if is_instance_valid(button):
+			button.text = label)
 
 func clear_live() -> void:
 	for child in live_block.get_children():
