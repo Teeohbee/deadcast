@@ -14,3 +14,7 @@ builds/
 Thumbs.db
 .superpowers/
 .worktrees/
+
+# Godot engine/template downloads (CI fetches its own)
+*.zip
+*.tpz
