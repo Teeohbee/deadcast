@@ -73,3 +73,8 @@ func test_cycle_hint_shows_cycle_lure_glyph() -> void:
 	var p := _make_panel()
 	assert_string_contains(p._cycle_hint.text, "[X]")
 	assert_string_contains(p._cycle_hint.text, "CYCLE LURE")
+
+func test_depth_rating_uses_feet_like_the_rest_of_the_rig_ui() -> void:
+	var p := _make_panel()
+	await get_tree().process_frame
+	assert_string_contains(p._rod_meta.text, "DEPTH RATING: %dft" % GameState.current_rod.max_depth)

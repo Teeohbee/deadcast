@@ -41,3 +41,16 @@ func test_focus_lands_on_buyable_item_on_load() -> void:
 	var focused := s.get_viewport().gui_get_focus_owner()
 	assert_true(focused is Button, "a stock button should hold focus on load")
 	assert_false((focused as Button).disabled, "focused item should be buyable")
+
+func test_reveal_in_same_frame_as_ready_builds_stock_once() -> void:
+	# UIController adds a screen and calls on_screen_shown in the same frame,
+	# so _ready's build and the reveal's build overlap.
+	var s := _make()
+	s.on_screen_shown()
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var rod_headers := 0
+	for child in s.stock_container.get_children():
+		if child is Label and not child.is_queued_for_deletion() and child.text.begins_with("── rods"):
+			rod_headers += 1
+	assert_eq(rod_headers, 1, "stock should be built exactly once")

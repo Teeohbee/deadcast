@@ -29,10 +29,12 @@ func on_screen_shown() -> void:
 
 # Okeke is the deck's sole dealer: rods and lures, base price, always open.
 func _build_stock() -> void:
+	# Detach old rows immediately rather than awaiting a frame: an await here let
+	# _ready's build and on_screen_shown's build interleave and stack two copies.
 	for child in stock_container.get_children():
+		stock_container.remove_child(child)
 		child.queue_free()
 	_schematic.clear()
-	await get_tree().process_frame
 
 	_add_dim_label("\"if you need it, i can get it. don't ask where from.\"\n— okeke")
 

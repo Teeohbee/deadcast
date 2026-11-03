@@ -21,8 +21,8 @@ DEADCAST_OS presents itself as a diegetic operating system running on failing ba
 
 ## built with
 
-[Godot 4.6](https://godotengine.org/)
+[Godot 4.7](https://godotengine.org/)
 
 ## running
 
-Open the project in Godot 4.6 and run from the editor. No external dependencies.
+Open the project in Godot 4.7 and run from the editor. No external dependencies.
