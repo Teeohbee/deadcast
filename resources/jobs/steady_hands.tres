@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="JobData" format=3]
+
+[ext_resource type="Script" path="res://resources/job_data.gd" id="1_job"]
+
+[resource]
+script = ExtResource("1_job")
+id = "steady_hands"
+title = "steady hands"
+brief = "\"a buyer wants proof you can hold a line.\"\n\"no cutting loose. whatever bites, you see it through.\""
+condition = 1
+debt_relief = 2500
+min_run = 1
+

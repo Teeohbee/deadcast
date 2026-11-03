@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="JobData" format=3]
+
+[ext_resource type="Script" path="res://resources/job_data.gd" id="1_job"]
+
+[resource]
+script = ExtResource("1_job")
+id = "dead_air"
+title = "dead air"
+brief = "\"the people paying for this want you deep in the static.\"\n\"three catches in a row with SIG at 20 or under. then come home.\""
+condition = 2
+debt_relief = 8000
+min_run = 8
+corruption_threshold = 80.0
+streak_length = 3

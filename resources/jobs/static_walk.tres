@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="JobData" format=3]
+
+[ext_resource type="Script" path="res://resources/job_data.gd" id="1_job"]
+
+[resource]
+script = ExtResource("1_job")
+id = "static_walk"
+title = "static walk"
+brief = "\"axiom's tracers ignore noisy lines. get noisy.\"\n\"three catches in a row with SIG at 50 or under.\""
+condition = 2
+debt_relief = 4000
+min_run = 3
+corruption_threshold = 50.0
+streak_length = 3
