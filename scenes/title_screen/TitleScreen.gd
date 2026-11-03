@@ -13,6 +13,19 @@ extends Control
 @onready var _crt_overlay: ColorRect = $CRTOverlay
 
 var _cursor_visible := true
+var sound_button: Button
+var crt_button: Button
+var _crt_material: ShaderMaterial
+
+const WORDMARK := """██████╗ ███████╗ █████╗ ██████╗  ██████╗ █████╗ ███████╗████████╗
+██╔══██╗██╔════╝██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔════╝╚══██╔══╝
+██║  ██║█████╗  ███████║██║  ██║██║     ███████║███████╗   ██║
+██║  ██║██╔══╝  ██╔══██║██║  ██║██║     ██╔══██║╚════██║   ██║
+██████╔╝███████╗██║  ██║██████╔╝╚██████╗██║  ██║███████║   ██║
+╚═════╝ ╚══════╝╚═╝  ╚═╝╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝   ╚═╝"""
+const TAGLINE := "signal trawling in the drowned city"
+const WORDMARK_FONT_SIZE := 15
+const ACTION_COLUMN_WIDTH := 420
 
 func _ready() -> void:
 	self.theme = DeckStyle.get_theme()
@@ -20,6 +33,7 @@ func _ready() -> void:
 	if not Settings.crt_enabled:
 		crt_mat.set_shader_parameter("scan_alpha", 0.0)
 	_crt_overlay.material = crt_mat
+	_crt_material = crt_mat
 
 	var save_exists := FileAccess.file_exists(GameState.save_path)
 	continue_button.visible = save_exists
@@ -28,8 +42,14 @@ func _ready() -> void:
 	header_label.text = "deadcast_os %s" % GameState.OS_VERSION
 	DeckStyle.apply_label(header_label, DeckStyle.DIM, 13)
 
-	title_label.text = "┌ deadcast ─────────────────────────────┐\n└────────────────────────────────────────┘"
-	DeckStyle.apply_label(title_label, DeckStyle.TEXT, DeckStyle.SIZE_VALUE)
+	title_label.text = WORDMARK
+	# Left-align the lines but centre the label: centring each line separately
+	# would shear the block letters, since the lines differ in length.
+	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	title_label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	DeckStyle.apply_label(title_label, DeckStyle.GREEN, WORDMARK_FONT_SIZE)
+	_arrange_centred_layout()
+	_add_settings_toggles()
 	DeckStyle.apply_label(confirm_label, DeckStyle.AMBER, DeckStyle.SIZE_BODY)
 	DeckStyle.apply_label(footer_label, DeckStyle.DIM, 13)
 
@@ -54,12 +74,91 @@ func _ready() -> void:
 	yes_button.pressed.connect(_on_confirm_yes)
 	no_button.pressed.connect(_on_confirm_no)
 
+	DeckNav.chain_vertical(_visible_actions())
+
 	if save_exists:
 		continue_button.grab_focus()
 	else:
 		new_game_button.grab_focus()
 
 	_blink_cursor()
+
+# Header pinned top, footer pinned bottom; wordmark, tagline, sonar and a
+# narrow column of actions float in the middle.
+func _arrange_centred_layout() -> void:
+	var content := title_label.get_parent() as VBoxContainer
+	var top_spacer := Control.new()
+	top_spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content.add_child(top_spacer)
+	content.move_child(top_spacer, title_label.get_index())
+
+	var tagline := Label.new()
+	tagline.text = TAGLINE
+	tagline.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	DeckStyle.apply_label(tagline, DeckStyle.DIM, DeckStyle.SIZE_BODY)
+	content.add_child(tagline)
+	content.move_child(tagline, title_label.get_index() + 1)
+
+	var sonar := SonarWave.new()
+	sonar.custom_minimum_size = Vector2(0, 90)
+	sonar.amplitude = 14.0
+	sonar.frequency = 0.015
+	sonar.speed = 1.2
+	sonar.line_color = Color(DeckStyle.GREEN, 0.7)
+	content.add_child(sonar)
+	content.move_child(sonar, tagline.get_index() + 1)
+
+	var action_block := continue_button.get_parent() as Control
+	action_block.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	action_block.custom_minimum_size.x = ACTION_COLUMN_WIDTH
+
+func _add_settings_toggles() -> void:
+	var action_block := continue_button.get_parent()
+	sound_button = _make_toggle_button()
+	sound_button.pressed.connect(_on_sound_pressed)
+	action_block.add_child(sound_button)
+	action_block.move_child(sound_button, new_game_button.get_index() + 1)
+	crt_button = _make_toggle_button()
+	crt_button.pressed.connect(_on_crt_pressed)
+	action_block.add_child(crt_button)
+	action_block.move_child(crt_button, sound_button.get_index() + 1)
+	_refresh_toggle_labels()
+
+func _make_toggle_button() -> Button:
+	var button := Button.new()
+	button.focus_mode = Control.FOCUS_ALL
+	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	DeckStyle.apply_action_button(button, DeckStyle.DIM)
+	return button
+
+func _refresh_toggle_labels() -> void:
+	sound_button.text = "[ SOUND: %s ]" % ("OFF" if Settings.audio_muted else "ON")
+	crt_button.text = "[ CRT: %s ]" % ("ON" if Settings.crt_enabled else "OFF")
+
+func _on_sound_pressed() -> void:
+	Audio.toggle_mute()
+	_refresh_toggle_labels()
+
+func _on_crt_pressed() -> void:
+	Settings.set_crt_enabled(not Settings.crt_enabled)
+	if Settings.crt_enabled:
+		_crt_material.set_shader_parameter("scan_alpha", null)  # back to the shader default
+	else:
+		_crt_material.set_shader_parameter("scan_alpha", 0.0)
+	_refresh_toggle_labels()
+
+func _visible_actions() -> Array[Control]:
+	var actions: Array[Control] = []
+	for button in [continue_button, new_game_button, sound_button, crt_button]:
+		if button.visible:
+			actions.append(button)
+	return actions
+
+func _set_main_actions_visible(should_show: bool, save_exists: bool) -> void:
+	continue_button.visible = should_show and save_exists
+	new_game_button.visible = should_show
+	sound_button.visible = should_show
+	crt_button.visible = should_show
 
 func _blink_cursor() -> void:
 	while is_instance_valid(self):
@@ -72,8 +171,7 @@ func _on_continue_pressed() -> void:
 
 func _on_new_game_pressed() -> void:
 	if FileAccess.file_exists(GameState.save_path):
-		continue_button.visible = false
-		new_game_button.visible = false
+		_set_main_actions_visible(false, true)
 		confirm_panel.visible = true
 		yes_button.grab_focus()
 	else:
@@ -86,6 +184,5 @@ func _on_confirm_yes() -> void:
 
 func _on_confirm_no() -> void:
 	confirm_panel.visible = false
-	continue_button.visible = true
-	new_game_button.visible = true
+	_set_main_actions_visible(true, true)
 	continue_button.grab_focus()
