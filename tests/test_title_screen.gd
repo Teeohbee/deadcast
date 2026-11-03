@@ -8,10 +8,10 @@ var _backup_ready: bool = false
 
 func before_each() -> void:
 	_backup_ready = true
-	_save_backup_exists = FileAccess.file_exists(GameState.SAVE_PATH)
+	_save_backup_exists = FileAccess.file_exists(GameState.save_path)
 	_save_backup_data = PackedByteArray()
 	if _save_backup_exists:
-		var f := FileAccess.open(GameState.SAVE_PATH, FileAccess.READ)
+		var f := FileAccess.open(GameState.save_path, FileAccess.READ)
 		if not f:
 			_backup_ready = false
 			return
@@ -23,17 +23,17 @@ func after_each() -> void:
 		return
 	_remove_save()
 	if _save_backup_exists:
-		var f := FileAccess.open(GameState.SAVE_PATH, FileAccess.WRITE)
+		var f := FileAccess.open(GameState.save_path, FileAccess.WRITE)
 		if f:
 			f.store_buffer(_save_backup_data)
 
 func _remove_save() -> void:
 	var dir := DirAccess.open("user://")
-	if dir and dir.file_exists("save.cfg"):
-		dir.remove("save.cfg")
+	if dir and dir.file_exists(GameState.save_path.get_file()):
+		dir.remove(GameState.save_path.get_file())
 
 func _create_save() -> void:
-	var f := FileAccess.open(GameState.SAVE_PATH, FileAccess.WRITE)
+	var f := FileAccess.open(GameState.save_path, FileAccess.WRITE)
 	if f:
 		f.store_string("test")
 
