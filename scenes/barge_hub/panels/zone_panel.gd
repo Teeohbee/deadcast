@@ -7,6 +7,7 @@ var _cards: Dictionary = {}       # zone_id -> Button
 var _indicators: Dictionary = {}  # zone_id -> Label
 var _names: Dictionary = {}       # zone_id -> Label
 var _nav_hint: Label
+var _hosts_label: Label
 
 func _ready() -> void:
 	title = "available_zones"
@@ -28,22 +29,35 @@ func _build() -> void:
 	header.add_child(_nav_hint)
 	InputGlyphs.device_changed.connect(_refresh_nav_hint)
 	_refresh_nav_hint()
-	var hosts := Label.new()
-	hosts.text = "%d LOCAL HOSTS CONNECTED" % ZONE_IDS.size()
-	DeckStyle.apply_label(hosts, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
-	header.add_child(hosts)
+	_hosts_label = Label.new()
+	DeckStyle.apply_label(_hosts_label, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
+	header.add_child(_hosts_label)
 	root.add_child(header)
 
 	for zone_id in ZONE_IDS:
 		var zone: ZoneData = load("res://resources/zones/%s.tres" % zone_id)
 		root.add_child(_build_card(zone_id, zone))
 
-	for i in ZONE_IDS.size():
-		var btn: Button = _cards[ZONE_IDS[i]]
-		if i > 0:
-			btn.focus_neighbor_top = btn.get_path_to(_cards[ZONE_IDS[i - 1]])
-		if i < ZONE_IDS.size() - 1:
-			btn.focus_neighbor_bottom = btn.get_path_to(_cards[ZONE_IDS[i + 1]])
+	refresh_unlocked()
+
+# Show only the zones Unlocks has opened, chain focus through the visible
+# cards, and move the selection off a zone that isn't open yet.
+func refresh_unlocked() -> void:
+	var open_cards: Array[Control] = []
+	for zone_id in ZONE_IDS:
+		var open := Unlocks.is_zone_open(zone_id)
+		_cards[zone_id].visible = open
+		if open:
+			open_cards.append(_cards[zone_id])
+	for i in open_cards.size():
+		var btn: Button = open_cards[i]
+		btn.focus_neighbor_top = btn.get_path_to(open_cards[i - 1]) if i > 0 else NodePath()
+		btn.focus_neighbor_bottom = btn.get_path_to(open_cards[i + 1]) \
+			if i < open_cards.size() - 1 else NodePath()
+	_hosts_label.text = "%d LOCAL HOST%s CONNECTED" % [
+		open_cards.size(), "" if open_cards.size() == 1 else "S"]
+	if not Unlocks.is_zone_open(GameState.selected_zone):
+		GameState.select_zone(ZONE_IDS[0])
 
 func _build_card(zone_id: String, zone: ZoneData) -> Button:
 	var btn := Button.new()
@@ -142,5 +156,6 @@ func focus_selected() -> void:
 func focus_targets() -> Array[Control]:
 	var out: Array[Control] = []
 	for id in ZONE_IDS:
-		out.append(_cards[id])
+		if _cards[id].visible:
+			out.append(_cards[id])
 	return out

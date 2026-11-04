@@ -91,3 +91,10 @@ func test_focus_targets_is_sell_button() -> void:
 	GameState.freezer_base = 500
 	var p := _make_panel()
 	assert_eq(p.focus_targets(), [p._sell_btn])
+
+func test_base_and_sale_values_are_labelled_as_different_numbers() -> void:
+	GameState.freezer_base = 350
+	GameState.freezer_multiplier = 1.32
+	var p := _make_panel()
+	assert_eq(p._count_label.text, "BASE 350 cr")
+	assert_eq(p._value_label.text, "SELLS FOR 462 cr")
