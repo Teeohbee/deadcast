@@ -1,16 +1,17 @@
 # scenes/intro/SkylineShot.gd
 # Drowned Skyline: the Sump at night in a storm, built from boxes and glowing
 # quads. Everything comes from a fixed seed so the city looks the same on
-# every launch. The Meridian rides the swell in the foreground, and the
-# camera drifts in towards the green terminal on its aft deck.
+# every launch. The Meridian rides the swell in the foreground. The camera
+# idles on the wide shot, then pushes in until the green terminal on the
+# aft deck fills the frame.
 class_name SkylineShot
 extends Node3D
 
-signal drift_finished
+signal push_finished
 
 const CITY_SEED := 7
-const DRIFT_SECONDS := 6.0
 const CAMERA_START := Vector3(16.0, 10.0, 26.0)
+const CAMERA_FOV := 52.0
 const CITY_LOOK_TARGET := Vector3(0.0, 80.0, -600.0)
 const MERIDIAN_POSITION := Vector3(-6.0, 0.0, -32.0)
 const MERIDIAN_HEADING_DEGREES := -14.0
@@ -61,8 +62,9 @@ var _trains: Array[Dictionary] = []
 var _beams: Array[Dictionary] = []
 var _blinkers: Array[MeshInstance3D] = []
 var _elapsed := 0.0
-var _camera_end := Vector3.ZERO
-var _terminal_target := Vector3.ZERO
+# 0 while idling on the wide shot, rising to 1 as the camera reaches the screen.
+var _push_progress := 0.0
+var _push_from := Transform3D.IDENTITY
 
 func _ready() -> void:
 	_random.seed = CITY_SEED
@@ -89,16 +91,22 @@ func _ready() -> void:
 	_build_rain()
 	_build_camera()
 
-func start_drift() -> void:
+func push_to_terminal(seconds: float) -> void:
+	_push_from = camera.global_transform
 	var tween := create_tween()
 	tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_method(_move_along_drift, 0.0, 1.0, DRIFT_SECONDS)
-	tween.tween_callback(drift_finished.emit)
+	tween.tween_method(set_push_progress, 0.0, 1.0, seconds)
+	tween.tween_callback(push_finished.emit)
+
+func set_push_progress(progress: float) -> void:
+	_push_progress = progress
+	_place_camera()
 
 func _process(delta: float) -> void:
 	_elapsed += delta
 	_water_material.set_shader_parameter("wave_time", _elapsed)
 	_ride_the_swell()
+	_place_camera()
 	meridian.radar.rotation.y += delta * 1.8
 	for car in _flying_cars:
 		var node: Node3D = car.node
@@ -594,21 +602,49 @@ func _build_rain() -> void:
 
 func _build_camera() -> void:
 	camera = Camera3D.new()
-	camera.fov = 52.0
+	camera.fov = CAMERA_FOV
+	camera.near = 0.05
 	camera.far = 3000.0
 	add_child(camera)
 	camera.make_current()
-	# The drift ends off the starboard quarter, looking down at the deck terminal.
-	_terminal_target = meridian.terminal_screen_position()
-	var anchor_basis: Basis = (meridian.get_parent() as Node3D).global_transform.basis
-	_camera_end = _terminal_target + anchor_basis.z * 5.0 + anchor_basis.x * 6.5 + Vector3(0.0, 2.6, 0.0)
-	_move_along_drift(0.0)
+	_place_camera()
+	_push_from = camera.global_transform
 
-# Start wide on the city across the water, end close on the deck terminal.
-func _move_along_drift(progress: float) -> void:
-	camera.position = CAMERA_START.lerp(_camera_end, progress)
-	var target := CITY_LOOK_TARGET.lerp(_terminal_target, smoothstep(0.3, 1.0, progress))
-	camera.look_at(target)
+func _place_camera() -> void:
+	if _push_progress <= 0.0:
+		_place_idle_camera()
+	else:
+		_place_pushing_camera(_push_progress)
+
+# A slow sway over the water so the title never looks frozen.
+func _place_idle_camera() -> void:
+	camera.position = CAMERA_START + Vector3(sin(_elapsed * 0.05) * 4.0, sin(_elapsed * 0.09) * 0.8, cos(_elapsed * 0.05) * 2.0 - 2.0)
+	camera.look_at(CITY_LOOK_TARGET + Vector3(sin(_elapsed * 0.04) * 20.0, 0.0, 0.0))
+
+# Curve from wherever the idle camera was, past the starboard quarter, to
+# square in front of the screen. The end point follows the boat as it rolls,
+# so the screen lands exactly filling the frame.
+func _place_pushing_camera(progress: float) -> void:
+	var screen := meridian.terminal_screen_transform()
+	var screen_normal := screen.basis.z.normalized()
+	var end_origin := screen.origin + screen_normal * screen_fill_distance()
+	var anchor_basis: Basis = (meridian.get_parent() as Node3D).global_transform.basis
+	var waypoint := screen.origin + anchor_basis.z * 5.0 + anchor_basis.x * 6.5 + Vector3(0.0, 2.6, 0.0)
+	var start_origin := _push_from.origin
+	var along := 1.0 - progress
+	camera.global_position = start_origin * along * along + waypoint * 2.0 * along * progress + end_origin * progress * progress
+	# Turn from the city to the screen early, then square up to it at the end.
+	var start_rotation := _push_from.basis.get_rotation_quaternion()
+	var facing_screen := Basis.looking_at(screen.origin - camera.global_position, Vector3.UP).get_rotation_quaternion()
+	var square_on := screen.basis.orthonormalized().get_rotation_quaternion()
+	var rotation := start_rotation.slerp(facing_screen, smoothstep(0.0, 0.5, progress))
+	rotation = rotation.slerp(square_on, smoothstep(0.65, 1.0, progress))
+	camera.global_basis = Basis(rotation)
+
+# How far in front of the screen the camera sits for the screen to fill it.
+func screen_fill_distance() -> float:
+	var half_height := MeridianBoat.SCREEN_SIZE.y * 0.5
+	return half_height / tan(deg_to_rad(CAMERA_FOV * 0.5))
 
 # ------------------------------------------------------------------ materials
 

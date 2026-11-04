@@ -12,6 +12,8 @@ const WARM_LAMP := Color(1.0, 0.62, 0.3)
 const TERMINAL_GREEN := Color(0.13, 0.9, 0.4)
 const NAV_RED := Color(1.0, 0.1, 0.08)
 const NAV_GREEN := Color(0.1, 1.0, 0.3)
+# 16:9 so a camera filling the frame with it matches the full-screen title.
+const SCREEN_SIZE := Vector2(1.0, 0.5625)
 const SIGN_FONT := preload("res://fonts/IBMPlexMono-Regular.otf")
 const TERMINAL_SCREEN_SHADER := preload("res://scenes/intro/terminal_screen.gdshader")
 
@@ -34,6 +36,9 @@ func _ready() -> void:
 
 func terminal_screen_position() -> Vector3:
 	return _terminal_screen.global_position
+
+func terminal_screen_transform() -> Transform3D:
+	return _terminal_screen.global_transform
 
 func _build_hull(hull_paint: Material, rust_band: Material, trim_paint: Material, dark_metal: Material) -> void:
 	# Main hull runs from the stern (z = +10) to where the bow starts (z = -7).
@@ -158,7 +163,7 @@ func _build_deck_terminal(dark_metal: Material, trim_paint: Material) -> void:
 	IntroBuild.add_box(head, Vector3(1.2, 0.85, 0.45), Vector3.ZERO, trim_paint)
 	IntroBuild.add_box(head, Vector3(1.3, 0.08, 0.7), Vector3(0, 0.48, 0.1), dark_metal)
 	var screen_quad := QuadMesh.new()
-	screen_quad.size = Vector2(1.0, 0.66)
+	screen_quad.size = SCREEN_SIZE
 	var screen_material := ShaderMaterial.new()
 	screen_material.shader = TERMINAL_SCREEN_SHADER
 	_terminal_screen = MeshInstance3D.new()
