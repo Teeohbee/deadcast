@@ -2,6 +2,8 @@
 extends TerminalPanel
 class_name LifeSupportStrip
 
+const READOUT := "6/min    O2 MIX 21%    HULL moored, 0ft    BAY 18.4°C    STATE: resting"
+
 var _wave: SonarWave
 var _readout: Label
 
@@ -35,6 +37,6 @@ func _ready() -> void:
 	_readout = Label.new()
 	_readout.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_readout.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_readout.text = "6/min    O2 MIX 21%    HULL -4200m    BAY 18.4°C    STATE: resting"
+	_readout.text = READOUT
 	DeckStyle.apply_label(_readout, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 	root.add_child(_readout)

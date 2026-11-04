@@ -12,7 +12,7 @@ const MAX_LINES := 6
 const LINES := {
 	0: [
 		"sonar return: 1 contact, bearing 040",
-		"thermal vent, 12m starboard",
+		"thermal vent, 40ft starboard",
 		"current steady, 0.3kn",
 		"ballast nominal",
 		"hull pressure holding",
