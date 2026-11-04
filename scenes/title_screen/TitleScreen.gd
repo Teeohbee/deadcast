@@ -11,6 +11,20 @@ extends Control
 @onready var yes_button: Button = $OuterMargin/MainPanel/ContentAnchor/ActionBlock/ConfirmPanel/ConfirmButtons/YesButton
 @onready var no_button: Button = $OuterMargin/MainPanel/ContentAnchor/ActionBlock/ConfirmPanel/ConfirmButtons/NoButton
 @onready var _crt_overlay: ColorRect = $CRTOverlay
+@onready var _outer_margin: MarginContainer = $OuterMargin
+
+# Played when the skyline title pushes in: the deck terminal wakes up, prints a
+# few lines, flickers, and the menu appears. Opening the title directly skips it.
+const BOOT_LINE_SECONDS := 0.16
+const BOOT_LINES := [
+	"> waking from low power ...... ok",
+	"> deck link (aft rail) ....... ok",
+	"> trawl rig .................. ok",
+	"> mounting /home/meridian .... ok",
+]
+var is_booting := false
+var boot_label: Label
+var _boot_tween: Tween
 
 var _cursor_visible := true
 var sound_button: Button
@@ -81,7 +95,50 @@ func _ready() -> void:
 	else:
 		new_game_button.grab_focus()
 
+	_build_boot_label()
 	_blink_cursor()
+
+func focus_default_action() -> void:
+	if continue_button.visible:
+		continue_button.grab_focus()
+	else:
+		new_game_button.grab_focus()
+
+func play_boot_flicker() -> void:
+	is_booting = true
+	_outer_margin.modulate.a = 0.0
+	boot_label.text = "deadcast_os %s" % GameState.OS_VERSION
+	boot_label.visible = true
+	if _boot_tween:
+		_boot_tween.kill()
+	_boot_tween = create_tween()
+	for line in BOOT_LINES:
+		_boot_tween.tween_interval(BOOT_LINE_SECONDS)
+		_boot_tween.tween_callback(func() -> void: boot_label.text += "\n" + line)
+	_boot_tween.tween_interval(BOOT_LINE_SECONDS * 2.0)
+	# A couple of flickers as the menu comes up.
+	_boot_tween.tween_callback(func() -> void: boot_label.visible = false)
+	_boot_tween.tween_property(_outer_margin, "modulate:a", 1.0, 0.05)
+	_boot_tween.tween_property(_outer_margin, "modulate:a", 0.25, 0.06)
+	_boot_tween.tween_property(_outer_margin, "modulate:a", 1.0, 0.08)
+	_boot_tween.tween_callback(finish_boot_flicker)
+
+func finish_boot_flicker() -> void:
+	if _boot_tween:
+		_boot_tween.kill()
+	is_booting = false
+	boot_label.visible = false
+	_outer_margin.modulate.a = 1.0
+
+func _build_boot_label() -> void:
+	boot_label = Label.new()
+	boot_label.name = "BootLabel"
+	boot_label.visible = false
+	boot_label.position = Vector2(40, 36)
+	DeckStyle.apply_label(boot_label, DeckStyle.GREEN, DeckStyle.SIZE_BODY)
+	add_child(boot_label)
+	# Under the CRT scanlines like everything else.
+	move_child(boot_label, _crt_overlay.get_index())
 
 # Header pinned top, footer pinned bottom; wordmark, tagline, sonar and a
 # narrow column of actions float in the middle.

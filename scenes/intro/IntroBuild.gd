@@ -29,7 +29,8 @@ static func lit_material(colour: Color) -> StandardMaterial3D:
 
 # A small glowing bulb with a soft halo that still reads from far away,
 # plus a real light so it shows up on the surfaces around it.
-static func add_lamp(parent: Node3D, at: Vector3, colour: Color, light_range: float, halo_size: float = 2.4, with_bulb: bool = true) -> void:
+# Returns the halo, so callers can dim it.
+static func add_lamp(parent: Node3D, at: Vector3, colour: Color, light_range: float, halo_size: float = 2.4, with_bulb: bool = true) -> MeshInstance3D:
 	var bulb_mesh := SphereMesh.new()
 	bulb_mesh.radius = 0.16
 	bulb_mesh.height = 0.32
@@ -59,3 +60,4 @@ static func add_lamp(parent: Node3D, at: Vector3, colour: Color, light_range: fl
 		light.omni_attenuation = 1.4
 		light.position = at
 		parent.add_child(light)
+	return halo

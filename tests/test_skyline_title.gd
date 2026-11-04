@@ -6,11 +6,11 @@ extends GutTest
 const SCENE := preload("res://scenes/title_skyline/SkylineTitle.tscn")
 const TERMINAL_TITLE := "res://scenes/title_screen/TitleScreen.tscn"
 
-var _requested_scenes: Array[String] = []
+var _handed_over: Array[Node] = []
 var _previous_glyph_mode: int
 
 func before_each() -> void:
-	_requested_scenes.clear()
+	_handed_over.clear()
 	_previous_glyph_mode = InputGlyphs.mode
 
 func after_each() -> void:
@@ -19,7 +19,7 @@ func after_each() -> void:
 
 func _make() -> SkylineTitle:
 	var title: SkylineTitle = SCENE.instantiate()
-	title.change_scene = func(path: String) -> void: _requested_scenes.append(path)
+	title.hand_over = func(terminal_title: Node) -> void: _handed_over.append(terminal_title)
 	add_child_autofree(title)
 	return title
 
@@ -57,20 +57,35 @@ func test_accept_starts_the_push_without_leaving_yet() -> void:
 	var title := _make()
 	_press_accept(title)
 	assert_eq(title.state, SkylineTitle.State.PUSHING)
-	assert_eq(_requested_scenes, [])
+	assert_eq(_handed_over, [])
 
-func test_accept_during_the_push_skips_to_the_terminal_title() -> void:
+func test_the_terminal_screen_shows_the_live_terminal_title() -> void:
+	var title := _make()
+	assert_not_null(title.terminal_title.get("continue_button"), "terminal title should be the real TitleScreen")
+	assert_eq(title.shot.meridian.screen_texture(), title.terminal_viewport.get_texture())
+
+func test_terminal_viewport_matches_the_window_layout() -> void:
+	var title := _make()
+	assert_eq(title.terminal_viewport.size_2d_override, Vector2i(title.get_viewport().get_visible_rect().size))
+
+func test_pushing_boots_the_terminal() -> void:
+	var title := _make()
+	_press_accept(title)
+	assert_true(title.terminal_title.is_booting)
+
+func test_accept_during_the_push_hands_over_the_booted_terminal() -> void:
 	var title := _make()
 	_press_accept(title)
 	_press_accept(title)
-	assert_eq(_requested_scenes, [TERMINAL_TITLE])
+	assert_eq(_handed_over, [title.terminal_title])
+	assert_false(title.terminal_title.is_booting)
 
-func test_finished_push_goes_to_the_terminal_title_once() -> void:
+func test_finished_push_hands_over_once() -> void:
 	var title := _make()
 	_press_accept(title)
 	title.shot.push_finished.emit()
 	_press_accept(title)
-	assert_eq(_requested_scenes, [TERMINAL_TITLE])
+	assert_eq(_handed_over.size(), 1)
 
 func test_push_ends_on_the_terminal_screen() -> void:
 	var title := _make()

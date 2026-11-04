@@ -21,6 +21,8 @@ var mast_light: MeshInstance3D
 var radar: Node3D
 var _wheelhouse_window: MeshInstance3D
 var _terminal_screen: MeshInstance3D
+var _terminal_halo: MeshInstance3D
+var _terminal_light: OmniLight3D
 
 func _ready() -> void:
 	var hull_paint := IntroBuild.lit_material(Color(0.07, 0.075, 0.08))
@@ -39,6 +41,29 @@ func terminal_screen_position() -> Vector3:
 
 func terminal_screen_transform() -> Transform3D:
 	return _terminal_screen.global_transform
+
+# Show a live picture (the terminal title's viewport) on the deck terminal.
+func set_screen_texture(texture: Texture2D) -> void:
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.albedo_texture = texture
+	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
+	material.disable_fog = true
+	_terminal_screen.material_override = material
+
+func screen_texture() -> Texture2D:
+	var material := _terminal_screen.material_override as StandardMaterial3D
+	return material.albedo_texture if material else null
+
+# Match the screen's shape to the player's display, keeping its height.
+func set_screen_aspect(aspect: float) -> void:
+	(_terminal_screen.mesh as QuadMesh).size = Vector2(SCREEN_SIZE.y * aspect, SCREEN_SIZE.y)
+
+# 1 from far away; 0 up close, where the halo would wash over the screen.
+func set_terminal_halo(strength: float) -> void:
+	_terminal_halo.visible = strength > 0.0
+	(_terminal_halo.material_override as ShaderMaterial).set_shader_parameter("energy", 1.4 * strength)
+	_terminal_light.light_energy = 2.2 * strength
 
 func _build_hull(hull_paint: Material, rust_band: Material, trim_paint: Material, dark_metal: Material) -> void:
 	# Main hull runs from the stern (z = +10) to where the bow starts (z = -7).
@@ -173,13 +198,13 @@ func _build_deck_terminal(dark_metal: Material, trim_paint: Material) -> void:
 	_terminal_screen.position = Vector3(0, 0, 0.231)
 	head.add_child(_terminal_screen)
 	# A soft halo so the screen reads from the wide shot, and green light on the deck.
-	IntroBuild.add_lamp(head, Vector3(0, 0, 0.3), TERMINAL_GREEN, 0.0, 1.8, false)
-	var glow := OmniLight3D.new()
-	glow.light_color = TERMINAL_GREEN
-	glow.light_energy = 2.2
-	glow.omni_range = 5.0
-	glow.position = Vector3(0, 0, 0.8)
-	head.add_child(glow)
+	_terminal_halo = IntroBuild.add_lamp(head, Vector3(0, 0, 0.3), TERMINAL_GREEN, 0.0, 1.8, false)
+	_terminal_light = OmniLight3D.new()
+	_terminal_light.light_color = TERMINAL_GREEN
+	_terminal_light.light_energy = 2.2
+	_terminal_light.omni_range = 5.0
+	_terminal_light.position = Vector3(0, 0, 0.8)
+	head.add_child(_terminal_light)
 
 func _build_lights() -> void:
 	# Work lamps: gantry, deckhouse back wall, bow. Nav lights port and starboard.

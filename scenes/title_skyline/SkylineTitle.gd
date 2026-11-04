@@ -1,14 +1,17 @@
 # scenes/title_skyline/SkylineTitle.gd
 # The title screen: the Sump in the rain, the Meridian riding the swell, and
 # the wordmark fading in over the city to music. A fades the title and pushes
-# the camera into the terminal on the Meridian's deck, landing on the
-# terminal title (CONTINUE / NEW GAME). A again during the push skips it.
+# the camera into the terminal on the Meridian's deck. That terminal shows the
+# real terminal title (CONTINUE / NEW GAME), rendered live in a SubViewport at
+# the window's own layout size. It boots up as the camera arrives; when the
+# screen fills the frame the same title node moves out of the SubViewport to
+# become the current scene, so nothing jumps. A again during the push skips.
 class_name SkylineTitle
 extends Node
 
 enum State { FADING_IN, WAITING, PUSHING, LEAVING }
 
-const TERMINAL_TITLE := "res://scenes/title_screen/TitleScreen.tscn"
+const TERMINAL_TITLE := preload("res://scenes/title_screen/TitleScreen.tscn")
 const SKYLINE_SHOT := preload("res://scenes/intro/SkylineShot.tscn")
 const TERMINAL_TITLE_SCRIPT := preload("res://scenes/title_screen/TitleScreen.gd")
 
@@ -18,6 +21,7 @@ const TITLE_FADE_OUT_SECONDS := 0.5
 const PUSH_SECONDS := 3.5
 const WORDMARK_FONT_SIZE := 22
 const PROMPT_BLINK_SECONDS := 1.1
+const HANDOVER_FADE_SECONDS := 0.25
 
 var state: State = State.FADING_IN
 var shot: SkylineShot
@@ -25,8 +29,10 @@ var overlay: Control
 var wordmark_label: Label
 var tagline_label: Label
 var prompt_label: Label
-# Swapped out in tests so they can see where the title would go.
-var change_scene: Callable = func(path: String) -> void: get_tree().change_scene_to_file(path)
+var terminal_viewport: SubViewport
+var terminal_title: Control
+# Swapped out in tests, which can't hand the scene tree over.
+var hand_over: Callable = _hand_over_to_terminal_title
 
 var _title_tween: Tween
 
@@ -34,6 +40,7 @@ func _ready() -> void:
 	shot = SKYLINE_SHOT.instantiate()
 	add_child(shot)
 	shot.push_finished.connect(_on_push_finished)
+	_build_terminal_viewport()
 	_build_overlay()
 	if not Input.get_connected_joypads().is_empty():
 		InputGlyphs.mode = InputGlyphs.Mode.PAD
@@ -61,6 +68,7 @@ func _start_push() -> void:
 		_title_tween.kill()
 	_title_tween = create_tween()
 	_title_tween.tween_property(overlay, "modulate:a", 0.0, TITLE_FADE_OUT_SECONDS)
+	terminal_title.play_boot_flicker()
 	shot.push_to_terminal(PUSH_SECONDS)
 
 func _on_push_finished() -> void:
@@ -70,7 +78,40 @@ func _leave() -> void:
 	if state == State.LEAVING:
 		return
 	state = State.LEAVING
-	change_scene.call(TERMINAL_TITLE)
+	terminal_title.finish_boot_flicker()
+	hand_over.call(terminal_title)
+
+# Move the live terminal title out of the SubViewport to be the current scene,
+# fade it up over the last 3D frame (hiding the tonemapper's slight colour
+# shift), then free the skyline.
+func _hand_over_to_terminal_title(title: Control) -> void:
+	var tree := get_tree()
+	terminal_viewport.remove_child(title)
+	title.modulate.a = 0.0
+	tree.root.add_child(title)
+	tree.current_scene = title
+	title.focus_default_action()
+	var fade := title.create_tween()
+	fade.tween_property(title, "modulate:a", 1.0, HANDOVER_FADE_SECONDS)
+	fade.tween_callback(queue_free)
+
+# The terminal title renders at the window's real pixel size with the same
+# layout size the game uses full screen, so the screen texture matches the
+# full-screen title exactly when it fills the frame.
+func _build_terminal_viewport() -> void:
+	var layout_size := Vector2i(get_viewport().get_visible_rect().size)
+	var pixel_size := get_window().size if get_window() else layout_size
+	terminal_viewport = SubViewport.new()
+	terminal_viewport.name = "TerminalViewport"
+	terminal_viewport.size = pixel_size
+	terminal_viewport.size_2d_override = layout_size
+	terminal_viewport.size_2d_override_stretch = true
+	terminal_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	add_child(terminal_viewport)
+	terminal_title = TERMINAL_TITLE.instantiate()
+	terminal_viewport.add_child(terminal_title)
+	shot.meridian.set_screen_aspect(float(layout_size.x) / float(layout_size.y))
+	shot.meridian.set_screen_texture(terminal_viewport.get_texture())
 
 func _fade_title_in() -> void:
 	overlay.modulate.a = 0.0

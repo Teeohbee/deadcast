@@ -160,3 +160,24 @@ func test_confirm_prompt_hides_settings_toggles() -> void:
 	await get_tree().process_frame
 	assert_false(s.sound_button.visible)
 	assert_false(s.crt_button.visible)
+
+func test_boot_flicker_hides_the_menu_until_it_finishes() -> void:
+	if _skip_when_backup_unavailable():
+		return
+	var s := _make()
+	await get_tree().process_frame
+	s.play_boot_flicker()
+	assert_true(s.is_booting)
+	assert_true(s.boot_label.visible)
+	s.finish_boot_flicker()
+	assert_false(s.is_booting)
+	assert_false(s.boot_label.visible)
+	assert_almost_eq(s.get_node("OuterMargin").modulate.a, 1.0, 0.01)
+
+func test_title_is_not_booting_when_opened_directly() -> void:
+	if _skip_when_backup_unavailable():
+		return
+	var s := _make()
+	await get_tree().process_frame
+	assert_false(s.is_booting)
+	assert_false(s.boot_label.visible)

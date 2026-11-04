@@ -56,6 +56,7 @@ var _random := RandomNumberGenerator.new()
 var _city: Node3D
 var _tower_material: ShaderMaterial
 var _water_material: ShaderMaterial
+var _environment: Environment
 var _normalised_waves: Array[Vector4] = []
 var _flying_cars: Array[Dictionary] = []
 var _trains: Array[Dictionary] = []
@@ -180,6 +181,7 @@ func _build_environment() -> void:
 	var sky := Sky.new()
 	sky.sky_material = sky_material
 	var environment := Environment.new()
+	_environment = environment
 	environment.background_mode = Environment.BG_SKY
 	environment.sky = sky
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
@@ -640,6 +642,12 @@ func _place_pushing_camera(progress: float) -> void:
 	var rotation := start_rotation.slerp(facing_screen, smoothstep(0.0, 0.5, progress))
 	rotation = rotation.slerp(square_on, smoothstep(0.65, 1.0, progress))
 	camera.global_basis = Basis(rotation)
+	meridian.set_terminal_halo(1.0 - smoothstep(0.5, 0.9, progress))
+	# Once the screen fills nearly all the frame, render it as plain 2D would:
+	# no filmic curve, no glow. Then the handover to the real title is invisible.
+	var nearly_there := progress > 0.85
+	_environment.tonemap_mode = Environment.TONE_MAPPER_LINEAR if nearly_there else Environment.TONE_MAPPER_FILMIC
+	_environment.glow_enabled = not nearly_there
 
 # How far in front of the screen the camera sits for the screen to fill it.
 func screen_fill_distance() -> float:
