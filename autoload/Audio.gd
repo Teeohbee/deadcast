@@ -6,12 +6,14 @@ extends Node
 # repeats don't sound mechanical. Screens never play sounds directly: UI clicks
 # hook into the viewport globally and dive sounds listen to EventBus.
 #
-# Samples are Kenney CC0 packs (see README credits).
+# Samples are Kenney CC0 packs; the title music is "Pyro" from OpenGameArt
+# (CC0). See README credits.
 
 const INTERFACE := "res://audio/kenney_interface/"
 const SCI_FI := "res://audio/kenney_sci_fi/"
 const IMPACT := "res://audio/kenney_impact/"
 const RPG := "res://audio/kenney_rpg/"
+const MUSIC := "res://audio/music/"
 
 const CUES := {
 	# UI
@@ -77,7 +79,10 @@ const CUES := {
 
 # Looping beds under everything. Kenney's engine loops are 5s; pitched down
 # they read as barge machinery (hub) and water pressure on the hull (dive).
+# The title plays music instead, and it carries on into the terminal title
+# until the first deck screen switches to the hub bed.
 const AMBIENCES := {
+	"title": {"file": MUSIC + "pyro.mp3", "volume_db": -8.0, "pitch": 1.0},
 	"hub":  {"file": SCI_FI + "spaceEngineLow_000.ogg", "volume_db": -24.0, "pitch": 0.6},
 	"dive": {"file": SCI_FI + "engineCircular_000.ogg", "volume_db": -20.0, "pitch": 0.4},
 }
@@ -213,8 +218,13 @@ func _on_focus_changed(_control: Control) -> void:
 # Every Button anywhere in the game clicks when pressed, so screens built in
 # code (vendor stock, dive choices) get sound without knowing about Audio.
 func _on_node_added(node: Node) -> void:
-	if node is BaseButton:
-		(node as BaseButton).pressed.connect(func() -> void: play_cue("ui_confirm"))
+	# A button re-enters the tree when it is moved (the title handover does
+	# this), so hook it only once.
+	if node is BaseButton and not (node as BaseButton).pressed.is_connected(_on_button_pressed):
+		(node as BaseButton).pressed.connect(_on_button_pressed)
+
+func _on_button_pressed() -> void:
+	play_cue("ui_confirm")
 
 func _on_screen_changed(screen_id: String) -> void:
 	play_cue("ui_screen")
@@ -270,8 +280,9 @@ func _take_next_cue_player() -> AudioStreamPlayer:
 	return player
 
 func _fade_in(player: AudioStreamPlayer, ambience: Dictionary) -> void:
-	var looping_stream: AudioStreamOggVorbis = load(ambience.file).duplicate()
-	looping_stream.loop = true
+	# Both AudioStreamOggVorbis and AudioStreamMP3 loop through a "loop" property.
+	var looping_stream: AudioStream = load(ambience.file).duplicate()
+	looping_stream.set("loop", true)
 	player.stream = looping_stream
 	player.pitch_scale = ambience.pitch
 	player.volume_db = SILENT_DB

@@ -41,11 +41,33 @@ func test_ambience_switches_between_hub_and_dive() -> void:
 	Audio.set_ambience("hub")
 	assert_eq(Audio.current_ambience, "hub")
 
+func test_every_ambience_file_exists_and_loads() -> void:
+	for ambience_name in Audio.AMBIENCES:
+		var file: String = Audio.AMBIENCES[ambience_name].file
+		assert_true(ResourceLoader.exists(file), "%s: missing %s" % [ambience_name, file])
+		assert_not_null(load(file), "%s: %s did not load" % [ambience_name, file])
+
+func test_title_music_is_an_ambience() -> void:
+	assert_true(Audio.AMBIENCES.has("title"))
+
 func test_entering_the_dive_screen_switches_to_dive_ambience() -> void:
 	UIController.screen_changed.emit("dive")
 	assert_eq(Audio.current_ambience, "dive")
 	UIController.screen_changed.emit("deck")
 	assert_eq(Audio.current_ambience, "hub")
+
+func test_a_button_moved_between_parents_is_hooked_once() -> void:
+	var first_parent := Node.new()
+	var second_parent := Node.new()
+	add_child_autofree(first_parent)
+	add_child_autofree(second_parent)
+	var button := Button.new()
+	first_parent.add_child(button)
+	first_parent.remove_child(button)
+	second_parent.add_child(button)
+	# play_cue drops repeats inside a few milliseconds, which would hide a
+	# double hook, so count the connections instead.
+	assert_eq(button.pressed.get_connections().size(), 1)
 
 func test_mute_setting_mutes_the_master_bus() -> void:
 	Settings.audio_muted = true

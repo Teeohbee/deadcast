@@ -30,3 +30,5 @@ Open the project in Godot 4.7 and run from the editor. No external dependencies.
 ## credits
 
 Sound effects: [Kenney](https://kenney.nl) - Interface Sounds, Sci-Fi Sounds, Impact Sounds and RPG Audio (CC0). Press M (or Back on a pad) to mute.
+
+Title music: ["Pyro"](https://opengameart.org/content/pyro) from OpenGameArt (CC0). Trimmed and loudness-normalised for the title loop.
