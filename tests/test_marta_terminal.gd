@@ -113,3 +113,18 @@ func test_payment_line_shows_a_smaller_final_payment() -> void:
 	var s := _make()
 	await get_tree().process_frame
 	assert_eq(s.payment_label.text, "next payment: 4,000cr due in 2 runs.")
+
+func test_marta_does_not_praise_a_schedule_before_the_first_run() -> void:
+	GameState.run_count = 0
+	GameState.pressure_level = 0
+	var s := _make()
+	await get_tree().process_frame
+	assert_false(s.dialogue_label.text.contains("on schedule"))
+	assert_string_contains(s.dialogue_label.text, "go fishing")
+
+func test_marta_on_schedule_after_a_run() -> void:
+	GameState.run_count = 1
+	GameState.pressure_level = 0
+	var s := _make()
+	await get_tree().process_frame
+	assert_string_contains(s.dialogue_label.text, "on schedule")

@@ -42,7 +42,10 @@ func _ready() -> void:
 
 	EventBus.deck_log.connect(append_line)
 	EventBus.zone_changed.connect(_on_zone_changed)
-	append_line("DECK COMM: Welcome back, Diver. Keep your eye on the debt ledger.")
+	if GameState.run_count == 0:
+		append_line("DECK COMM: New operator registered. Pick a ruin and cast a line.")
+	else:
+		append_line("DECK COMM: Welcome back, Diver. Keep your eye on the debt ledger.")
 
 func append_line(text: String) -> void:
 	var stamp := Time.get_time_string_from_system()

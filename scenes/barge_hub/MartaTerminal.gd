@@ -51,7 +51,7 @@ func _refresh() -> void:
 		debt_status_label.text = "outstanding debt: %s cr  ·  missed payments %d/5" % [
 			LedgerPanel.format_thousands(GameState.debt), GameState.pressure_level]
 		DeckStyle.apply_label(debt_status_label, DeckStyle.RED)
-		dialogue_label.text = _marta_dialogue(GameState.pressure_level)
+		dialogue_label.text = _marta_dialogue(GameState.pressure_level, GameState.run_count)
 		DeckStyle.apply_label(dialogue_label, DeckStyle.TEXT)
 		payment_label.text = "next payment: %scr due in %d run%s." % [
 			LedgerPanel.format_thousands(LedgerPanel.next_payment_amount()), runs_to_payment, "s" if runs_to_payment != 1 else ""]
@@ -125,7 +125,9 @@ func _history_text(run: int) -> String:
 		return "no earlier transmissions."
 	return "\n\n".join(entries)
 
-func _marta_dialogue(pressure: int) -> String:
+func _marta_dialogue(pressure: int, run_count: int) -> String:
+	if run_count == 0:
+		return "\"you haven't made me a single credit yet.\ngo fishing.\"\n— marta"
 	match pressure:
 		0: return "\"you're on schedule. keep it that way.\"\n— marta"
 		1: return "\"one missed payment. i'm noting it.\ndon't make this a habit.\"\n— marta"
