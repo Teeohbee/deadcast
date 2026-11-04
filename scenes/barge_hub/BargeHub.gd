@@ -47,7 +47,15 @@ func on_screen_shown() -> void:
 func _wire_focus_graph() -> void:
 	var left: Array[Control] = _zone_panel.focus_targets()
 	var right: Array[Control] = _rig_panel.focus_targets() + _freezer_panel.focus_targets()
-	if left.is_empty() or right.is_empty():
+	if left.is_empty():
+		return
+	if right.is_empty():
+		# Nothing focusable on the right yet (the freezer is still locked):
+		# the zone cards lead straight down to the dive button and back.
+		for card in left:
+			card.focus_neighbor_right = NodePath()
+		DeckNav.link(left[left.size() - 1], _dive_button, SIDE_BOTTOM)
+		DeckNav.link(_dive_button, left[left.size() - 1], SIDE_TOP)
 		return
 	var first_right: Control = right[0]
 	# Left column: each card reaches the right column; the last descends to dive.

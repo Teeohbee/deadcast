@@ -89,6 +89,8 @@ func _build() -> void:
 func refresh() -> void:
 	var sale := GameState.freezer_sale_value()
 	var has_stock := GameState.freezer_base > 0
+	# Hidden until Unlocks opens it, so a new operator meets it with a deposit.
+	visible = Unlocks.is_freezer_open()
 	_count_label.text = "%s cr STORED" % _fmt(GameState.freezer_base)
 	_vacant.visible = not has_stock
 	_strip.visible = has_stock
@@ -129,6 +131,8 @@ func _apply_market_chip() -> void:
 	styled.free()
 
 func focus_targets() -> Array[Control]:
+	if not visible:
+		return []
 	return [_sell_btn]
 
 func _on_sell() -> void:
