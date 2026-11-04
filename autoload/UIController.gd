@@ -45,6 +45,9 @@ func _is_persistent(id: String) -> bool:
 func navigate_to(id: String) -> void:
 	assert(_zone2 != null, "UIController.initialize() must be called before navigate_to()")
 
+	if _is_persistent(id) and not Unlocks.is_tab_open(id):
+		id = "deck"
+
 	if id == "deck" and GameState.pressure_level >= 5:
 		id = "gameover"
 
@@ -100,5 +103,9 @@ func _cycle_tab(direction: int) -> void:
 	if idx == -1:
 		navigate_to(_TAB_ORDER[0])
 		return
-	idx = (idx + direction + _TAB_ORDER.size()) % _TAB_ORDER.size()
+	# Step past locked tabs; DECK is always open, so this always lands.
+	for step in _TAB_ORDER.size():
+		idx = (idx + direction + _TAB_ORDER.size()) % _TAB_ORDER.size()
+		if Unlocks.is_tab_open(_TAB_ORDER[idx]):
+			break
 	navigate_to(_TAB_ORDER[idx])

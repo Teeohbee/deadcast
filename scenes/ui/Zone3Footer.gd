@@ -14,6 +14,8 @@ const _TABS: Array[Dictionary] = [
 @onready var sep_label: Label = $VBoxContainer/SepLabel
 
 var _tab_buttons: Array[Button] = []
+# The divider before each tab (null for the first), hidden with its tab.
+var _dividers: Array[Label] = []
 var _prev_hint: Label
 var _next_hint: Label
 
@@ -26,12 +28,14 @@ func _ready() -> void:
 
 	for i in _TABS.size():
 		var tab := _TABS[i]
+		var sep: Label = null
 		if i > 0:
 			# Diegetic terminal column divider between menu entries.
-			var sep := Label.new()
+			sep = Label.new()
 			sep.text = "│"
 			DeckStyle.apply_label(sep, DeckStyle.DIM, DeckStyle.SIZE_BODY)
 			tab_row.add_child(sep)
+		_dividers.append(sep)
 		var btn := Button.new()
 		btn.focus_mode = Control.FOCUS_NONE
 		DeckStyle.apply_function_key(btn)
@@ -49,6 +53,16 @@ func _ready() -> void:
 	UIController.screen_changed.connect(_on_screen_changed)
 	InputGlyphs.device_changed.connect(_refresh_hints)
 	_refresh_hints()
+	_refresh_unlocked_tabs()
+
+# Locked tabs (see Unlocks) are hidden along with the divider before them.
+# DECK is always open and first, so a hidden tab always has a divider to drop.
+func _refresh_unlocked_tabs() -> void:
+	for i in _tab_buttons.size():
+		var open := Unlocks.is_tab_open(_TABS[i]["id"])
+		_tab_buttons[i].visible = open
+		if _dividers[i] != null:
+			_dividers[i].visible = open
 
 # Named method so Godot auto-disconnects when this node frees.
 # Accepts the optional mode arg the signal passes; defaulted for direct calls.
@@ -58,6 +72,7 @@ func _refresh_hints(_mode: int = 0) -> void:
 
 func _on_screen_changed(id: String) -> void:
 	visible = _TABS.any(func(t: Dictionary) -> bool: return t["id"] == id)
+	_refresh_unlocked_tabs()
 
 	for i in _tab_buttons.size():
 		var btn: Button = _tab_buttons[i]

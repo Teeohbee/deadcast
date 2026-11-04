@@ -2,6 +2,7 @@
 extends GutTest
 
 var _zone2: Control
+var _saved_run_count: int
 
 class FakeScreen:
 	extends Control
@@ -13,11 +14,14 @@ func before_each() -> void:
 	_zone2 = Control.new()
 	add_child_autofree(_zone2)
 	GameState.pressure_level = 0
+	_saved_run_count = GameState.run_count
+	GameState.run_count = 10  # every tab open
 	UIController._scene_factory = func(_id: String) -> Node:
 		return FakeScreen.new()
 	UIController.initialize(_zone2)
 
 func after_each() -> void:
+	GameState.run_count = _saved_run_count
 	UIController._scene_factory = UIController._default_scene_factory
 
 # --- navigation behaviour (retained from the original test file) ---
@@ -114,3 +118,29 @@ func test_navigate_to_deck_remaps_to_gameover_under_pressure() -> void:
 	GameState.pressure_level = 5
 	UIController.navigate_to("deck")
 	assert_eq(UIController.current_screen, "gameover")
+
+# --- staged unlocks ---
+
+func test_cycle_tab_skips_locked_tabs_for_a_new_operator() -> void:
+	GameState.run_count = 0
+	UIController.navigate_to("deck")
+	UIController._cycle_tab(1)
+	assert_eq(UIController.current_screen, "bunk")
+	UIController._cycle_tab(1)
+	assert_eq(UIController.current_screen, "deck")
+
+func test_cycle_tab_backward_skips_locked_tabs() -> void:
+	GameState.run_count = 0
+	UIController.navigate_to("deck")
+	UIController._cycle_tab(-1)
+	assert_eq(UIController.current_screen, "bunk")
+
+func test_navigating_to_a_locked_tab_lands_on_the_deck() -> void:
+	GameState.run_count = 0
+	UIController.navigate_to("decrypt")
+	assert_eq(UIController.current_screen, "deck")
+
+func test_dive_is_never_locked() -> void:
+	GameState.run_count = 0
+	UIController.navigate_to("dive")
+	assert_eq(UIController.current_screen, "dive")
