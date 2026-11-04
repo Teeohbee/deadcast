@@ -97,3 +97,18 @@ func test_push_ends_on_the_terminal_screen() -> void:
 func test_title_plays_the_title_music() -> void:
 	_make()
 	assert_eq(Audio.current_ambience, "title")
+
+# Switching glow off mid-push stalls the GL driver for ~200ms (the stutter at
+# 85%), so the push fades glow out instead and never toggles it.
+func test_glow_stays_enabled_through_the_push() -> void:
+	var title := _make()
+	for progress in [0.0, 0.5, 0.86, 0.95, 1.0]:
+		title.shot.set_push_progress(progress)
+		assert_true(title.shot._environment.glow_enabled, "glow on at %.2f" % progress)
+
+func test_glow_is_full_early_in_the_push_and_gone_by_the_close_view() -> void:
+	var title := _make()
+	title.shot.set_push_progress(0.5)
+	assert_almost_eq(title.shot._environment.glow_intensity, SkylineShot.GLOW_INTENSITY, 0.001)
+	title.shot.set_push_progress(0.86)
+	assert_almost_eq(title.shot._environment.glow_intensity, 0.0, 0.001)
