@@ -100,3 +100,31 @@ func test_no_job_offered_before_first_run() -> void:
 	var s := _make()
 	await get_tree().process_frame
 	assert_false(s._accept_button.visible)
+
+func test_debt_status_names_missed_payments() -> void:
+	GameState.pressure_level = 1
+	var s := _make()
+	await get_tree().process_frame
+	assert_eq(s.debt_status_label.text, "outstanding debt: 80,000 cr  ·  missed payments 1/5")
+
+func test_payment_line_shows_a_smaller_final_payment() -> void:
+	GameState.debt = 4000
+	GameState.runs_since_payment = 3
+	var s := _make()
+	await get_tree().process_frame
+	assert_eq(s.payment_label.text, "next payment: 4,000cr due in 2 runs.")
+
+func test_marta_does_not_praise_a_schedule_before_the_first_run() -> void:
+	GameState.run_count = 0
+	GameState.pressure_level = 0
+	var s := _make()
+	await get_tree().process_frame
+	assert_false(s.dialogue_label.text.contains("on schedule"))
+	assert_string_contains(s.dialogue_label.text, "go fishing")
+
+func test_marta_on_schedule_after_a_run() -> void:
+	GameState.run_count = 1
+	GameState.pressure_level = 0
+	var s := _make()
+	await get_tree().process_frame
+	assert_string_contains(s.dialogue_label.text, "on schedule")

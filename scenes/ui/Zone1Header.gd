@@ -38,7 +38,14 @@ func _ready() -> void:
 
 	_credits = GameState.credits
 	_refresh_status()
+	_refresh_depth()
 	host_label.text = "HOST: THE_MERIDIAN_DECK"
+
+# The rod's depth rating, in feet like every other depth in the game. Refreshed
+# on each screen change so a rod bought or upgraded shows on the next screen.
+func _refresh_depth() -> void:
+	var rated_feet: int = GameState.current_rod.max_depth if GameState.current_rod else 100
+	depth_label.text = "LINE RATING: %dft" % rated_feet
 
 func _on_clock_tick() -> void:
 	clock_label.text = "SYS_TIME: %s" % Time.get_time_string_from_system()
@@ -52,6 +59,7 @@ func _on_corruption_changed(value: float) -> void:
 	_refresh_status()
 
 func _on_screen_changed(id: String) -> void:
+	_refresh_depth()
 	if id == "dive":
 		host_label.text = "HOST: %s" % _zone_host_name(GameState.selected_zone)
 	else:

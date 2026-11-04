@@ -32,7 +32,7 @@ size_flags_horizontal = 3
 text = "HOST: THE_MERIDIAN_DECK"
 
 [node name="DepthLabel" type="Label" parent="VBoxContainer/ReadoutMargin/HBoxContainer"]
-text = "PRESSURE DEPTH: 4,200m"
+text = "LINE RATING: 100ft"
 
 [node name="ClockLabel" type="Label" parent="VBoxContainer/ReadoutMargin/HBoxContainer"]
 text = "SYS_TIME: 00:00:00"
