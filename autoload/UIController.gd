@@ -20,6 +20,8 @@ const _TAB_ORDER: Array[String] = [
 ]
 
 var current_screen: String = ""
+# Tabs opened since the player last visited them; the footer marks them NEW.
+var fresh_tabs: Array[String] = []
 var _zone2: Control = null
 var _current_node: Node = null
 # Persistent screens (the hub tabs) are built once and kept alive, hidden, in
@@ -32,6 +34,7 @@ var _scene_factory: Callable = _default_scene_factory
 func initialize(zone2: Control) -> void:
 	_zone2 = zone2
 	_cache.clear()
+	fresh_tabs.clear()
 	_current_node = null
 	current_screen = ""
 
@@ -52,6 +55,7 @@ func navigate_to(id: String) -> void:
 		id = "gameover"
 
 	assert(id in _REGISTRY, "UIController: unknown screen id '%s'" % id)
+	fresh_tabs.erase(id)
 
 	# Detach the outgoing screen: keep persistent screens alive (hidden) so they
 	# keep ticking; free transient flow screens so they always restart clean.
@@ -86,6 +90,11 @@ func navigate_to(id: String) -> void:
 
 	screen_changed.emit(id)
 	dive_state_changed.emit(id == "dive")
+
+func mark_fresh_tabs(feature_ids: Array[String]) -> void:
+	for feature in feature_ids:
+		if feature in _TAB_ORDER and feature not in fresh_tabs:
+			fresh_tabs.append(feature)
 
 func navigate_to_title() -> void:
 	get_tree().change_scene_to_file("res://scenes/title_screen/TitleScreen.tscn")

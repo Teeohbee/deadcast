@@ -21,6 +21,7 @@ func before_each() -> void:
 	UIController.initialize(_zone2)
 
 func after_each() -> void:
+	UIController.fresh_tabs.clear()
 	GameState.run_count = _saved_run_count
 	UIController._scene_factory = UIController._default_scene_factory
 
@@ -144,3 +145,9 @@ func test_dive_is_never_locked() -> void:
 	GameState.run_count = 0
 	UIController.navigate_to("dive")
 	assert_eq(UIController.current_screen, "dive")
+
+func test_fresh_tabs_clear_when_visited() -> void:
+	UIController.mark_fresh_tabs(["workshop", "vendors", "exchange"] as Array[String])
+	assert_eq(UIController.fresh_tabs, ["workshop", "vendors"] as Array[String], "zones are not tabs")
+	UIController.navigate_to("workshop")
+	assert_eq(UIController.fresh_tabs, ["vendors"] as Array[String])

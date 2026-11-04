@@ -79,7 +79,10 @@ func _on_screen_changed(id: String) -> void:
 		var tab_id: String = _TABS[i]["id"]
 		var base_label: String = _TABS[i]["label"]
 
-		if tab_id == "marta" and GameState.has_new_marta_beat():
+		if tab_id in UIController.fresh_tabs:
+			btn.text = base_label + " NEW"
+			btn.add_theme_color_override("font_color", DeckStyle.AMBER)
+		elif tab_id == "marta" and GameState.has_new_marta_beat():
 			btn.text = base_label + " !"
 			btn.add_theme_color_override("font_color", DeckStyle.AMBER)
 		elif tab_id == id:

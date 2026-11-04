@@ -10,8 +10,13 @@ extends Control
 @onready var _banner_zone: Label = $Margin/VBox/DiveBanner/BannerRow/BannerZone
 @onready var _dive_button: Button = $Margin/VBox/DiveBanner/BannerRow/DiveButton
 
+# What Unlocks had open when the deck was last shown, to announce what's new.
+# Taken fresh each session, so continuing a save never replays old unlocks.
+var _known_features: Array[String] = []
+
 func _ready() -> void:
 	self.theme = DeckStyle.get_theme()
+	_known_features = Unlocks.open_features()
 
 	var banner_sb := DeckStyle.panel_style(false)
 	banner_sb.bg_color = Color("#09110d")
@@ -39,10 +44,21 @@ func on_screen_shown() -> void:
 	_ledger_panel.refresh()
 	_freezer_panel.refresh()
 	_rig_panel.refresh()
+	_announce_new_unlocks()
 	_zone_panel.refresh_unlocked()
 	_wire_focus_graph()
 	_on_zone_changed(GameState.selected_zone)
 	_zone_panel.focus_selected()
+
+func _announce_new_unlocks() -> void:
+	var open_now := Unlocks.open_features()
+	var opened := Unlocks.newly_opened(_known_features, open_now)
+	_known_features = open_now
+	for feature in opened:
+		var line := Unlocks.announcement_for(feature)
+		if line != "":
+			EventBus.deck_log.emit(line)
+	UIController.mark_fresh_tabs(opened)
 
 func _wire_focus_graph() -> void:
 	var left: Array[Control] = _zone_panel.focus_targets()

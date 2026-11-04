@@ -7,6 +7,7 @@ var _saved_run_count: int
 
 func before_each() -> void:
 	_saved_run_count = GameState.run_count
+	UIController.fresh_tabs.clear()
 
 func after_each() -> void:
 	GameState.run_count = _saved_run_count
@@ -80,3 +81,15 @@ func test_tabs_appear_as_runs_complete() -> void:
 	UIController.screen_changed.emit("deck")
 	assert_eq(_visible_tab_labels(f), ["DECK", "WORKSHOP", "BUNK", "MARTA", "VENDORS"] as Array[String])
 	assert_eq(_visible_dividers(f), 4)
+
+func test_fresh_tabs_are_marked_new_until_visited() -> void:
+	GameState.run_count = 1
+	var f := _make()
+	await get_tree().process_frame
+	UIController.fresh_tabs = ["workshop"] as Array[String]
+	UIController.screen_changed.emit("deck")
+	var workshop: Button = f._tab_buttons[1]
+	assert_eq(workshop.text, "WORKSHOP NEW")
+	UIController.fresh_tabs.clear()
+	UIController.screen_changed.emit("workshop")
+	assert_eq(workshop.text, "WORKSHOP")

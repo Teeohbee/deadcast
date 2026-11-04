@@ -134,3 +134,34 @@ func test_freezer_appears_with_its_first_deposit() -> void:
 	hub.on_screen_shown()
 	assert_true(hub._freezer_panel.visible)
 	GameState.freezer_base = saved_freezer_base
+
+func test_first_run_unlocks_are_announced_once_on_the_deck() -> void:
+	GameState.run_count = 0
+	var saved_freezer_base := GameState.freezer_base
+	GameState.freezer_base = 0
+	var hub := HUB.instantiate()
+	add_child_autofree(hub)
+	await get_tree().process_frame
+	var lines: Array[String] = []
+	var collect := func(line: String) -> void: lines.append(line)
+	EventBus.deck_log.connect(collect)
+	GameState.run_count = 1
+	hub.on_screen_shown()
+	hub.on_screen_shown()
+	EventBus.deck_log.disconnect(collect)
+	GameState.freezer_base = saved_freezer_base
+	assert_eq(lines.size(), 3, str(lines))
+	assert_string_contains(lines[0], "Workshop")
+	assert_string_contains(lines[1], "Okeke")
+	assert_string_contains(lines[2], "Marta")
+	assert_eq(UIController.fresh_tabs, ["workshop", "vendors", "marta"] as Array[String])
+	UIController.fresh_tabs.clear()
+
+func test_a_continued_save_announces_nothing() -> void:
+	GameState.run_count = 7
+	var hub := HUB.instantiate()
+	add_child_autofree(hub)
+	await get_tree().process_frame
+	watch_signals(EventBus)
+	hub.on_screen_shown()
+	assert_signal_not_emitted(EventBus, "deck_log")
