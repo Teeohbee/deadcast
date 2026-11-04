@@ -9,6 +9,7 @@ const ZONE_PARAMS: Dictionary = {
 
 var _wave: SonarWave
 var _sig_label: Label
+var _legend: VBoxContainer
 
 func _ready() -> void:
 	title = "sonar_hydro-scan"
@@ -32,27 +33,32 @@ func _build() -> void:
 	(header.get_child(2) as Label).horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	root.add_child(header)
 
+	# The wave and its legend share a row so the legend never sits on the wave.
+	var wave_row := HBoxContainer.new()
+	wave_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	wave_row.add_theme_constant_override("separation", 12)
+	root.add_child(wave_row)
+
 	var wave_holder := Control.new()
-	wave_holder.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	root.add_child(wave_holder)
+	wave_holder.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	wave_row.add_child(wave_holder)
 
 	_wave = SonarWave.new()
 	_wave.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	wave_holder.add_child(_wave)
 
-	var legend := VBoxContainer.new()
-	legend.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	legend.offset_left = -210
-	legend.offset_top = 6
-	legend.offset_right = -6
+	_legend = VBoxContainer.new()
+	_legend.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	# Fixed width, so the wave doesn't jump when GHOST-SIG changes length.
+	_legend.custom_minimum_size = Vector2(210, 0)
 	_sig_label = Label.new()
 	DeckStyle.apply_label(_sig_label, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
-	legend.add_child(_sig_label)
+	_legend.add_child(_sig_label)
 	var thermo := Label.new()
 	thermo.text = "█ THERMOCLINE: 4.1°C"
 	DeckStyle.apply_label(thermo, DeckStyle.SKY, DeckStyle.SIZE_AMBIENT)
-	legend.add_child(thermo)
-	wave_holder.add_child(legend)
+	_legend.add_child(thermo)
+	wave_row.add_child(_legend)
 
 func params_for(zone_id: String) -> Dictionary:
 	return ZONE_PARAMS.get(zone_id, ZONE_PARAMS["district7"])

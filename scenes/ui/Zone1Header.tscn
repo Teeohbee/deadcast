@@ -16,27 +16,31 @@ anchor_bottom = 1.0
 clip_text = true
 text = "────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+[node name="ReadoutMargin" type="MarginContainer" parent="VBoxContainer"]
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_right = 12
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/ReadoutMargin"]
 size_flags_horizontal = 3
 theme_override_constants/separation = 18
 
-[node name="OSLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
+[node name="OSLabel" type="Label" parent="VBoxContainer/ReadoutMargin/HBoxContainer"]
 text = ""
 
-[node name="HostLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
+[node name="HostLabel" type="Label" parent="VBoxContainer/ReadoutMargin/HBoxContainer"]
 size_flags_horizontal = 3
 text = "HOST: THE_MERIDIAN_DECK"
 
-[node name="DepthLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
+[node name="DepthLabel" type="Label" parent="VBoxContainer/ReadoutMargin/HBoxContainer"]
 text = "PRESSURE DEPTH: 4,200m"
 
-[node name="ClockLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
+[node name="ClockLabel" type="Label" parent="VBoxContainer/ReadoutMargin/HBoxContainer"]
 text = "SYS_TIME: 00:00:00"
 
-[node name="BatteryLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
+[node name="BatteryLabel" type="Label" parent="VBoxContainer/ReadoutMargin/HBoxContainer"]
 text = "BATTERY: 100% [LINE]"
 
-[node name="StatusLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
+[node name="StatusLabel" type="Label" parent="VBoxContainer/ReadoutMargin/HBoxContainer"]
 horizontal_alignment = 2
 text = "CR: 0  SIG: 100%"
 
