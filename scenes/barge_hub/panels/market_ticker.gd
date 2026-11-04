@@ -23,10 +23,10 @@ const NEWS: Array[String] = [
 	"ghost-net recoveries post record quarter",
 	"abyssal_freight halts after lost convoy",
 	"lure-tech IPO oversubscribed 6x",
-	"credit liquidity tight below 4,000m",
+	"credit liquidity tight below 200ft",
 	"port authority flags black-market sonar parts",
 	"deep_pulse demand spikes on swarm sightings",
-	"insurers hike premiums for sub-5,000m runs",
+	"insurers hike premiums for sub-250ft runs",
 ]
 
 const SCROLL_SPEED: float = 70.0  # px/sec

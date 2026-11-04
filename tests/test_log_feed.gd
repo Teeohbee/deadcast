@@ -53,3 +53,18 @@ func test_fit_lines_falls_back_before_layout() -> void:
 	# Height 0 (not yet laid out) shows the cap; corrects on first resize.
 	assert_eq(PANEL_SCRIPT._fit_lines(0.0, 17.0, 8), 8)
 	assert_eq(PANEL_SCRIPT._fit_lines(90.0, 0.0, 8), 8)
+
+func test_new_operator_gets_a_first_run_greeting() -> void:
+	var saved_run_count := GameState.run_count
+	GameState.run_count = 0
+	var p := _make_panel()
+	GameState.run_count = saved_run_count
+	assert_string_contains(p._lines[0], "New operator registered")
+	assert_false(p._lines[0].contains("Welcome back"))
+
+func test_returning_operator_is_welcomed_back() -> void:
+	var saved_run_count := GameState.run_count
+	GameState.run_count = 3
+	var p := _make_panel()
+	GameState.run_count = saved_run_count
+	assert_string_contains(p._lines[0], "Welcome back")

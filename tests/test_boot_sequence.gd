@@ -60,3 +60,30 @@ func test_screen_touch_skips_boot_sequence() -> void:
 	boot._input(touch)
 
 	assert_true(boot._finished)
+
+func _all_boot_lines(boot: Control) -> PackedStringArray:
+	var lines := PackedStringArray()
+	for group in boot._groups:
+		lines.append_array((group.lines as String).split("\n"))
+	return lines
+
+func test_boot_text_names_no_keyboard_keys() -> void:
+	var boot := _instantiate_boot()
+	await get_tree().process_frame
+	boot._finished = true
+	var regex := RegEx.new()
+	regex.compile("\\[F\\d+\\]")
+	for line in _all_boot_lines(boot):
+		assert_null(regex.search(line), line)
+
+func test_every_boot_line_fits_the_base_viewport() -> void:
+	var boot := _instantiate_boot()
+	await get_tree().process_frame
+	boot._finished = true
+	var font: Font = boot.output_label.get_theme_font("normal_font", "RichTextLabel")
+	var font_size: int = boot.output_label.get_theme_font_size("normal_font_size", "RichTextLabel")
+	var base_width: int = ProjectSettings.get_setting("display/window/size/viewport_width")
+	var usable_width := base_width - 48  # panel margins and border
+	for line in _all_boot_lines(boot):
+		var width := font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		assert_lt(width, float(usable_width), line)
