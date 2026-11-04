@@ -61,6 +61,13 @@ func test_screen_touch_skips_boot_sequence() -> void:
 
 	assert_true(boot._finished)
 
+func test_boot_points_a_new_operator_at_the_manual() -> void:
+	var boot := _instantiate_boot()
+	await get_tree().process_frame
+	boot._finished = true
+	var last_group: String = boot._groups[boot._groups.size() - 1].lines
+	assert_string_contains(last_group, "manual")
+	assert_string_contains(last_group, "BUNK")
 func _all_boot_lines(boot: Control) -> PackedStringArray:
 	var lines := PackedStringArray()
 	for group in boot._groups:

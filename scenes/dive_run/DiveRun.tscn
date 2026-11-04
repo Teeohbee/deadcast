@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scenes/dive_run/DiveRun.gd" id="1_DiveRun"]
 [ext_resource type="PackedScene" path="res://scenes/dive_run/LineSystem.tscn" id="2_LineSystem"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scenes/dive_run/hydrophone.gd" id="8_Hydrophone"]
 [ext_resource type="Script" path="res://scenes/barge_hub/panels/terminal_panel.gd" id="5_TerminalPanel"]
 [ext_resource type="Script" path="res://scenes/dive_run/dive_status_strip.gd" id="6_StatusStrip"]
+[ext_resource type="Script" uid="uid://b7erdu3oxajmm" path="res://scenes/dive_run/line_tension.gd" id="9_LineTension"]
 
 [node name="DiveRun" type="Control"]
 layout_mode = 3
@@ -37,6 +38,10 @@ theme_override_constants/separation = 12
 custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
 theme_override_constants/separation = 12
+
+[node name="LineTension" type="PanelContainer" parent="Margin/MainRow/Rail"]
+layout_mode = 2
+script = ExtResource("9_LineTension")
 
 [node name="Biosign" type="PanelContainer" parent="Margin/MainRow/Rail"]
 layout_mode = 2

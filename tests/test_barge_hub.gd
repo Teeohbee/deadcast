@@ -3,9 +3,16 @@ extends GutTest
 
 const HUB := preload("res://scenes/barge_hub/BargeHub.tscn")
 
+var _saved_run_count: int
+
 func before_each() -> void:
 	GameState.selected_zone = "district7"
 	GameState.pressure_level = 0
+	_saved_run_count = GameState.run_count
+	GameState.run_count = 10  # every zone and panel open
+
+func after_each() -> void:
+	GameState.run_count = _saved_run_count
 
 func test_hub_instantiates_with_all_panels() -> void:
 	var hub := HUB.instantiate()
@@ -86,3 +93,75 @@ func test_dive_button_updates_on_device_change() -> void:
 	InputGlyphs.mode = InputGlyphs.Mode.KEY
 	InputGlyphs.device_changed.emit(InputGlyphs.Mode.KEY)
 	assert_string_contains(hub._dive_button.text, "[ENTER]")
+
+func test_newly_opened_zone_becomes_the_card_above_the_dive_button() -> void:
+	GameState.run_count = 1
+	var hub := HUB.instantiate()
+	add_child_autofree(hub)
+	await get_tree().process_frame
+	var zone_panel: Node = hub._zone_panel
+	var district7: Button = zone_panel._cards["district7"]
+	assert_eq(district7.get_node(district7.focus_neighbor_bottom), hub._dive_button)
+	GameState.run_count = 2
+	hub.on_screen_shown()
+	var exchange: Button = zone_panel._cards["exchange"]
+	assert_eq(district7.get_node(district7.focus_neighbor_bottom), exchange)
+	assert_eq(exchange.get_node(exchange.focus_neighbor_bottom), hub._dive_button)
+
+func test_freezer_is_hidden_for_a_new_operator() -> void:
+	GameState.run_count = 0
+	var saved_freezer_base := GameState.freezer_base
+	GameState.freezer_base = 0
+	var hub := HUB.instantiate()
+	add_child_autofree(hub)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	assert_false(hub._freezer_panel.visible)
+	var district7: Button = hub._zone_panel._cards["district7"]
+	assert_eq(district7.get_node(district7.focus_neighbor_bottom), hub._dive_button)
+	assert_eq(hub._dive_button.get_node(hub._dive_button.focus_neighbor_top), district7)
+	GameState.freezer_base = saved_freezer_base
+
+func test_freezer_appears_with_its_first_deposit() -> void:
+	GameState.run_count = 0
+	var saved_freezer_base := GameState.freezer_base
+	GameState.freezer_base = 0
+	var hub := HUB.instantiate()
+	add_child_autofree(hub)
+	await get_tree().process_frame
+	GameState.run_count = 1
+	GameState.freezer_base = 350
+	hub.on_screen_shown()
+	assert_true(hub._freezer_panel.visible)
+	GameState.freezer_base = saved_freezer_base
+
+func test_first_run_unlocks_are_announced_once_on_the_deck() -> void:
+	GameState.run_count = 0
+	var saved_freezer_base := GameState.freezer_base
+	GameState.freezer_base = 0
+	var hub := HUB.instantiate()
+	add_child_autofree(hub)
+	await get_tree().process_frame
+	var lines: Array[String] = []
+	var collect := func(line: String) -> void: lines.append(line)
+	EventBus.deck_log.connect(collect)
+	GameState.run_count = 1
+	hub.on_screen_shown()
+	hub.on_screen_shown()
+	EventBus.deck_log.disconnect(collect)
+	GameState.freezer_base = saved_freezer_base
+	assert_eq(lines.size(), 3, str(lines))
+	assert_string_contains(lines[0], "Workshop")
+	assert_string_contains(lines[1], "Okeke")
+	assert_string_contains(lines[2], "Marta")
+	assert_eq(UIController.fresh_tabs, ["workshop", "vendors", "marta"] as Array[String])
+	UIController.fresh_tabs.clear()
+
+func test_a_continued_save_announces_nothing() -> void:
+	GameState.run_count = 7
+	var hub := HUB.instantiate()
+	add_child_autofree(hub)
+	await get_tree().process_frame
+	watch_signals(EventBus)
+	hub.on_screen_shown()
+	assert_signal_not_emitted(EventBus, "deck_log")

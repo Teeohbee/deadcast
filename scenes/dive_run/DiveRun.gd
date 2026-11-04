@@ -11,6 +11,7 @@ const _DEBRIEF_SEP := "───────────────────
 const _DEBRIEF_SEP_SHORT := "────────────────────────────────────────────────"
 
 @onready var line_system: LineSystem = $LineSystem
+@onready var line_tension: LineTensionPanel = $Margin/MainRow/Rail/LineTension
 @onready var biosign: BiosignPanel = $Margin/MainRow/Rail/Biosign
 @onready var hydrophone: HydrophonePanel = $Margin/MainRow/Rail/Hydrophone
 @onready var depth_column: DepthColumnPanel = $Margin/MainRow/Rail/DepthColumn
@@ -58,10 +59,11 @@ func _ready() -> void:
 
 	depth_column.setup(_column.reachable_layer_sizes())
 	status_strip.setup(_initial_lure_label())
+	line_tension.setup(line_system.max_tension)
 	biosign.setup(line_system.max_tension)
 	var bloom := RailBloom.new()
 	add_child(bloom)
-	bloom.track([biosign, depth_column, hydrophone, $Margin/MainRow/LogPanel])
+	bloom.track([line_tension, biosign, depth_column, hydrophone, $Margin/MainRow/LogPanel])
 	EventBus.haul_changed.emit(0)
 	EventBus.tension_changed.emit(line_system.tension)
 	EventBus.corruption_changed.emit(line_system.corruption)
