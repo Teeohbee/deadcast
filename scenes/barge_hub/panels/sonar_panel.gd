@@ -13,6 +13,7 @@ var _legend: VBoxContainer
 
 func _ready() -> void:
 	title = "sonar_hydro-scan"
+	ambient = true
 	custom_minimum_size = Vector2(0, 160)
 	_build()
 	EventBus.zone_changed.connect(_on_zone_changed)

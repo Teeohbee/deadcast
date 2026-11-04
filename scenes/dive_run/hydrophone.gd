@@ -46,6 +46,7 @@ var _corruption: float = 0.0
 
 func _ready() -> void:
 	title = "hydrophone"
+	ambient = true
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 
 	_feed = VBoxContainer.new()

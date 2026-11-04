@@ -49,6 +49,7 @@ func setup(max_tension: int) -> void:
 
 func _ready() -> void:
 	title = "biosign"
+	ambient = true
 	custom_minimum_size = Vector2(0, 72)
 
 	var root := VBoxContainer.new()
@@ -94,8 +95,8 @@ func _on_corruption_changed(value: float) -> void:
 
 # A real pull on the line: the panel flares red and settles.
 func _pulse() -> void:
-	modulate = Color(1.8, 0.6, 0.6)
-	create_tween().tween_property(self, "modulate", Color.WHITE, TENSION_PULSE_SECONDS)
+	modulate = Color(1.8, 0.6, 0.6, resting_modulate().a)
+	create_tween().tween_property(self, "modulate", resting_modulate(), TENSION_PULSE_SECONDS)
 
 func _on_run_ended(result: Dictionary) -> void:
 	if not result.get("snapped", false) or _flatline:

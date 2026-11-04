@@ -16,6 +16,16 @@ extends PanelContainer
 		_apply_style()
 		queue_redraw()
 
+# Flavour panels (sonar, hydrophone, biosign...) set this so they recede behind
+# the panels holding the player's own numbers.
+@export var ambient: bool = false:
+	set(value):
+		ambient = value
+		modulate = resting_modulate()
+
+func resting_modulate() -> Color:
+	return Color(1, 1, 1, DeckStyle.AMBIENT_ALPHA) if ambient else Color.WHITE
+
 func _init() -> void:
 	_apply_style()
 

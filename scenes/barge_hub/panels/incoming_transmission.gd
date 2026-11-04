@@ -8,6 +8,7 @@ var _spectrum: BounceBars
 
 func _ready() -> void:
 	title = "incoming_transmission"
+	ambient = true
 	custom_minimum_size = Vector2(0, 120)
 
 	var root := VBoxContainer.new()

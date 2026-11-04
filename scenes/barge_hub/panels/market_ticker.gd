@@ -40,6 +40,7 @@ var _view: Control
 
 func _ready() -> void:
 	title = "market_ticker"
+	ambient = true
 	custom_minimum_size = Vector2(0, 50)
 	_text = ticker_text()
 
