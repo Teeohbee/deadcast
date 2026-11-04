@@ -17,6 +17,8 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="deadcast"
 run/main_scene="res://scenes/title_skyline/SkylineTitle.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
+boot_splash/bg_color=Color(0.039216, 0.039216, 0.039216, 1)
+boot_splash/show_image=false
 config/icon="res://icon.png"
 
 [autoload]
