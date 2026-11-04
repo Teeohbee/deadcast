@@ -56,6 +56,19 @@ func test_entering_the_dive_screen_switches_to_dive_ambience() -> void:
 	UIController.screen_changed.emit("deck")
 	assert_eq(Audio.current_ambience, "hub")
 
+func test_a_button_moved_between_parents_is_hooked_once() -> void:
+	var first_parent := Node.new()
+	var second_parent := Node.new()
+	add_child_autofree(first_parent)
+	add_child_autofree(second_parent)
+	var button := Button.new()
+	first_parent.add_child(button)
+	first_parent.remove_child(button)
+	second_parent.add_child(button)
+	# play_cue drops repeats inside a few milliseconds, which would hide a
+	# double hook, so count the connections instead.
+	assert_eq(button.pressed.get_connections().size(), 1)
+
 func test_mute_setting_mutes_the_master_bus() -> void:
 	Settings.audio_muted = true
 	Audio.apply_mute_setting()

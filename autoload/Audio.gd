@@ -218,8 +218,13 @@ func _on_focus_changed(_control: Control) -> void:
 # Every Button anywhere in the game clicks when pressed, so screens built in
 # code (vendor stock, dive choices) get sound without knowing about Audio.
 func _on_node_added(node: Node) -> void:
-	if node is BaseButton:
-		(node as BaseButton).pressed.connect(func() -> void: play_cue("ui_confirm"))
+	# A button re-enters the tree when it is moved (the title handover does
+	# this), so hook it only once.
+	if node is BaseButton and not (node as BaseButton).pressed.is_connected(_on_button_pressed):
+		(node as BaseButton).pressed.connect(_on_button_pressed)
+
+func _on_button_pressed() -> void:
+	play_cue("ui_confirm")
 
 func _on_screen_changed(screen_id: String) -> void:
 	play_cue("ui_screen")
