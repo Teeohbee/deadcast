@@ -100,3 +100,16 @@ func test_no_job_offered_before_first_run() -> void:
 	var s := _make()
 	await get_tree().process_frame
 	assert_false(s._accept_button.visible)
+
+func test_debt_status_names_missed_payments() -> void:
+	GameState.pressure_level = 1
+	var s := _make()
+	await get_tree().process_frame
+	assert_eq(s.debt_status_label.text, "outstanding debt: 80,000 cr  ·  missed payments 1/5")
+
+func test_payment_line_shows_a_smaller_final_payment() -> void:
+	GameState.debt = 4000
+	GameState.runs_since_payment = 3
+	var s := _make()
+	await get_tree().process_frame
+	assert_eq(s.payment_label.text, "next payment: 4,000cr due in 2 runs.")

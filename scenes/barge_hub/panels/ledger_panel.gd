@@ -27,7 +27,7 @@ func _build() -> void:
 
 	var ratio_row := HBoxContainer.new()
 	var plabel := Label.new()
-	plabel.text = "DEBT ACCRUAL PRESSURE:"
+	plabel.text = "MISSED PAYMENTS:"
 	plabel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	DeckStyle.apply_label(plabel, DeckStyle.DIM, DeckStyle.SIZE_BODY)
 	ratio_row.add_child(plabel)
@@ -46,7 +46,7 @@ func _build() -> void:
 		_segments.append(seg)
 	root.add_child(seg_row)
 
-	_due_value = _add_row(root, "NEXT REPOSSESSION DUE:", DeckStyle.AMBER)
+	_due_value = _add_row(root, "NEXT PAYMENT (10,000cr):", DeckStyle.AMBER)
 
 func _add_row(parent: Container, caption: String, value_color: Color) -> Label:
 	var row := HBoxContainer.new()
@@ -65,8 +65,8 @@ func _on_credits_changed(_value: int) -> void:
 	refresh()
 
 func refresh() -> void:
-	_wallet_value.text = "%s cr" % _fmt(GameState.credits)
-	_debt_value.text = "%s cr" % _fmt(GameState.debt)
+	_wallet_value.text = "%s cr" % format_thousands(GameState.credits)
+	_debt_value.text = "%s cr" % format_thousands(GameState.debt)
 	_pressure_ratio.text = "%d / %d" % [GameState.pressure_level, SEGMENTS]
 
 	var fill := pressure_fill_color(GameState.pressure_level)
@@ -74,6 +74,7 @@ func refresh() -> void:
 	for i in SEGMENTS:
 		_segments[i].color = fill if i < GameState.pressure_level else SEGMENT_EMPTY
 
+	_due_caption().text = "NEXT PAYMENT (%scr):" % format_thousands(next_payment_amount())
 	var runs_left := 5 - GameState.runs_since_payment
 	if runs_left > 0:
 		_due_value.text = "in %d run%s" % [runs_left, "s" if runs_left != 1 else ""]
@@ -82,6 +83,13 @@ func refresh() -> void:
 		_due_value.text = "IMMEDIATE DANGER"
 		DeckStyle.apply_label(_due_value, DeckStyle.RED, DeckStyle.SIZE_VALUE)
 
+func _due_caption() -> Label:
+	return _due_value.get_parent().get_child(0) as Label
+
+# Mirrors GameState's payment rule: 10,000cr, or whatever is left if less.
+static func next_payment_amount() -> int:
+	return mini(10000, GameState.debt)
+
 static func pressure_fill_color(level: int) -> Color:
 	if level >= 4:
 		return DeckStyle.RED
@@ -89,7 +97,7 @@ static func pressure_fill_color(level: int) -> Color:
 		return DeckStyle.AMBER
 	return DeckStyle.GREEN
 
-static func _fmt(n: int) -> String:
+static func format_thousands(n: int) -> String:
 	var s := str(n)
 	var out := ""
 	var count := 0

@@ -52,10 +52,10 @@ func test_repossession_immediate_danger() -> void:
 
 func test_thousands_formatting() -> void:
 	var p := _make_panel()
-	assert_eq(p._fmt(0), "0")
-	assert_eq(p._fmt(999), "999")
-	assert_eq(p._fmt(80000), "80,000")
-	assert_eq(p._fmt(1234567), "1,234,567")
+	assert_eq(p.format_thousands(0), "0")
+	assert_eq(p.format_thousands(999), "999")
+	assert_eq(p.format_thousands(80000), "80,000")
+	assert_eq(p.format_thousands(1234567), "1,234,567")
 
 func test_refreshes_on_credits_changed() -> void:
 	var p := _make_panel()
@@ -67,3 +67,21 @@ func test_money_readouts_use_value_tier() -> void:
 	assert_eq(p._wallet_value.get_theme_font_size("font_size"), DeckStyle.SIZE_VALUE)
 	assert_eq(p._debt_value.get_theme_font_size("font_size"), DeckStyle.SIZE_VALUE)
 	assert_eq(p._due_value.get_theme_font_size("font_size"), DeckStyle.SIZE_VALUE)
+
+# The pips count missed payments (game over at 5); the row below counts runs to
+# the next payment. Labelled so the two fives don't read as the same clock.
+func _caption_of(value_label: Label) -> String:
+	return (value_label.get_parent().get_child(0) as Label).text
+
+func test_pressure_row_is_labelled_missed_payments() -> void:
+	var p := _make_panel()
+	assert_eq(_caption_of(p._pressure_ratio), "MISSED PAYMENTS:")
+
+func test_due_row_names_the_payment_amount() -> void:
+	var p := _make_panel()
+	assert_eq(_caption_of(p._due_value), "NEXT PAYMENT (10,000cr):")
+
+func test_due_row_shows_a_smaller_final_payment() -> void:
+	GameState.debt = 4000
+	var p := _make_panel()
+	assert_eq(_caption_of(p._due_value), "NEXT PAYMENT (4,000cr):")
