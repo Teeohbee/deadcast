@@ -4,9 +4,10 @@
 shader_type spatial;
 render_mode unshaded, cull_disabled;
 
-uniform vec3 body_color : source_color = vec3(0.012, 0.013, 0.022);
+uniform vec3 body_color : source_color = vec3(0.01, 0.016, 0.026);
 // Street-level neon lighting the bottom of every tower from the water.
-uniform vec3 street_glow : source_color = vec3(0.35, 0.06, 0.25);
+uniform vec3 street_glow_teal : source_color = vec3(0.04, 0.26, 0.3);
+uniform vec3 street_glow_magenta : source_color = vec3(0.3, 0.05, 0.22);
 uniform float lit_ratio = 0.09;
 uniform float window_energy = 1.4;
 uniform vec2 window_cell = vec2(1.7, 3.2);
@@ -34,6 +35,7 @@ void fragment() {
 	// Side faces darker than front faces so towers separate from each other.
 	float face_shade = abs(world_normal.x) > 0.5 ? 0.55 : 1.0;
 	vec3 colour = body_color * face_shade;
+	vec3 street_glow = tower_seed > 0.35 ? street_glow_teal : street_glow_magenta;
 	colour += street_glow * exp(-height / 28.0) * face_shade;
 	if (is_wall) {
 		float along_face = abs(world_normal.x) > 0.5 ? world_position.z : world_position.x;
