@@ -39,6 +39,8 @@ func on_screen_shown() -> void:
 	_ledger_panel.refresh()
 	_freezer_panel.refresh()
 	_rig_panel.refresh()
+	_zone_panel.refresh_unlocked()
+	_wire_focus_graph()
 	_on_zone_changed(GameState.selected_zone)
 	_zone_panel.focus_selected()
 
