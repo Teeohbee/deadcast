@@ -2,7 +2,7 @@
 # Drowned Skyline: the Sump at night in a storm, built from boxes and glowing
 # quads. Everything comes from a fixed seed so the city looks the same on
 # every launch. The Meridian rides the swell in the foreground, and the
-# camera drifts in towards its green wheelhouse windows.
+# camera drifts in towards the green terminal on its aft deck.
 class_name SkylineShot
 extends Node3D
 
@@ -62,7 +62,7 @@ var _beams: Array[Dictionary] = []
 var _blinkers: Array[MeshInstance3D] = []
 var _elapsed := 0.0
 var _camera_end := Vector3.ZERO
-var _window_target := Vector3.ZERO
+var _terminal_target := Vector3.ZERO
 
 func _ready() -> void:
 	_random.seed = CITY_SEED
@@ -154,6 +154,7 @@ func _build_water() -> void:
 	_water_material.set_shader_parameter("wave_settings", _normalised_waves)
 	_water_material.set_shader_parameter("calm_centre", Vector2(0, -20))
 	_water_material.set_shader_parameter("boat_glow_position", MERIDIAN_POSITION)
+	_water_material.set_shader_parameter("boat_glow_color", Color(1.0, 0.6, 0.28))
 	var water := MeshInstance3D.new()
 	water.name = "Water"
 	water.mesh = plane
@@ -597,17 +598,16 @@ func _build_camera() -> void:
 	camera.far = 3000.0
 	add_child(camera)
 	camera.make_current()
-	# The drift ends behind and above the port quarter, looking down past the
-	# funnel at the wheelhouse windows.
-	_window_target = meridian.green_window_position()
+	# The drift ends off the starboard quarter, looking down at the deck terminal.
+	_terminal_target = meridian.terminal_screen_position()
 	var anchor_basis: Basis = (meridian.get_parent() as Node3D).global_transform.basis
-	_camera_end = _window_target + anchor_basis.z * 19.0 - anchor_basis.x * 9.0 + Vector3(0.0, 5.0, 0.0)
+	_camera_end = _terminal_target + anchor_basis.z * 5.0 + anchor_basis.x * 6.5 + Vector3(0.0, 2.6, 0.0)
 	_move_along_drift(0.0)
 
-# Start wide on the city across the water, end close on the green windows.
+# Start wide on the city across the water, end close on the deck terminal.
 func _move_along_drift(progress: float) -> void:
 	camera.position = CAMERA_START.lerp(_camera_end, progress)
-	var target := CITY_LOOK_TARGET.lerp(_window_target, smoothstep(0.3, 1.0, progress))
+	var target := CITY_LOOK_TARGET.lerp(_terminal_target, smoothstep(0.3, 1.0, progress))
 	camera.look_at(target)
 
 # ------------------------------------------------------------------ materials

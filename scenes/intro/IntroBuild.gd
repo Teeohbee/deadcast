@@ -29,17 +29,18 @@ static func lit_material(colour: Color) -> StandardMaterial3D:
 
 # A small glowing bulb with a soft halo that still reads from far away,
 # plus a real light so it shows up on the surfaces around it.
-static func add_lamp(parent: Node3D, at: Vector3, colour: Color, light_range: float, halo_size: float = 2.4) -> void:
+static func add_lamp(parent: Node3D, at: Vector3, colour: Color, light_range: float, halo_size: float = 2.4, with_bulb: bool = true) -> void:
 	var bulb_mesh := SphereMesh.new()
 	bulb_mesh.radius = 0.16
 	bulb_mesh.height = 0.32
 	bulb_mesh.radial_segments = 8
 	bulb_mesh.rings = 4
-	var bulb := MeshInstance3D.new()
-	bulb.mesh = bulb_mesh
-	bulb.material_override = glow_material(colour, 4.0)
-	bulb.position = at
-	parent.add_child(bulb)
+	if with_bulb:
+		var bulb := MeshInstance3D.new()
+		bulb.mesh = bulb_mesh
+		bulb.material_override = glow_material(colour, 4.0)
+		bulb.position = at
+		parent.add_child(bulb)
 	var halo_quad := QuadMesh.new()
 	halo_quad.size = Vector2(halo_size, halo_size)
 	var halo_material := ShaderMaterial.new()
