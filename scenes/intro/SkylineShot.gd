@@ -12,6 +12,11 @@ signal push_finished
 const CITY_SEED := 7
 const CAMERA_START := Vector3(16.0, 10.0, 26.0)
 const CAMERA_FOV := 52.0
+# Glow fades out over the end of the push rather than switching off:
+# toggling glow_enabled stalls the GL driver for ~200ms (the 85% stutter).
+const GLOW_INTENSITY := 1.0
+const GLOW_FADE_START := 0.7
+const GLOW_FADE_END := 0.85
 const CITY_LOOK_TARGET := Vector3(0.0, 80.0, -600.0)
 const MERIDIAN_POSITION := Vector3(-6.0, 0.0, -32.0)
 const MERIDIAN_HEADING_DEGREES := -14.0
@@ -189,7 +194,7 @@ func _build_environment() -> void:
 	environment.ambient_light_energy = 0.6
 	environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	environment.glow_enabled = true
-	environment.glow_intensity = 1.0
+	environment.glow_intensity = GLOW_INTENSITY
 	environment.glow_strength = 1.1
 	environment.glow_bloom = 0.08
 	environment.glow_hdr_threshold = 0.9
@@ -645,9 +650,9 @@ func _place_pushing_camera(progress: float) -> void:
 	meridian.set_terminal_halo(1.0 - smoothstep(0.5, 0.9, progress))
 	# Once the screen fills nearly all the frame, render it as plain 2D would:
 	# no filmic curve, no glow. Then the handover to the real title is invisible.
-	var nearly_there := progress > 0.85
+	var nearly_there := progress > GLOW_FADE_END
 	_environment.tonemap_mode = Environment.TONE_MAPPER_LINEAR if nearly_there else Environment.TONE_MAPPER_FILMIC
-	_environment.glow_enabled = not nearly_there
+	_environment.glow_intensity = GLOW_INTENSITY * (1.0 - smoothstep(GLOW_FADE_START, GLOW_FADE_END, progress))
 
 # How far in front of the screen the camera sits for the screen to fill it.
 func screen_fill_distance() -> float:
