@@ -1,12 +1,12 @@
 # scenes/ui/Zone1Header.gd
 extends Control
 
-@onready var os_label: Label = $VBoxContainer/HBoxContainer/OSLabel
-@onready var host_label: Label = $VBoxContainer/HBoxContainer/HostLabel
-@onready var depth_label: Label = $VBoxContainer/HBoxContainer/DepthLabel
-@onready var clock_label: Label = $VBoxContainer/HBoxContainer/ClockLabel
-@onready var battery_label: Label = $VBoxContainer/HBoxContainer/BatteryLabel
-@onready var status_label: Label = $VBoxContainer/HBoxContainer/StatusLabel
+@onready var os_label: Label = $VBoxContainer/ReadoutMargin/HBoxContainer/OSLabel
+@onready var host_label: Label = $VBoxContainer/ReadoutMargin/HBoxContainer/HostLabel
+@onready var depth_label: Label = $VBoxContainer/ReadoutMargin/HBoxContainer/DepthLabel
+@onready var clock_label: Label = $VBoxContainer/ReadoutMargin/HBoxContainer/ClockLabel
+@onready var battery_label: Label = $VBoxContainer/ReadoutMargin/HBoxContainer/BatteryLabel
+@onready var status_label: Label = $VBoxContainer/ReadoutMargin/HBoxContainer/StatusLabel
 @onready var top_sep: Label = $VBoxContainer/TopSep
 @onready var bot_sep: Label = $VBoxContainer/BottomSep
 

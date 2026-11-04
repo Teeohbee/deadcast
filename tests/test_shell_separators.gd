@@ -32,3 +32,17 @@ func test_footer_rule_reaches_right_edge() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	assert_true(_rule_reaches_edge(footer.sep_label), "footer rule should span the shell")
+
+# The header's readouts sit in from the screen edges, in line with the panels
+# below, rather than touching them.
+const HEADER_SIDE_INSET := 8.0
+
+func test_header_readouts_are_inset_from_both_edges() -> void:
+	var header := _make_in_shell_width("res://scenes/ui/Zone1Header.tscn")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var header_rect: Rect2 = header.get_global_rect()
+	var first_readout_left: float = header.os_label.get_global_rect().position.x
+	var last_readout_right: float = header.status_label.get_global_rect().end.x
+	assert_gte(first_readout_left - header_rect.position.x, HEADER_SIDE_INSET, "OS label should not touch the left edge")
+	assert_gte(header_rect.end.x - last_readout_right, HEADER_SIDE_INSET, "status label should not touch the right edge")
