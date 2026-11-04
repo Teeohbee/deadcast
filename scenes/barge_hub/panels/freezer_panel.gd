@@ -91,13 +91,13 @@ func refresh() -> void:
 	var has_stock := GameState.freezer_base > 0
 	# Hidden until Unlocks opens it, so a new operator meets it with a deposit.
 	visible = Unlocks.is_freezer_open()
-	_count_label.text = "%s cr STORED" % _fmt(GameState.freezer_base)
+	_count_label.text = "BASE %s cr" % _fmt(GameState.freezer_base)
 	_vacant.visible = not has_stock
 	_strip.visible = has_stock
 	_sell_btn.visible = has_stock
 	_market_chip.visible = has_stock
 	if has_stock:
-		_value_label.text = "%s cr" % _fmt(sale)
+		_value_label.text = "SELLS FOR %s cr" % _fmt(sale)
 		_apply_chip()
 		_apply_market_chip()
 
