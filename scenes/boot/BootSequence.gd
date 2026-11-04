@@ -38,7 +38,7 @@ func _ready() -> void:
 		{"lines": "> LOADING DIVE PROTOCOLS...\n  the sump was a city once. district 7, the exchange, axiom tower.\n  flooded forty years ago. nobody came back for what was left.", "delay": NARRATIVE_DELAY},
 		{"lines": "  each dive deploys a trawl line into the ruins. whatever surfaces -\n  data, bio-matter, machines, ghosts - you decide what to do with it.", "delay": NARRATIVE_DELAY},
 		{"lines": "  tension accumulates with every catch. push too hard and the line snaps. lose everything.", "delay": NARRATIVE_DELAY},
-		{"lines": "> SYSTEM READY.\n  pay the debt. keep the rig. don't think too hard about what you're pulling up.", "delay": NARRATIVE_DELAY},
+		{"lines": "> SYSTEM READY.\n  pay the debt. keep the rig. don't think too hard about what you're pulling up.\n  operator manual on file in the BUNK.", "delay": NARRATIVE_DELAY},
 	]
 
 	_run_sequence()
