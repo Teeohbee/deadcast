@@ -28,17 +28,22 @@ theme_override_constants/separation = 18
 text = ""
 
 [node name="HostLabel" type="Label" parent="VBoxContainer/ReadoutMargin/HBoxContainer"]
-size_flags_horizontal = 3
 text = "HOST: THE_MERIDIAN_DECK"
-
-[node name="DepthLabel" type="Label" parent="VBoxContainer/ReadoutMargin/HBoxContainer"]
-text = "LINE RATING: 100ft"
 
 [node name="ClockLabel" type="Label" parent="VBoxContainer/ReadoutMargin/HBoxContainer"]
 text = "SYS_TIME: 00:00:00"
 
 [node name="BatteryLabel" type="Label" parent="VBoxContainer/ReadoutMargin/HBoxContainer"]
 text = "BATTERY: 100% [LINE]"
+
+[node name="Spacer" type="Control" parent="VBoxContainer/ReadoutMargin/HBoxContainer"]
+size_flags_horizontal = 3
+
+[node name="Divider" type="Label" parent="VBoxContainer/ReadoutMargin/HBoxContainer"]
+text = "│"
+
+[node name="DepthLabel" type="Label" parent="VBoxContainer/ReadoutMargin/HBoxContainer"]
+text = "LINE RATING: 100ft"
 
 [node name="StatusLabel" type="Label" parent="VBoxContainer/ReadoutMargin/HBoxContainer"]
 horizontal_alignment = 2

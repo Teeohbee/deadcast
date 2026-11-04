@@ -19,6 +19,7 @@ var _timer: Timer
 
 func _ready() -> void:
 	title = "maintenance_log"
+	ambient = true
 	custom_minimum_size = Vector2(0, 120)
 
 	_rtl = RichTextLabel.new()

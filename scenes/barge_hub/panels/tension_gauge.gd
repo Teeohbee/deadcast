@@ -8,6 +8,7 @@ var _readout: Label
 
 func _ready() -> void:
 	title = "tension_gauge"
+	ambient = true
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	custom_minimum_size = Vector2(0, 120)
 

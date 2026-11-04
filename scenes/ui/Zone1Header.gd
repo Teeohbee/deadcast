@@ -7,6 +7,7 @@ extends Control
 @onready var clock_label: Label = $VBoxContainer/ReadoutMargin/HBoxContainer/ClockLabel
 @onready var battery_label: Label = $VBoxContainer/ReadoutMargin/HBoxContainer/BatteryLabel
 @onready var status_label: Label = $VBoxContainer/ReadoutMargin/HBoxContainer/StatusLabel
+@onready var divider: Label = $VBoxContainer/ReadoutMargin/HBoxContainer/Divider
 @onready var top_sep: Label = $VBoxContainer/TopSep
 @onready var bot_sep: Label = $VBoxContainer/BottomSep
 
@@ -22,6 +23,12 @@ func _ready() -> void:
 	DeckStyle.apply_label(clock_label, DeckStyle.DIM)
 	DeckStyle.apply_label(battery_label, DeckStyle.GREEN)
 	DeckStyle.apply_label(status_label, DeckStyle.TEXT)
+	DeckStyle.apply_label(divider, DeckStyle.BORDER)
+	DeckStyle.apply_value_frame(depth_label, DeckStyle.SKY)
+
+	# Vessel block (left) recedes; the operator block (right) is framed.
+	for vessel_label in [os_label, host_label, clock_label, battery_label]:
+		vessel_label.modulate = Color(1, 1, 1, DeckStyle.AMBIENT_ALPHA)
 
 	os_label.text = "// DEADCAST_OS %s //" % GameState.OS_VERSION
 
@@ -70,6 +77,7 @@ func _refresh_status() -> void:
 	status_label.text = "CR: %d  SIG: %d%%" % [_credits, sig_pct]
 	var color := DeckStyle.RED if _corruption >= 50.0 else DeckStyle.TEXT
 	DeckStyle.apply_label(status_label, color)
+	DeckStyle.apply_value_frame(status_label, color)
 
 func _zone_host_name(zone_id: String) -> String:
 	match zone_id:

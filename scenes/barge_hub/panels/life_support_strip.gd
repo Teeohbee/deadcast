@@ -9,6 +9,7 @@ var _readout: Label
 
 func _ready() -> void:
 	title = "life_support"
+	ambient = true
 	custom_minimum_size = Vector2(0, 64)
 
 	var root := HBoxContainer.new()

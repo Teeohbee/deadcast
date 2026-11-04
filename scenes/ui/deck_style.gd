@@ -12,6 +12,10 @@ const RED      := Color("#ef4444")  # debt/critical
 const TEXT     := Color("#d1d5db")  # bright value text
 const SKY      := Color("#38bdf8")  # depth/thermocline accents
 
+# Flavour panels and vessel readouts recede to this alpha so the player's own
+# numbers read first. They stay on screen and keep animating.
+const AMBIENT_ALPHA := 0.55
+
 const SIZE_VALUE   := 18  # headline readouts - the btop "big number"
 const SIZE_BODY    := 14  # readable labels, instructions, secondary values
 const SIZE_AMBIENT := 12  # telemetry, chatter, chrome, captions
@@ -40,6 +44,19 @@ static func panel_style(active: bool = false) -> StyleBoxFlat:
 	sb.content_margin_top = 12
 	sb.content_margin_bottom = 8
 	return sb
+
+# Frames a value the player manages (wallet, line rating, SIG) in a faint
+# inverse-video field of its own colour. Call again when the colour changes.
+static func apply_value_frame(label: Label, color: Color) -> void:
+	var frame := StyleBoxFlat.new()
+	frame.bg_color = Color(color, 0.13)
+	frame.border_color = Color(color, 0.55)
+	frame.set_border_width_all(1)
+	frame.content_margin_left = 6
+	frame.content_margin_right = 6
+	frame.content_margin_top = 1
+	frame.content_margin_bottom = 1
+	label.add_theme_stylebox_override("normal", frame)
 
 static func tier_color(tier: int) -> Color:
 	match tier:

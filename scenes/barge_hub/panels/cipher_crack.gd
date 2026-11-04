@@ -14,6 +14,7 @@ var _timer: Timer
 
 func _ready() -> void:
 	title = "cipher_crack"
+	ambient = true
 	custom_minimum_size = Vector2(0, 150)
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 
