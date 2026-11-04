@@ -10,7 +10,7 @@ const _TABS: Array[Dictionary] = [
 	{"id": "vendors",  "label": "VENDORS"},
 ]
 
-@onready var tab_row: HBoxContainer = $VBoxContainer/TabRow
+@onready var tab_row: HBoxContainer = $VBoxContainer/TabMargin/TabRow
 @onready var sep_label: Label = $VBoxContainer/SepLabel
 
 var _tab_buttons: Array[Button] = []

@@ -16,5 +16,9 @@ anchor_bottom = 1.0
 clip_text = true
 text = "────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────"
 
-[node name="TabRow" type="HBoxContainer" parent="VBoxContainer"]
+[node name="TabMargin" type="MarginContainer" parent="VBoxContainer"]
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_right = 12
+
+[node name="TabRow" type="HBoxContainer" parent="VBoxContainer/TabMargin"]
 size_flags_horizontal = 3
