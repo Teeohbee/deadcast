@@ -18,6 +18,7 @@ const NEON_CYAN := Color(0.1, 0.85, 1.0)
 const NEON_AMBER := Color(1.0, 0.6, 0.15)
 const NEON_GREEN := Color(0.13, 0.77, 0.37)
 const NEON_VIOLET := Color(0.6, 0.3, 1.0)
+const WARM_LAMP := Color(1.0, 0.62, 0.3)
 
 # In-world signage. Names come from the boot text and the cast.
 const SIGN_WORDS := [
@@ -31,6 +32,7 @@ const HOLO_SHADER := preload("res://scenes/intro/holo.gdshader")
 const BEAM_SHADER := preload("res://scenes/intro/beam.gdshader")
 const WATER_SHADER := preload("res://scenes/intro/water.gdshader")
 const SKY_SHADER := preload("res://scenes/intro/sky.gdshader")
+const LAMP_HALO_SHADER := preload("res://scenes/intro/lamp_halo.gdshader")
 const SIGN_FONT := preload("res://fonts/IBMPlexMono-Regular.otf")
 
 var camera: Camera3D
@@ -388,7 +390,7 @@ func _build_water() -> void:
 func _build_meridian() -> void:
 	_meridian = Node3D.new()
 	_meridian.name = "Meridian"
-	var hull_material := _flat_material(Color(0.03, 0.035, 0.04))
+	var hull_material := _flat_material(Color(0.09, 0.085, 0.08))
 	var anchor := Node3D.new()
 	anchor.position = MERIDIAN_POSITION
 	anchor.rotation.y = deg_to_rad(-18.0)
@@ -409,6 +411,41 @@ func _build_meridian() -> void:
 	lamp.position = Vector3(-0.6, 2.6, 3.0)
 	_meridian.add_child(lamp)
 	_add_blinker(_meridian, Vector3(-3.0, 9.0, 0))
+	# Warm work lamps at bow, stern and on the mast, so the hull reads in the dark.
+	_add_box(_meridian, Vector3(0.12, 1.2, 0.12), Vector3(6.4, 1.8, 0), hull_material)
+	_add_warm_lamp(Vector3(6.4, 2.5, 0))
+	_add_box(_meridian, Vector3(0.12, 1.0, 0.12), Vector3(-6.4, 1.7, 0), hull_material)
+	_add_warm_lamp(Vector3(-6.4, 2.3, 0))
+	_add_warm_lamp(Vector3(-3.0, 4.6, 0.35))
+
+func _add_warm_lamp(at: Vector3) -> void:
+	var bulb_mesh := SphereMesh.new()
+	bulb_mesh.radius = 0.16
+	bulb_mesh.height = 0.32
+	bulb_mesh.radial_segments = 8
+	bulb_mesh.rings = 4
+	var bulb := MeshInstance3D.new()
+	bulb.mesh = bulb_mesh
+	bulb.material_override = _glow_material(WARM_LAMP, 4.0)
+	bulb.position = at
+	_meridian.add_child(bulb)
+	var halo_quad := QuadMesh.new()
+	halo_quad.size = Vector2(2.4, 2.4)
+	var halo_material := ShaderMaterial.new()
+	halo_material.shader = LAMP_HALO_SHADER
+	halo_material.set_shader_parameter("halo_color", WARM_LAMP)
+	var halo := MeshInstance3D.new()
+	halo.mesh = halo_quad
+	halo.material_override = halo_material
+	halo.position = at
+	_meridian.add_child(halo)
+	var light := OmniLight3D.new()
+	light.light_color = WARM_LAMP
+	light.light_energy = 3.0
+	light.omni_range = 8.0
+	light.omni_attenuation = 1.4
+	light.position = at
+	_meridian.add_child(light)
 
 func meridian_window_position() -> Vector3:
 	return _meridian.get_node("GreenWindow").global_position
