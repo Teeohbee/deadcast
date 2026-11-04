@@ -41,6 +41,15 @@ func test_ambience_switches_between_hub_and_dive() -> void:
 	Audio.set_ambience("hub")
 	assert_eq(Audio.current_ambience, "hub")
 
+func test_every_ambience_file_exists_and_loads() -> void:
+	for ambience_name in Audio.AMBIENCES:
+		var file: String = Audio.AMBIENCES[ambience_name].file
+		assert_true(ResourceLoader.exists(file), "%s: missing %s" % [ambience_name, file])
+		assert_not_null(load(file), "%s: %s did not load" % [ambience_name, file])
+
+func test_title_music_is_an_ambience() -> void:
+	assert_true(Audio.AMBIENCES.has("title"))
+
 func test_entering_the_dive_screen_switches_to_dive_ambience() -> void:
 	UIController.screen_changed.emit("dive")
 	assert_eq(Audio.current_ambience, "dive")
