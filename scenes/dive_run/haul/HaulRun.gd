@@ -85,10 +85,21 @@ func _ready() -> void:
 	_hum.play()
 
 	view.title = "%s %s" % [_glyph, _title]
+	_say_opening()
+	# The status already names the button, so the first hint explains instead.
+	_hint("opening", "the payload rises while you hold and slips back when you let go")
+	InputGlyphs.device_changed.connect(_on_device_changed)
+	tree_exiting.connect(func() -> void:
+		if InputGlyphs.device_changed.is_connected(_on_device_changed):
+			InputGlyphs.device_changed.disconnect(_on_device_changed))
+
+func _say_opening() -> void:
 	_say(_prompt("hold to haul"), DeckStyle.GREEN, 0.0, InputGlyphs.icon(ACTION_GLYPH))
-	if sim.hints():
-		view.hint = _prompt("hold to haul the payload up")
-		view.hint_icon = InputGlyphs.icon(ACTION_GLYPH)
+
+# The opening prompt follows the device until the haul starts.
+func _on_device_changed(_mode: int) -> void:
+	if sim.phase == HaulSim.READY:
+		_say_opening()
 
 func _process(delta: float) -> void:
 	tick(minf(delta, MAX_STEP), Input.is_action_pressed(ACTION))
