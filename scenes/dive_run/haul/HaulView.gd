@@ -106,9 +106,9 @@ func _draw() -> void:
 	_draw_payload(py)
 
 	if status != "":
-		_text(status, Vector2(40, 52), status_color, 20)
+		_text(status, Vector2(40, 150), status_color, 20)
 	if hint != "":
-		_text(hint, Vector2(40, 82), DeckStyle.GREEN, 16)
+		_text(hint, Vector2(40, 180), DeckStyle.GREEN, 16)
 	if sim.phase == HaulSim.READY:
 		_text("hold %s to haul" % InputGlyphs.glyph("haul"), Vector2(X, DESIGN.y - 70), DeckStyle.GREEN, 22, HORIZONTAL_ALIGNMENT_CENTER)
 	draw_set_transform(Vector2.ZERO)
