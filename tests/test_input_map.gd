@@ -80,3 +80,12 @@ func test_right_stick_and_page_keys_scroll() -> void:
 	assert_true(stick)
 	assert_true(_has_key("scroll_down", KEY_PAGEDOWN))
 	assert_true(_has_key("scroll_up", KEY_PAGEUP))
+
+# Esc and the pad's Menu button open the system menu. Backspace joins B as
+# "back", since Esc is taken on the hub.
+func test_menu_button_and_escape_open_the_system_menu() -> void:
+	assert_true(_has_pad_button("system_menu", JOY_BUTTON_START))
+	assert_true(_has_key("system_menu", KEY_ESCAPE))
+
+func test_backspace_also_goes_back() -> void:
+	assert_true(_has_key("ui_cancel", KEY_BACKSPACE))

@@ -48,6 +48,8 @@ func before_each() -> void:
 	UIController.initialize(_zone2)
 
 func after_each() -> void:
+	if UIController.menu_open():
+		UIController.close_menu()
 	UIController.fresh_tabs.clear()
 	GameState.run_count = _saved_run_count
 	UIController._scene_factory = UIController._default_scene_factory
@@ -271,9 +273,9 @@ func test_scroll_by_moves_a_rich_text_label() -> void:
 func _actions_of(legend: Array) -> Array:
 	return legend.map(func(p: Array) -> String: return p[0])
 
-func test_legend_on_deck_is_select_only() -> void:
+func test_legend_on_deck_is_select_and_menu() -> void:
 	UIController.navigate_to("deck")
-	assert_eq(_actions_of(UIController.legend()), ["accept"])
+	assert_eq(_actions_of(UIController.legend()), ["accept", "menu"])
 
 func test_legend_off_deck_offers_back_to_deck() -> void:
 	UIController.navigate_to("workshop")
@@ -284,4 +286,43 @@ func test_legend_off_deck_offers_back_to_deck() -> void:
 func test_legend_offers_scroll_when_the_screen_scrolls() -> void:
 	await _scrolling_screen()
 	assert_has(_actions_of(UIController.legend()), "scroll")
+
+# --- system menu ---
+
+func test_menu_opens_on_a_hub_tab_and_closes_again() -> void:
+	UIController.navigate_to("workshop")
+	UIController._unhandled_input(_action("system_menu"))
+	assert_true(UIController.menu_open())
+	UIController._unhandled_input(_action("system_menu"))
+	assert_false(UIController.menu_open())
+
+func test_back_closes_the_menu_without_leaving_the_tab() -> void:
+	UIController.navigate_to("workshop")
+	UIController._unhandled_input(_action("system_menu"))
+	UIController._unhandled_input(_action("ui_cancel"))
+	assert_false(UIController.menu_open())
+	assert_eq(UIController.current_screen, "workshop")
+
+func test_tabs_do_not_switch_under_the_menu() -> void:
+	UIController.navigate_to("deck")
+	UIController._unhandled_input(_action("system_menu"))
+	UIController._unhandled_input(_action("tab_next"))
+	assert_eq(UIController.current_screen, "deck")
+	UIController._unhandled_input(_action("system_menu"))
+
+func test_no_menu_mid_dive() -> void:
+	UIController.navigate_to("dive")
+	UIController._unhandled_input(_action("system_menu"))
+	assert_false(UIController.menu_open())
+
+func test_legend_offers_the_menu_on_hub_tabs() -> void:
+	UIController.navigate_to("deck")
+	assert_has(UIController.legend(), ["menu", "MENU"])
+
+func test_input_is_ignored_once_the_shell_is_gone() -> void:
+	UIController.navigate_to("workshop")
+	_zone2.get_parent().remove_child(_zone2)  # as when the shell is swapped for the title
+	UIController._unhandled_input(_action("tab_next"))
+	UIController._unhandled_input(_action("system_menu"))
+	assert_eq(UIController.current_screen, "workshop")
 
