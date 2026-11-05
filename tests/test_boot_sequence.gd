@@ -61,13 +61,22 @@ func test_screen_touch_skips_boot_sequence() -> void:
 
 	assert_true(boot._finished)
 
-func test_boot_points_a_new_operator_at_the_manual() -> void:
+func test_boot_is_hardware_only_and_ends_on_marta_calling() -> void:
 	var boot := _instantiate_boot()
 	await get_tree().process_frame
 	boot._finished = true
+	var all_text := "\n".join(_all_boot_lines(boot))
+	assert_false(all_text.contains("80,000"), "the debt moved to Axiom Credit's notice")
+	assert_false(all_text.contains("the sump was a city"), "the story moved to Marta's call")
 	var last_group: String = boot._groups[boot._groups.size() - 1].lines
-	assert_string_contains(last_group, "manual")
-	assert_string_contains(last_group, "BUNK")
+	assert_string_contains(last_group, "INCOMING: M. VOSS")
+
+func test_the_prompt_is_to_answer_the_call() -> void:
+	var boot := _instantiate_boot()
+	await get_tree().process_frame
+	boot._finished = true
+	assert_string_contains(boot._answer_prompt(), "ANSWER")
+
 func _all_boot_lines(boot: Control) -> PackedStringArray:
 	var lines := PackedStringArray()
 	for group in boot._groups:

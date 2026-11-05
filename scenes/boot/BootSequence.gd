@@ -29,16 +29,13 @@ func _ready() -> void:
 	output_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	await get_tree().process_frame
 	_max_visible_lines = _estimate_visible_lines()
+	# Hardware only. The story, the debt and the rules arrive in Marta's
+	# first call, which the boot ends on; answering it replaces "press any key".
 	_groups = [
 		{"lines": "DEADCAST_OS %s\nBOOT SEQUENCE INITIATED..." % GameState.OS_VERSION, "delay": SYSTEM_DELAY},
 		{"lines": "> SCANNING HARDWARE...\n  VESSEL:      THE MERIDIAN (deep-sea data trawler, class IV)\n  MOORING:     DISTRICT 7 DOCKS, THE SUMP\n  OPERATOR:    [NOT REGISTERED]\n  ROD SYSTEM:  SCRAP ROD Mk.I (salvage-grade, low depth)\n  HULL STATUS: pressure-rated to 600ft. last survey: OVERDUE", "delay": SYSTEM_DELAY},
-		{"lines": "> CHECKING NETWORK...\n  ENCRYPTED CHANNEL DETECTED: MARTA VOSS", "delay": SYSTEM_DELAY},
-		{"lines": "  OUTSTANDING DEBT: 80,000cr\n  TERMS: 10,000cr every 5 runs. miss a payment and the terms change.", "delay": SYSTEM_DELAY},
-		{"lines": "  VENDOR CHANNEL: OKEKE", "delay": SYSTEM_DELAY},
-		{"lines": "> LOADING DIVE PROTOCOLS...\n  the sump was a city once. district 7, the exchange, axiom tower.\n  flooded forty years ago. nobody came back for what was left.", "delay": NARRATIVE_DELAY},
-		{"lines": "  each dive deploys a trawl line into the ruins. whatever surfaces -\n  data, bio-matter, machines, ghosts - you decide what to do with it.", "delay": NARRATIVE_DELAY},
-		{"lines": "  tension accumulates with every catch. push too hard and the line snaps. lose everything.", "delay": NARRATIVE_DELAY},
-		{"lines": "> SYSTEM READY.\n  pay the debt. keep the rig. don't think too hard about what you're pulling up.\n  operator manual on file in the BUNK.", "delay": NARRATIVE_DELAY},
+		{"lines": "> CHECKING NETWORK...\n  RELAY 7 ..................... OK\n  NOTICES: 1 unread · AXIOM CREDIT", "delay": SYSTEM_DELAY},
+		{"lines": "> INCOMING: M. VOSS · relay 7 · encrypted", "delay": SYSTEM_DELAY},
 	]
 
 	_run_sequence()
@@ -66,7 +63,7 @@ func _run_sequence() -> void:
 func _show_prompt() -> void:
 	_waiting_for_key = true
 	_append_text("\n\n")
-	_append_text("[ PRESS ANY KEY TO BEGIN ]")
+	_append_text(_answer_prompt())
 	_blink_prompt()
 
 func _blink_prompt() -> void:
@@ -74,11 +71,14 @@ func _blink_prompt() -> void:
 		await get_tree().create_timer(0.6).timeout
 		if not _waiting_for_key or not is_instance_valid(self):
 			return
-		output_label.visible_characters = output_label.text.length() - 26
+		output_label.visible_characters = output_label.text.length() - _answer_prompt().length()
 		await get_tree().create_timer(0.4).timeout
 		if not _waiting_for_key or not is_instance_valid(self):
 			return
 		output_label.visible_characters = -1
+
+func _answer_prompt() -> String:
+	return "  %s ANSWER" % InputGlyphs.glyph("accept")
 
 func _skip_to_end() -> void:
 	_finished = true
@@ -134,6 +134,8 @@ func _transition_to_game() -> void:
 	var tween := create_tween()
 	tween.tween_property(self, "modulate", Color(3.0, 3.0, 3.0), 0.04)
 	await tween.finished
+	# The player answered on the boot screen, so the call opens connected.
+	UIController.answer_next_call = true
 	get_tree().change_scene_to_file("res://scenes/AppShell.tscn")
 
 func _input(event: InputEvent) -> void:
