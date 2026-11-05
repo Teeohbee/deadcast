@@ -44,10 +44,10 @@ const ACTION_COLUMN_WIDTH := 420
 func _ready() -> void:
 	self.theme = DeckStyle.get_theme()
 	var crt_mat := (_crt_overlay.material as ShaderMaterial).duplicate() as ShaderMaterial
-	if not Settings.crt_enabled:
-		crt_mat.set_shader_parameter("scan_alpha", 0.0)
+	Settings.apply_crt(crt_mat, Settings.crt_enabled)
 	_crt_overlay.material = crt_mat
 	_crt_material = crt_mat
+	Settings.crt_changed.connect(_on_crt_changed)
 
 	var save_exists := FileAccess.file_exists(GameState.save_path)
 	continue_button.visible = save_exists
@@ -171,38 +171,16 @@ func _arrange_centred_layout() -> void:
 
 func _add_settings_toggles() -> void:
 	var action_block := continue_button.get_parent()
-	sound_button = _make_toggle_button()
-	sound_button.pressed.connect(_on_sound_pressed)
+	sound_button = SettingsToggles.sound_button()
 	action_block.add_child(sound_button)
 	action_block.move_child(sound_button, new_game_button.get_index() + 1)
-	crt_button = _make_toggle_button()
-	crt_button.pressed.connect(_on_crt_pressed)
+	crt_button = SettingsToggles.crt_button()
 	action_block.add_child(crt_button)
 	action_block.move_child(crt_button, sound_button.get_index() + 1)
-	_refresh_toggle_labels()
 
-func _make_toggle_button() -> Button:
-	var button := Button.new()
-	button.focus_mode = Control.FOCUS_ALL
-	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	DeckStyle.apply_action_button(button, DeckStyle.DIM)
-	return button
-
-func _refresh_toggle_labels() -> void:
-	sound_button.text = "[ SOUND: %s ]" % ("OFF" if Settings.audio_muted else "ON")
-	crt_button.text = "[ CRT: %s ]" % ("ON" if Settings.crt_enabled else "OFF")
-
-func _on_sound_pressed() -> void:
-	Audio.toggle_mute()
-	_refresh_toggle_labels()
-
-func _on_crt_pressed() -> void:
-	Settings.set_crt_enabled(not Settings.crt_enabled)
-	if Settings.crt_enabled:
-		_crt_material.set_shader_parameter("scan_alpha", null)  # back to the shader default
-	else:
-		_crt_material.set_shader_parameter("scan_alpha", 0.0)
-	_refresh_toggle_labels()
+# Named method so Godot drops the connection when the title frees.
+func _on_crt_changed(enabled: bool) -> void:
+	Settings.apply_crt(_crt_material, enabled)
 
 func _visible_actions() -> Array[Control]:
 	var actions: Array[Control] = []
