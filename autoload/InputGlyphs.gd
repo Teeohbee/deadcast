@@ -14,7 +14,8 @@ enum Mode { KEY, PAD }
 
 const _GLYPHS := {
 	"accept":   {Mode.PAD: "[A]",     Mode.KEY: "[ENTER]"},
-	"cancel":   {Mode.PAD: "[B]",     Mode.KEY: "[ESC]"},
+	"cancel":   {Mode.PAD: "[B]",     Mode.KEY: "[BKSP]"},
+	"menu":     {Mode.PAD: "[MENU]",  Mode.KEY: "[ESC]"},
 	"prev":     {Mode.PAD: "[L1]",    Mode.KEY: "[Q]"},
 	"next":     {Mode.PAD: "[R1]",    Mode.KEY: "[E]"},
 	"navigate": {Mode.PAD: "[+]",     Mode.KEY: "[UP/DN]"},
@@ -28,6 +29,7 @@ const _ICON_DIR := "res://resources/glyphs/steam/steamdeck_%s.svg"
 const _ICONS := {
 	"accept":     "button_a",
 	"cancel":     "button_b",
+	"menu":       "button_options",
 	"prev":       "button_l1",
 	"next":       "button_r1",
 	"navigate":   "dpad_vertical",

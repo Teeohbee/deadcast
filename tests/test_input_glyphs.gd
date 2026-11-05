@@ -79,3 +79,9 @@ func test_scroll_glyph_per_mode() -> void:
 	InputGlyphs.mode = InputGlyphs.Mode.PAD
 	assert_not_null(InputGlyphs.icon("scroll"))
 
+
+func test_menu_and_back_glyphs_per_mode() -> void:
+	assert_eq(InputGlyphs.glyph("menu"), "[ESC]")
+	assert_eq(InputGlyphs.glyph("cancel"), "[BKSP]")
+	InputGlyphs.mode = InputGlyphs.Mode.PAD
+	assert_not_null(InputGlyphs.icon("menu"))
