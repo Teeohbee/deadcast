@@ -20,6 +20,7 @@ const SMALL_BOX := 24.0
 var sim: OverrideSim
 var title := ""
 var class_line := ""
+## HostileWireframe model name (drone, ghost, ...).
 var art := ""
 var hint := ""
 ## Rig command id -> effect text for the code list.
@@ -35,9 +36,29 @@ var fired_id := ""
 var fired_t := 9.0
 
 var _font: Font = preload("res://fonts/IBMPlexMono-Regular.otf")
+var _wireframe: HostileWireframe
+const PORTRAIT := Rect2(24, 30, 276, 190)
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_wireframe = HostileWireframe.new()
+	_wireframe.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_wireframe.set_hostile(art)
+	add_child(_wireframe)
+	resized.connect(_layout_portrait)
+	_layout_portrait()
+
+func _layout_portrait() -> void:
+	if _wireframe == null:
+		return
+	var k := minf(size.x / DESIGN.x, size.y / DESIGN.y)
+	_wireframe.position = (size - DESIGN * k) / 2.0 + PORTRAIT.position * k
+	_wireframe.size = PORTRAIT.size * k
+
+func hurt() -> void:
+	deal_t = 0.0
+	if _wireframe != null:
+		_wireframe.hurt()
 
 func advance(dt: float) -> void:
 	hit_t += dt
@@ -76,7 +97,6 @@ func _draw() -> void:
 	draw_rect(Rect2(10, 2, tw + 8, 20), DeckStyle.BG)
 	_text(frame_title, Vector2(14, 17), DeckStyle.RED, DeckStyle.SIZE_BODY)
 
-	_draw_portrait()
 	_draw_info()
 	draw_line(Vector2(10, STAGE_TOP), Vector2(DESIGN.x - 10, STAGE_TOP), DeckStyle.BORDER)
 	draw_line(Vector2(10, STAGE_BOTTOM), Vector2(DESIGN.x - 10, STAGE_BOTTOM), DeckStyle.BORDER)
@@ -84,17 +104,6 @@ func _draw() -> void:
 	_draw_log()
 	_draw_codes()
 	draw_set_transform(Vector2.ZERO)
-
-func _draw_portrait() -> void:
-	var color := DeckStyle.RED
-	var offset := Vector2.ZERO
-	if deal_t < 0.3:
-		color = DeckStyle.TEXT
-		var s := (1.0 - deal_t / 0.3) * 7.0
-		offset = Vector2(randf_range(-s, s), randf_range(-s, s) * 0.5)
-	var lines := art.split("\n")
-	for i in lines.size():
-		_text(lines[i], Vector2(24, 40 + i * 19) + offset, color, 15)
 
 func _draw_info() -> void:
 	var x := 330.0

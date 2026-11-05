@@ -131,12 +131,12 @@ func _handle(events: Array[String]) -> void:
 				_log(">>> OVERRIDE ACCEPTED · attack nulled", DeckStyle.GREEN)
 			"break":
 				Audio.play_cue("override_break")
-				view.deal_t = 0.0
+				view.hurt()
 				_fired(e)
 				_log(">>> BREAK%s · anchor %d/%d" % [" while it's exposed" if sim.exposed() else "", sim.anchor, sim.anchor_max], DeckStyle.GREEN)
 			"shock":
 				Audio.play_cue("lure_fire")
-				view.deal_t = 0.0
+				view.hurt()
 				_fired(e)
 				_log(">>> SHOCK lure · anchor %d/%d" % [sim.anchor, sim.anchor_max], DeckStyle.SKY)
 			"splice":
