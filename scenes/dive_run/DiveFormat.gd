@@ -50,8 +50,11 @@ static func security_tag(behavior: CatchData.BehaviorType) -> String:
 		CatchData.BehaviorType.AGGRESSIVE:  return "[HOSTILE]"
 	return "[UNKNOWN]"
 
-static func contact_card(catch_data: CatchData, hauled: bool = false) -> String:
-	var sig := ("-%d%%" % catch_data.corruption_gain) if catch_data.corruption_gain > 0 else "none"
+## sig_cost: the contact's signal cost on the current line (QUIET halves it);
+## -1 means the catch's own corruption_gain.
+static func contact_card(catch_data: CatchData, hauled: bool = false, sig_cost: int = -1) -> String:
+	var cost := catch_data.corruption_gain if sig_cost < 0 else sig_cost
+	var sig := ("-%d%%" % cost) if cost > 0 else "none"
 	var card := "\n> contact: %s\n│  class: %s   security: %s\n│  %s\n│  SIG IMPACT: %s" % [
 		catch_data.catch_name,
 		type_tag(catch_data.catch_type),

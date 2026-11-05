@@ -5,7 +5,8 @@
 [resource]
 script = ExtResource("1_rod")
 rod_name = "Ghost Line"
-tension_cap = 120
+tension_cap = 110
 repair_cost = 1200
-purchase_cost = 6000
-description = "Reduces Corruption gain. Expensive."
+purchase_cost = 5500
+description = "Quiet line: signal loss from contacts halved."
+line_trait = 2

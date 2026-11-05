@@ -44,6 +44,16 @@ static func payout(option: CatchOption, result: Dictionary) -> Dictionary:
 			return { "credits": 0, "tension": option.tension_delta + SNAP_TENSION }
 	return { "credits": option.credit_value, "tension": option.tension_delta }
 
+## The Monocarbon's brake: a snapped haul lands messy instead, once a dive.
+## Returns { result, braked }.
+static func apply_brake(result: Dictionary, brake_ready: bool) -> Dictionary:
+	if not brake_ready or result.get("outcome", "") != "snap":
+		return { "result": result, "braked": false }
+	var braked := result.duplicate()
+	braked.outcome = "messy"
+	braked.hits = maxi(1, int(result.get("hits", 0)))
+	return { "result": braked, "braked": true }
+
 ## The first dive of a save teaches the haul.
 static func difficulty(run_count: int) -> String:
 	return "tutorial" if run_count == 0 else "normal"
