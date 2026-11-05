@@ -6,5 +6,5 @@
 script = ExtResource("1_lure")
 lure_name = "Deep Pulse"
 effect = 3
-purchase_cost = 800
-description = "Fire to scan the remaining contacts in the current layer. Each fire consumes stock."
+purchase_cost = 300
+description = "Scout: fire at a depth checkpoint to scan the next layer before you choose to descend. Each fire consumes stock."

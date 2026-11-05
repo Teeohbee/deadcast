@@ -12,7 +12,7 @@ const SECTIONS: Array[Dictionary] = [
 	},
 	{
 		"title": "EQUIPMENT",
-		"body": "rods have a tension cap.\ndamaged rods reduce tension cap until repaired.\nthe deep winch reaches the deep layer.\n\nlures are fired mid-dive from the command block:\nscan ahead, slip a contact, bait the deep, or shock\nmachines. each fire consumes stock.\n\nworkshop [F2] handles repairs and upgrades.",
+		"body": "rods have a tension cap.\ndamaged rods reduce tension cap until repaired.\nthe deep winch reaches the deep layer.\n\nlures are fired mid-dive from the command block:\nscout the next layer, slip a contact, shock a machine,\nsplice the line, or bait the deep. each fire consumes stock.\n\nworkshop [F2] handles repairs and upgrades.",
 	},
 	{
 		"title": "THE DECK",

@@ -22,6 +22,8 @@ const SILENT_DB := -60.0
 ## fragments: [{ word, state }] from HaulFragments.recovered().
 var result: Dictionary = {}
 var sim: HaulSim
+## Shock lure charges for this haul (machines only), set before adding the run.
+var shield := 0
 var fragments: HaulFragments
 var view: HaulView
 var result_card: PanelContainer
@@ -55,6 +57,7 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	sim = HaulSim.new(_dials, _difficulty, _rng)
+	sim.shield = shield
 	fragments = HaulFragments.new(_words, HaulView.ROWS, _rng)
 	par = HaulSim.par(_dials, _difficulty)
 
@@ -140,6 +143,9 @@ func _handle(events: Array[String]) -> void:
 				ScreenFX.shake(view, 12.0, 0.3)
 				_say("HIT - you were still hauling", DeckStyle.RED, 0.8)
 				_hint("hit", "that hit landed because you were hauling - let go on amber")
+			"shocked":
+				Audio.play_cue("lure_fire")
+				_say("SHOCK - hit absorbed", DeckStyle.SKY, 0.8)
 			"absorbed":
 				Audio.play_cue("haul_absorbed")
 				_say("hit absorbed", DeckStyle.GREEN, 0.6)
@@ -191,6 +197,7 @@ func _finish() -> void:
 		"outcome": outcome,
 		"hits": sim.hits,
 		"absorbed": sim.absorbed,
+		"shocked": sim.shocked,
 		"t": sim.t,
 		"par": par,
 		"peak": sim.peak,

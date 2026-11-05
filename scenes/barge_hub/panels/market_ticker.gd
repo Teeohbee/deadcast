@@ -9,6 +9,7 @@ const GOODS: Array[String] = [
 	"res://resources/lures/shock_lure.tres",
 	"res://resources/lures/decoy_swarm.tres",
 	"res://resources/lures/deep_pulse.tres",
+	"res://resources/lures/splice_kit.tres",
 	"res://resources/lures/ghost_bait.tres",
 ]
 

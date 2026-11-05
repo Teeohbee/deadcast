@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="LureData" format=3]
+
+[ext_resource type="Script" path="res://resources/lure_data.gd" id="1_lure"]
+
+[resource]
+script = ExtResource("1_lure")
+lure_name = "Splice Kit"
+effect = 5
+purchase_cost = 500
+description = "Survive: fire between contacts or at a checkpoint to vent 20T off the line. Each fire consumes stock."

@@ -77,10 +77,11 @@ func test_draw_replacement_returns_catch_from_layer() -> void:
 	assert_not_null(c)
 	assert_eq(c.layer, CatchData.Layer.SHALLOWS)
 
-func test_draw_replacement_damps_entities_and_hostiles() -> void:
-	var risky := 0
+func test_draw_replacement_damps_entities_and_skips_hostiles() -> void:
+	var entities := 0
 	for i in 100:
 		var c = CatchPool.draw_replacement("district7", CatchData.Layer.MID, 0.0)
-		if c.catch_type == CatchData.CatchType.ENTITY or c.behavior == CatchData.BehaviorType.AGGRESSIVE:
-			risky += 1
-	assert_lt(risky, 50, "entity/aggressive draws weighted x0.2 should be a clear minority")
+		assert_ne(c.behavior, CatchData.BehaviorType.AGGRESSIVE)
+		if c.catch_type == CatchData.CatchType.ENTITY:
+			entities += 1
+	assert_lt(entities, 50, "entity draws weighted x0.2 should be a clear minority")

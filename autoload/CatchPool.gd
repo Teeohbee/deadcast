@@ -34,12 +34,14 @@ func generate_layer(zone: String, layer: CatchData.Layer, corruption: float = 0.
 
 func draw_replacement(zone: String, layer: CatchData.Layer, corruption: float) -> CatchData:
 	load_catches_for_zone(zone)
-	var pool = _loaded_catches.filter(func(c: CatchData) -> bool: return c.layer == layer)
+	# A decoy never draws a hostile: it's the escape.
+	var pool = _loaded_catches.filter(func(c: CatchData) -> bool:
+		return c.layer == layer and c.behavior != CatchData.BehaviorType.AGGRESSIVE)
 	if pool.is_empty():
 		return null
 	var weights = pool.map(func(c: CatchData) -> float:
 		var w: float = _calculate_weight(c, corruption, [])
-		if c.catch_type == CatchData.CatchType.ENTITY or c.behavior == CatchData.BehaviorType.AGGRESSIVE:
+		if c.catch_type == CatchData.CatchType.ENTITY:
 			w *= 0.2
 		return w)
 	var picked: CatchData = _weighted_random(pool, weights)

@@ -19,6 +19,8 @@ var layer_index: int = 0
 var slots: Array[CatchData] = []
 var slot_in_layer: int = 0
 var _resolved_before_layer: int = 0
+# The next layer, drawn early by a deep pulse so the scan is what you descend into.
+var _preview: Array[CatchData] = []
 
 func _init(p_zone_id: String, p_max_depth: int) -> void:
 	zone_id = p_zone_id
@@ -48,7 +50,26 @@ func can_descend() -> bool:
 func descend(corruption: float, entity_bias: bool = false) -> void:
 	_resolved_before_layer += slots.size()
 	layer_index += 1
-	generate_current_layer(corruption, entity_bias)
+	if _preview.is_empty():
+		generate_current_layer(corruption, entity_bias)
+	else:
+		slots = _preview
+		slot_in_layer = 0
+		_preview = []
+
+func preview_next_layer(corruption: float, entity_bias: bool = false) -> Array[CatchData]:
+	_preview = CatchPool.generate_layer(zone_id, LAYER_ORDER[layer_index + 1], corruption, entity_bias)
+	return _preview
+
+func preview_slots() -> Array[CatchData]:
+	return _preview
+
+func clear_preview() -> void:
+	_preview = []
+
+# Rail index of the first slot in the next layer.
+func next_layer_first_index() -> int:
+	return _resolved_before_layer + slots.size()
 
 func global_slot_index() -> int:
 	return _resolved_before_layer + slot_in_layer

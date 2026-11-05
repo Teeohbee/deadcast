@@ -96,6 +96,10 @@ static func _rolls_dice(option: CatchOption, behavior: CatchData.BehaviorType) -
 ## Overload fight commands in words, built from the command's own numbers.
 static func command_label(num: int, cmd: Dictionary) -> String:
 	var parts: Array[String] = ["[%d] %s" % [num, cmd.id]]
+	if cmd.id == "DECOY_SLIP":
+		parts.append("slip it, draw something calmer")
+		parts.append("uses a decoy")
+		return "  ·  ".join(parts)
 	if cmd.id == "ISOLATE_FEED":
 		parts.append("emergency disconnect")
 		parts.append("lose the catch, keep the strain")

@@ -182,6 +182,9 @@ func _build_lure() -> Array:
 			return _gyro(12)                             # nested gyro rings, sky
 		LureData.LureEffect.GHOST_BAIT:
 			return [_icosahedron(0.85, DeckStyle.DIM, true)]  # dashed phantom
+		LureData.LureEffect.SPLICE:
+			return [_box(Vector3(-0.35, 0, 0), Vector3(0.3, 0.3, 0.3), DeckStyle.GREEN),   # two ends,
+				_box(Vector3(0.35, 0, 0), Vector3(0.3, 0.3, 0.3), DeckStyle.GREEN)]        # spliced
 		_:
 			return [_octahedron(0.85)]                   # plain payload
 
