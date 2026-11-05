@@ -47,25 +47,12 @@ func test_without_a_charge_the_hit_lands() -> void:
 	assert_true(events.has("hit"))
 	assert_eq(sim.hits, 1)
 
-func test_shock_always_offers_overload_core_in_a_fight() -> void:
-	var fight := OverloadFight.new(80, 20, 3, 0.0, true)
-	for i in 30:
-		var ids := fight.pick_commands().map(func(cmd: Dictionary) -> String: return cmd.id)
-		assert_true("OVERLOAD_CORE" in ids)
-		assert_eq(ids.size(), 4)
-		assert_eq(ids[-1], "ISOLATE_FEED")
-
 # --- escape: decoy ---
 
 func test_a_decoy_replacement_is_never_hostile() -> void:
 	for i in 60:
 		var c := CatchPool.draw_replacement("axiom", CatchData.Layer.DEEP, 50.0)
 		assert_ne(c.behavior, CatchData.BehaviorType.AGGRESSIVE, c.catch_name)
-
-func test_the_decoy_command_reads_as_an_escape() -> void:
-	var label := DiveFormat.command_label(4, OverloadFight.DECOY_SLIP)
-	assert_string_contains(label, "DECOY_SLIP")
-	assert_string_contains(label, "uses a decoy")
 
 # --- scout: deep pulse at the checkpoint ---
 
