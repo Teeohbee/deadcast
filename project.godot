@@ -32,6 +32,7 @@ Settings="*res://autoload/Settings.gd"
 InputGlyphs="*res://autoload/InputGlyphs.gd"
 Audio="*res://autoload/Audio.gd"
 DisplayScaling="*res://autoload/DisplayScaling.gd"
+Lifecycle="*res://autoload/Lifecycle.gd"
 
 [display]
 
@@ -121,3 +122,7 @@ renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 anti_aliasing/quality/msaa_3d=1
 environment/default_clear_color=Color(0.039216, 0.039216, 0.039216, 1)
+
+[debug]
+
+file_logging/enable_file_logging=true
