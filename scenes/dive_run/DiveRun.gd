@@ -589,6 +589,8 @@ func _resolve_active_job(snapped: bool) -> Dictionary:
 	var relief := GameState.resolve_job(job, met)
 	var entry := {"kind": "job", "title": job.title, "met": met, "relief": relief}
 	_run_record.entries.append(entry)
+	GameState.relay_file_entry(RelayScripts.CONTACT_MARTA, GameState.RELAY_ENTRY_TEXT, "job_outcome_" + job.id,
+		[{"who": RelayScripts.CONTACT_MARTA, "text": RelayScripts.job_outcome_line(met, snapped, relief)}])
 	return entry
 
 func _end_run(snapped: bool) -> void:

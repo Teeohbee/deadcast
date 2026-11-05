@@ -66,12 +66,12 @@ func _visible_dividers(f: Node) -> int:
 			count += 1
 	return count
 
-func test_a_new_operator_sees_only_deck_and_bunk() -> void:
+func test_a_new_operator_sees_deck_bunk_and_relay() -> void:
 	GameState.run_count = 0
 	var f := _make()
 	await get_tree().process_frame
-	assert_eq(_visible_tab_labels(f), ["DECK", "BUNK"] as Array[String])
-	assert_eq(_visible_dividers(f), 1)
+	assert_eq(_visible_tab_labels(f), ["DECK", "BUNK", "RELAY"] as Array[String])
+	assert_eq(_visible_dividers(f), 2)
 
 func test_tabs_appear_as_runs_complete() -> void:
 	GameState.run_count = 0
@@ -79,7 +79,7 @@ func test_tabs_appear_as_runs_complete() -> void:
 	await get_tree().process_frame
 	GameState.run_count = 1
 	UIController.screen_changed.emit("deck")
-	assert_eq(_visible_tab_labels(f), ["DECK", "WORKSHOP", "BUNK", "MARTA", "VENDORS"] as Array[String])
+	assert_eq(_visible_tab_labels(f), ["DECK", "WORKSHOP", "BUNK", "RELAY", "VENDORS"] as Array[String])
 	assert_eq(_visible_dividers(f), 4)
 
 func test_fresh_tabs_are_marked_new_until_visited() -> void:

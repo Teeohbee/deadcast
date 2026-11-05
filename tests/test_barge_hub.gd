@@ -150,11 +150,10 @@ func test_first_run_unlocks_are_announced_once_on_the_deck() -> void:
 	hub.on_screen_shown()
 	EventBus.deck_log.disconnect(collect)
 	GameState.freezer_base = saved_freezer_base
-	assert_eq(lines.size(), 3, str(lines))
+	assert_eq(lines.size(), 2, str(lines))
 	assert_string_contains(lines[0], "Workshop")
 	assert_string_contains(lines[1], "Okeke")
-	assert_string_contains(lines[2], "Marta")
-	assert_eq(UIController.fresh_tabs, ["workshop", "vendors", "marta"] as Array[String])
+	assert_eq(UIController.fresh_tabs, ["workshop", "vendors"] as Array[String])
 	UIController.fresh_tabs.clear()
 
 func test_a_continued_save_announces_nothing() -> void:

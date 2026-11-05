@@ -12,7 +12,6 @@ func before_each() -> void:
 	GameState.decrypt_box_runs = 0
 	GameState.freezer_base = 0
 	GameState.freezer_runs = 0
-	GameState.marta_last_seen_run = -1
 	GameState.journal_entries = []
 
 func after_each() -> void:
@@ -44,16 +43,7 @@ func test_journal_entries_round_trip() -> void:
 	assert_eq(GameState.journal_entries.size(), 2)
 	assert_eq(GameState.journal_entries[0], "First entry")
 
-func test_marta_last_seen_run_round_trip() -> void:
-	GameState.marta_last_seen_run = 7
-	GameState._save_to("user://save_test.cfg")
-	GameState.marta_last_seen_run = -1
-	GameState._load_from("user://save_test.cfg")
-	assert_eq(GameState.marta_last_seen_run, 7)
-
 func test_new_game_resets_narrative_fields() -> void:
-	GameState.marta_last_seen_run = 5
 	GameState.journal_entries = ["something"]
 	GameState.new_game()
-	assert_eq(GameState.marta_last_seen_run, -1)
 	assert_eq(GameState.journal_entries.size(), 0)

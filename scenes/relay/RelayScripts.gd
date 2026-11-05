@@ -159,6 +159,86 @@ const OKEKE_INTRO_CALL := {
 	],
 }
 
+# --- Marta's job offers ---
+# Each run Marta texts the job MartaJobs offers, with take / pass / say
+# nothing. "condition" is the plain-words version for the case_file panel.
+const JOB_OFFER_COPY := {
+	"quiet_water": {
+		"offer": ["something's been talking back on the deep channels. client wants it left alone.", "no entities this run. not one. not even a polite one."],
+		"condition": "engage no entities this dive.",
+		"take": "good. ears shut, line down.",
+		"pass": "your boat.",
+		"silent": "i'll find someone who listens.",
+	},
+	"steady_hands": {
+		"offer": ["a buyer wants proof you can hold a line.", "no cutting loose this run. whatever bites, you see it through."],
+		"condition": "don't cut the line this dive.",
+		"take": "don't make me regret vouching.",
+		"pass": "fine. hands shaking?",
+		"silent": "silence. noted.",
+	},
+	"exchange_ledger": {
+		"offer": ["the voss exchange lost a ledger. a man who used to own a floor of it would like it found.", "any data container from the exchange."],
+		"condition": "land a data container in the voss exchange.",
+		"take": "exchange floor. mind the other lines.",
+		"pass": "he'll be disappointed. he's used to it.",
+		"silent": "i'll tell him you're thinking about it. you're not.",
+	},
+	"static_walk": {
+		"offer": ["axiom's tracers ignore noisy lines. a client wants to know what's under them.", "three catches in a row with the signal at half or worse. get noisy."],
+		"condition": "three catches in a row at SIG 50% or under.",
+		"take": "loud as you like.",
+		"pass": "coward. a well-paid coward, but.",
+		"silent": "i'll take that as a no.",
+	},
+	"sub_basement": {
+		"offer": ["there's a server rack under axiom that never got decommissioned.", "data container, axiom sub-basement. don't read it."],
+		"condition": "land a data container in the axiom sub-basement.",
+		"take": "and don't read it. i mean that.",
+		"pass": "sensible. boring, but sensible.",
+		"silent": "quiet. sensible, maybe.",
+	},
+	"dead_air": {
+		"offer": ["the people paying for this want you deep in the static. i didn't ask why.", "three catches in a row with the signal at a fifth or worse. then come home."],
+		"condition": "three catches in a row at SIG 20% or under.",
+		"take": "come home. that's the part that matters.",
+		"pass": "i'd pass too. i'm not going to tell them that.",
+		"silent": "nothing. good instinct.",
+	},
+}
+
+# The text exchange for one job offer, in the usual script shape. Not in
+# all_scripts(): offers recur every run, so they're never marked played.
+static func job_offer_script(job_id: String) -> Dictionary:
+	var copy: Dictionary = JOB_OFFER_COPY.get(job_id, {})
+	if copy.is_empty():
+		return {}
+	var steps: Array = []
+	for line in copy.offer:
+		steps.append({"say": line})
+	steps.append({"replies": [
+		{"text": "i'll take it.", "then": [{"say": copy.take}, {"do": ACTION_ACCEPT_JOB}]},
+		{"text": "pass.", "then": [{"say": copy["pass"]}, {"do": ACTION_DECLINE_JOB}]},
+	], "silent": [{"say": copy.silent}, {"do": ACTION_DECLINE_JOB}]})
+	return {
+		"id": "job_offer_" + job_id,
+		"contact": CONTACT_MARTA,
+		"channel": CHANNEL_TEXT,
+		"trigger": {"moment": TRIGGER_HUB_ARRIVAL},
+		"steps": steps,
+	}
+
+static func job_condition_text(job_id: String) -> String:
+	return JOB_OFFER_COPY.get(job_id, {}).get("condition", "")
+
+# Marta's text after a dive that carried a job.
+static func job_outcome_line(met: bool, snapped: bool, relief: int) -> String:
+	if met:
+		return "job done. client's paid. %scr off what you owe axiom. don't spend it all at once. you can't, it's not yours." % LedgerPanel.format_thousands(relief)
+	if snapped:
+		return "no line, no job. try keeping the rod in one piece next time."
+	return "client's not paying. i told them you were good. now i look like a liar, and i'm not cheap to make a liar."
+
 static func all_scripts() -> Array[Dictionary]:
 	return [
 		MARTA_FIRST_CALL,

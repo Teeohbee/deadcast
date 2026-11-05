@@ -9,7 +9,7 @@ const _REGISTRY: Dictionary = {
 	"workshop": "res://scenes/barge_hub/Workshop.tscn",
 	"decrypt":  "res://scenes/barge_hub/DecryptBox.tscn",
 	"bunk":     "res://scenes/barge_hub/Bunk.tscn",
-	"marta":    "res://scenes/barge_hub/MartaTerminal.tscn",
+	"relay":    "res://scenes/relay/RelayTab.tscn",
 	"vendors":  "res://scenes/barge_hub/VendorsLayout.tscn",
 	"dive":     "res://scenes/dive_run/DiveRun.tscn",
 	"gameover": "res://scenes/barge_hub/GameOver.tscn",
@@ -17,7 +17,7 @@ const _REGISTRY: Dictionary = {
 }
 
 const _TAB_ORDER: Array[String] = [
-	"deck", "workshop", "decrypt", "bunk", "marta", "vendors"
+	"deck", "workshop", "decrypt", "bunk", "relay", "vendors"
 ]
 
 var current_screen: String = ""

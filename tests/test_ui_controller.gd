@@ -128,11 +128,15 @@ func test_cycle_tab_skips_locked_tabs_for_a_new_operator() -> void:
 	UIController._cycle_tab(1)
 	assert_eq(UIController.current_screen, "bunk")
 	UIController._cycle_tab(1)
+	assert_eq(UIController.current_screen, "relay")
+	UIController._cycle_tab(1)
 	assert_eq(UIController.current_screen, "deck")
 
 func test_cycle_tab_backward_skips_locked_tabs() -> void:
 	GameState.run_count = 0
 	UIController.navigate_to("deck")
+	UIController._cycle_tab(-1)
+	assert_eq(UIController.current_screen, "relay")
 	UIController._cycle_tab(-1)
 	assert_eq(UIController.current_screen, "bunk")
 
