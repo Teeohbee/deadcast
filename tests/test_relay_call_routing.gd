@@ -101,3 +101,24 @@ func test_repossession_wins_over_any_call() -> void:
 	GameState.pressure_level = 5
 	UIController.navigate_to("deck")
 	assert_eq(UIController.current_screen, "gameover")
+
+func test_after_okekes_call_he_is_a_relay_contact_with_the_transcript() -> void:
+	GameState.relay_mark_played("marta_first_call")
+	GameState.relay_mark_played("marta_after_dive_one")
+	GameState.run_count = 2
+	UIController.navigate_to("deck")
+	UIController.navigate_to("vendors")
+	var screen: CallScreen = load("res://scenes/relay/CallScreen.tscn").instantiate()
+	screen.instant = true
+	add_child_autofree(screen)
+	screen.start(UIController.pending_call)
+	for safety in 30:
+		await get_tree().process_frame
+		if not screen.visible_options().is_empty():
+			screen.choose_option(0)
+		if GameState.relay_has_played("okeke_intro_call"):
+			break
+	var relay_tab: RelayTab = load("res://scenes/relay/RelayTab.tscn").instantiate()
+	add_child_autofree(relay_tab)
+	assert_true("okeke" in relay_tab.listed_contacts())
+	assert_string_contains(relay_tab.render_thread("okeke"), "i'm saying count.")
