@@ -6,5 +6,5 @@
 script = ExtResource("1_lure")
 lure_name = "Ghost Bait"
 effect = 4
-purchase_cost = 1000
-description = "Fire at a depth checkpoint: the next layer draws entity-heavy, aggression suppressed. Each fire consumes stock."
+purchase_cost = 600
+description = "Bait: fire at a depth checkpoint. The next layer draws what is listening, and hostile entities hold back. Each fire consumes stock."

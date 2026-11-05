@@ -6,5 +6,5 @@
 script = ExtResource("1_lure")
 lure_name = "Decoy Swarm"
 effect = 2
-purchase_cost = 600
-description = "Fire on a contact to slip it and draw a safer replacement. Each fire consumes stock."
+purchase_cost = 400
+description = "Escape: slip any contact, hostiles included, and draw a calmer replacement. Each fire consumes stock."

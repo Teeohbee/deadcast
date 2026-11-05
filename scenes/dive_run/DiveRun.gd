@@ -132,6 +132,7 @@ func _show_next_catch() -> void:
 
 func _show_checkpoint() -> void:
 	var ghost_bait_armed := false
+	var scanned := false
 	session_log.log_line("\n─── DEPTH CHECKPOINT ──────────────────────────", DeckStyle.SKY)
 	EventBus.checkpoint_reached.emit()
 	relay_dive_panel.on_moment(RelayDiveLines.MOMENT_CHECKPOINT,
@@ -150,6 +151,14 @@ func _show_checkpoint() -> void:
 			"[2] SURFACE   — bank %dcr and end the run" % _run_credits,
 		]
 		var echoes: Array[String] = ["descend", "surface"]
+		var actions: Array[String] = ["descend", "surface"]
+
+		if not scanned and _lure_ready(LureData.LureEffect.DEEP_PULSE):
+			labels.append(DiveFormat.lure_label(labels.size() + 1,
+				"fire deep_pulse (x%d)  ·  scan the %s before you choose" % [
+					_lure_count(LureData.LureEffect.DEEP_PULSE), _column.next_layer_name()]))
+			echoes.append("fire deep_pulse")
+			actions.append("pulse")
 
 		var offer_ghost_bait := (not ghost_bait_armed and
 			GameState.current_lure != null and
@@ -160,14 +169,31 @@ func _show_checkpoint() -> void:
 			labels.append(DiveFormat.lure_label(labels.size() + 1,
 				"fire ghost_bait (x%d)  ·  bait the next layer — entities surface, aggression suppressed" % qty))
 			echoes.append("fire ghost_bait")
+			actions.append("ghost_bait")
+
+		if _splice_ready():
+			labels.append(DiveFormat.lure_label(labels.size() + 1, _splice_label()))
+			echoes.append("fire splice_kit")
+			actions.append("splice")
 
 		var index: int = await session_log.present_choices(labels, echoes)
 		if _snapped:
 			return
 
-		if offer_ghost_bait and index == labels.size() - 1:
+		if actions[index] == "pulse":
+			scanned = true
+			_fire_deep_pulse()
+			continue
+		if actions[index] == "splice":
+			_fire_splice()
+			continue
+		if actions[index] == "ghost_bait":
 			GameState.consume_lure_use()
 			ghost_bait_armed = true
+			# A scan taken before the bait no longer shows what will be drawn.
+			if scanned:
+				_column.clear_preview()
+				scanned = false
 			_run_record.entries.append({"kind": "lure", "text": "ghost bait armed"})
 			session_log.log_line(">>> ghost bait armed — the next layer will draw what's listening",
 				DeckStyle.SKY)
@@ -197,9 +223,6 @@ func _present_catch(catch_data: CatchData) -> void:
 	var need_card := true
 	while true:
 		var augmented := current
-		var using_shock := _shock_ready(current)
-		if using_shock:
-			augmented = _inject_shock_option(current)
 
 		var hauled := augmented.haul_enabled
 		if need_card:
@@ -232,19 +255,11 @@ func _present_catch(catch_data: CatchData) -> void:
 		if not lure_action.is_empty() and index == labels.size() - 1:
 			match lure_action.effect:
 				LureData.LureEffect.DECOY:
-					GameState.consume_lure_use()
-					session_log.log_line(">>> decoy deployed — contact slipped", DeckStyle.SKY)
-					_run_record.entries.append({"kind": "lure", "text": "decoy deployed — contact slipped"})
-					current = CatchPool.draw_replacement(
-						_column.zone_id, _column.current_layer(), line_system.corruption)
-					_column.slots[_column.slot_in_layer] = current
+					current = _fire_decoy()
 					need_card = true
-					if current.behavior == CatchData.BehaviorType.AGGRESSIVE:
-						_run_overload(current)
-						return
 					continue
-				LureData.LureEffect.DEEP_PULSE:
-					_fire_deep_pulse()
+				LureData.LureEffect.SPLICE:
+					_fire_splice()
 					continue
 			continue
 
@@ -257,9 +272,6 @@ func _present_catch(catch_data: CatchData) -> void:
 			GameState.journal_entries.append("[%s]\n\n%s" % [augmented.catch_name, option.narrative_text])
 			GameState.save()
 			await session_log.present_continue()
-
-		if using_shock and index == 0:
-			GameState.consume_lure_use()
 
 		if option.sets_entity_flag and augmented.entity_id != "":
 			GameState.set_entity_encountered(augmented.entity_id)
@@ -300,33 +312,64 @@ func _present_catch(catch_data: CatchData) -> void:
 		return
 
 func _contact_lure_action() -> Dictionary:
-	if GameState.current_lure == null or not GameState.has_lure_stock(GameState.current_lure):
-		return {}
-	var lure_id := GameState.get_lure_id(GameState.current_lure)
-	var qty: int = GameState.lure_inventory.get(lure_id, 0)
-	match GameState.current_lure.effect:
-		LureData.LureEffect.DECOY:
-			return {
-				"label": "fire %s (x%d)  ·  slip this contact, draw a safer replacement" % [lure_id, qty],
-				"echo": "fire %s" % lure_id,
-				"effect": LureData.LureEffect.DECOY,
-			}
-		LureData.LureEffect.DEEP_PULSE:
-			if _column.slot_in_layer + 1 >= _column.slots.size():
-				return {}
-			return {
-				"label": "fire %s (x%d)  ·  scan remaining contacts in this layer" % [lure_id, qty],
-				"echo": "fire %s" % lure_id,
-				"effect": LureData.LureEffect.DEEP_PULSE,
-			}
+	if _lure_ready(LureData.LureEffect.DECOY):
+		return {
+			"label": "fire decoy_swarm (x%d)  ·  slip this contact, draw a calmer one" % _lure_count(LureData.LureEffect.DECOY),
+			"echo": "fire decoy_swarm",
+			"effect": LureData.LureEffect.DECOY,
+		}
+	if _splice_ready():
+		return {"label": _splice_label(), "echo": "fire splice_kit", "effect": LureData.LureEffect.SPLICE}
 	return {}
 
+# --- lures: each answers one question (shop economy plan, PR B4) ---
+
+func _lure_ready(effect: LureData.LureEffect) -> bool:
+	return (GameState.current_lure != null and GameState.current_lure.effect == effect
+		and GameState.has_lure_stock(GameState.current_lure))
+
+func _lure_count(effect: LureData.LureEffect) -> int:
+	if not _lure_ready(effect):
+		return 0
+	return GameState.lure_inventory.get(GameState.get_lure_id(GameState.current_lure), 0)
+
+func _consume_lure(effect: LureData.LureEffect) -> void:
+	if _lure_ready(effect):
+		GameState.consume_lure_use()
+
+func _splice_ready() -> bool:
+	return _lure_ready(LureData.LureEffect.SPLICE) and line_system.tension > 0.0
+
+func _splice_label() -> String:
+	return "fire splice_kit (x%d)  ·  vent %dT off the line" % [
+		_lure_count(LureData.LureEffect.SPLICE), LureData.SPLICE_VENT_T]
+
+# Survive: vent strain between contacts.
+func _fire_splice() -> void:
+	_consume_lure(LureData.LureEffect.SPLICE)
+	var vented := maxi(0, int(line_system.tension) - LureData.SPLICE_VENT_T)
+	line_system.sync_tension(vented)
+	_run_record.entries.append({"kind": "lure", "text": "splice fitted — line vented"})
+	session_log.log_line(">>> splice fitted — tension vented to %d/%d" % [vented, line_system.max_tension],
+		DeckStyle.SKY)
+
+# Escape: slip the contact in this slot and draw a calmer one (never hostile).
+func _fire_decoy() -> CatchData:
+	_consume_lure(LureData.LureEffect.DECOY)
+	session_log.log_line(">>> decoy deployed — contact slipped", DeckStyle.SKY)
+	_run_record.entries.append({"kind": "lure", "text": "decoy deployed — contact slipped"})
+	var replacement := CatchPool.draw_replacement(_column.zone_id, _column.current_layer(), line_system.corruption)
+	_column.slots[_column.slot_in_layer] = replacement
+	return replacement
+
+# Scout: at a checkpoint, draw the next layer now and show it on the rail.
 func _fire_deep_pulse() -> void:
-	GameState.consume_lure_use()
-	var base := _column.global_slot_index() - _column.slot_in_layer
+	_consume_lure(LureData.LureEffect.DEEP_PULSE)
+	var ahead := _column.preview_next_layer(line_system.corruption)
+	var base := _column.next_layer_first_index()
 	var tags: Array[String] = []
-	for i in range(_column.slot_in_layer + 1, _column.slots.size()):
-		var c := _column.slots[i]
+	for i in ahead.size():
+		var c := ahead[i]
 		var marker: String
 		var tag: String
 		if c.behavior == CatchData.BehaviorType.AGGRESSIVE:
@@ -338,7 +381,7 @@ func _fire_deep_pulse() -> void:
 			tag = "[%s]" % type_name
 		EventBus.slot_revealed.emit(base + i, marker)
 		tags.append(tag)
-	var summary := "deep_pulse: %d contacts ahead — %s" % [tags.size(), " ".join(tags)]
+	var summary := "deep_pulse: %d contacts below — %s" % [tags.size(), " ".join(tags)]
 	_run_record.entries.append({"kind": "lure", "text": summary})
 	session_log.log_line(">>> %s" % summary, DeckStyle.SKY)
 
@@ -349,10 +392,16 @@ func _resolve_haul(option: CatchOption, catch_data: CatchData, echo: String) -> 
 	run.setup(HaulTurn.dials(catch_data, option), HaulTurn.difficulty(GameState.run_count),
 		HaulFragments.draw(catch_data.fragments, catch_data.fragments_always),
 		HaulTurn.glyph(catch_data.catch_type), catch_data.catch_name.to_lower())
+	var shock_charge := catch_data.catch_type == CatchData.CatchType.MECH and _lure_ready(LureData.LureEffect.SHOCK)
+	if shock_charge:
+		run.shield = 1
 	relay_dive_panel.hold()
 	add_child(run)
 	var result: Dictionary = await run.finished
 	run.queue_free()
+	if int(result.get("shocked", 0)) > 0:
+		_consume_lure(LureData.LureEffect.SHOCK)
+		session_log.log_line(">>> shock lure fired — hit absorbed", DeckStyle.SKY)
 	var brake := HaulTurn.apply_brake(result, _brake_ready())
 	if brake.braked:
 		_brake_used = true
@@ -460,6 +509,8 @@ func _run_overload(catch_data: CatchData) -> void:
 			DeckStyle.TEXT)
 
 		var commands := fight.pick_commands()
+		if _lure_ready(LureData.LureEffect.DECOY):
+			commands.insert(commands.size() - 1, OverloadFight.DECOY_SLIP)
 		var labels: Array[String] = []
 		var echoes: Array[String] = []
 		for i in commands.size():
@@ -470,6 +521,15 @@ func _run_overload(catch_data: CatchData) -> void:
 			return
 		var cmd: Dictionary = commands[index]
 		last_echo = str(cmd.id).to_lower()
+
+		if cmd.id == "DECOY_SLIP":
+			line_system.sync_tension(fight.tension)
+			var replacement := _fire_decoy()
+			if replacement == null:
+				_advance_slot()
+				return
+			_present_catch(replacement)
+			return
 
 		if cmd.id == "ISOLATE_FEED":
 			line_system.sync_tension(fight.tension)
@@ -510,20 +570,6 @@ func _run_overload(catch_data: CatchData) -> void:
 			_advance_slot()
 			return
 		fight.next_turn()
-
-func _inject_shock_option(catch_data: CatchData) -> CatchData:
-	var overload_opt = CatchOption.new()
-	overload_opt.label = "shock overload"
-	overload_opt.tension_delta = 5
-	overload_opt.credit_value = int(catch_data.options[0].credit_value * 0.7)
-	overload_opt.flavor_text = "Short-circuit it. Destroys one Shock Lure use."
-	var augmented = catch_data.duplicate()
-	var new_options: Array[CatchOption] = []
-	for opt in catch_data.options:
-		new_options.append(opt)
-	new_options.insert(0, overload_opt)
-	augmented.options = new_options
-	return augmented
 
 func _apply_and_record(option: CatchOption, catch_data: CatchData) -> void:
 	line_system.apply_tension(option.tension_delta)

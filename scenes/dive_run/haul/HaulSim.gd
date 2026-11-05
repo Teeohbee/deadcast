@@ -65,6 +65,9 @@ var next_hit := 0.0
 var told := false
 var hits := 0
 var absorbed := 0
+# Shock lure charges: a hit that lands while hauling a machine is absorbed.
+var shield := 0
+var shocked := 0
 var outcome := ""
 
 func _init(p_dials: Dictionary, p_difficulty: String, p_rng: Lcg = null) -> void:
@@ -111,7 +114,11 @@ func step(dt: float, haul: bool) -> Array[String]:
 		told = true
 		ev.append("tell")
 	if t >= next_hit:
-		if haul:
+		if haul and shield > 0:
+			shield -= 1
+			shocked += 1
+			ev.append("shocked")
+		elif haul:
 			line_load = minf(99.0, line_load + hit_size)
 			hits += 1
 			ev.append("hit")

@@ -43,7 +43,7 @@ func test_pick_commands_includes_overload_core_only_with_shock() -> void:
 		for cmd in with_shock.pick_commands():
 			if cmd.id == "OVERLOAD_CORE":
 				seen = true
-	assert_true(seen, "OVERLOAD_CORE should appear in the pool when shock is available")
+	assert_true(seen, "OVERLOAD_CORE is always offered when shock is available")
 
 func test_execute_guaranteed_command_applies_costs() -> void:
 	var f := _fight()

@@ -13,6 +13,10 @@ const BASE_COMMANDS: Array[Dictionary] = [
 const ISOLATE_FEED: Dictionary = {
 	"id": "ISOLATE_FEED", "t_cost": 0, "anchor_hit": 0, "success_rate": 1.0, "fail_t": 0
 }
+# Fired from a decoy swarm: slip the hostile, draw something calmer.
+const DECOY_SLIP: Dictionary = {
+	"id": "DECOY_SLIP", "t_cost": 0, "anchor_hit": 0, "success_rate": 1.0, "fail_t": 0
+}
 const OVERLOAD_CORE: Dictionary = {
 	"id": "OVERLOAD_CORE", "t_cost": 15, "anchor_hit": -2, "success_rate": 1.0, "fail_t": 0
 }
@@ -46,19 +50,21 @@ func apply_backlash() -> int:
 
 func pick_commands() -> Array[Dictionary]:
 	var pool: Array[Dictionary] = BASE_COMMANDS.duplicate()
-	if shock_available:
-		pool.append(OVERLOAD_CORE)
 	# Fisher-Yates with the instance rng so tests can seed deterministically
 	for i in range(pool.size() - 1, 0, -1):
 		var j := rng.randi_range(0, i)
 		var tmp := pool[i]
 		pool[i] = pool[j]
 		pool[j] = tmp
+	# A shock lure keeps OVERLOAD_CORE on hand every turn.
 	var picked: Array[Dictionary] = []
+	var random_slots := 2 if shock_available else 3
 	for cmd: Dictionary in pool:
 		picked.append(cmd)
-		if picked.size() >= 3:
+		if picked.size() >= random_slots:
 			break
+	if shock_available:
+		picked.append(OVERLOAD_CORE)
 	picked.append(ISOLATE_FEED)
 	return picked
 

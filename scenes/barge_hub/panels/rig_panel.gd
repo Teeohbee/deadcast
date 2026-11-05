@@ -1,7 +1,7 @@
 # scenes/barge_hub/panels/rig_panel.gd
 extends TerminalPanel
 
-const LURE_ORDER: Array[String] = ["basic_hook", "shock_lure", "decoy_swarm", "deep_pulse", "ghost_bait"]
+const LURE_ORDER: Array[String] = ["basic_hook", "shock_lure", "decoy_swarm", "deep_pulse", "splice_kit", "ghost_bait"]
 
 var _rod_name: Label
 var _rod_meta: Label
