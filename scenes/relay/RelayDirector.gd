@@ -37,6 +37,8 @@ static func script_ids_already_past(run_count: int) -> Array[String]:
 				if run_count > 0:
 					past.append(relay_script.id)
 			RelayScripts.TRIGGER_HUB_ARRIVAL:
+				if trigger.has("min_pressure"):
+					continue
 				if run_count > trigger.get("from_run", 0):
 					past.append(relay_script.id)
 	return past
@@ -57,7 +59,9 @@ static func _trigger_matches(trigger: Dictionary, moment: String, tab_id: String
 		RelayScripts.TRIGGER_NEW_GAME:
 			return moment == RelayScripts.TRIGGER_NEW_GAME or moment == RelayScripts.TRIGGER_HUB_ARRIVAL
 		RelayScripts.TRIGGER_HUB_ARRIVAL:
-			return moment == RelayScripts.TRIGGER_HUB_ARRIVAL and GameState.run_count >= trigger.get("from_run", 0)
+			return moment == RelayScripts.TRIGGER_HUB_ARRIVAL \
+				and GameState.run_count >= trigger.get("from_run", 0) \
+				and GameState.pressure_level >= trigger.get("min_pressure", 0)
 		RelayScripts.TRIGGER_TAB_OPENED:
 			return moment == RelayScripts.TRIGGER_TAB_OPENED and tab_id == trigger.get("tab", "")
 	return false

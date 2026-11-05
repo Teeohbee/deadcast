@@ -239,12 +239,35 @@ static func job_outcome_line(met: bool, snapped: bool, relief: int) -> String:
 		return "no line, no job. try keeping the rod in one piece next time."
 	return "client's not paying. i told them you were good. now i look like a liar, and i'm not cheap to make a liar."
 
+# Rings once a recovery agent has been assigned (four missed instalments).
+const MARTA_RECOVERY_WARNING := {
+	"id": "marta_recovery_warning",
+	"contact": CONTACT_MARTA,
+	"channel": CHANNEL_CALL,
+	"trigger": {"moment": TRIGGER_HUB_ARRIVAL, "min_pressure": 4},
+	"steps": [
+		{"say": "they're sending someone. i've seen what they send."},
+		{"replies": [
+			{"text": "can you stop them?", "then": [
+				{"say": "i can stop a lot of things. not axiom's accountants."},
+			]},
+			{"text": "how long have i got?", "then": [
+				{"say": "one more missed payment. then you're a story fishers tell."},
+			]},
+		], "silent": [
+			{"say": "yes. that's the right reaction."},
+		]},
+		{"say": "find the money, or find a way to be somewhere else when they arrive."},
+	],
+}
+
 static func all_scripts() -> Array[Dictionary]:
 	return [
 		MARTA_FIRST_CALL,
 		AXIOM_MORTGAGE_NOTICE,
 		MARTA_AFTER_DIVE_ONE,
 		OKEKE_INTRO_CALL,
+		MARTA_RECOVERY_WARNING,
 	]
 
 static func find(script_id: String) -> Dictionary:

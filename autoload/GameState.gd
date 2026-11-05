@@ -118,7 +118,7 @@ func on_run_complete(snapped: bool, bio_credits: int) -> void:
 			decrypt_box_queue = 0
 			decrypt_box_runs = 0
 
-	# Debt payment every 5 runs
+	# Debt payment every 5 runs, collected by Axiom Credit, who say so on the relay.
 	if runs_since_payment >= 5:
 		runs_since_payment = 0
 		var payment = min(10000, debt)
@@ -127,8 +127,17 @@ func on_run_complete(snapped: bool, bio_credits: int) -> void:
 			if debt <= 0:
 				debt = 0
 				victory = true
+			if payment > 0:
+				AxiomCredit.notify_payment_received(payment, debt)
 		else:
 			pressure_level = min(5, pressure_level + 1)
+			AxiomCredit.notify_payment_missed(pressure_level)
+	elif runs_since_payment == 4 and not victory:
+		AxiomCredit.notify_instalment_due(min(10000, debt))
+	if not victory and debt < 40000:
+		AxiomCredit.notify_balance_below_half_once()
+	if victory:
+		AxiomCredit.notify_account_closed_once()
 
 	first_dive_hints_done = true
 	_maybe_append_journal_entry()
@@ -164,7 +173,7 @@ func _maybe_append_journal_entry() -> void:
 		8:
 			journal_entries.append("Run 8.\n\nThe transponder. She told me to my face.\n\nEvery dive. Every coordinate. Axiom Corp has a map of everywhere the Meridian has anchored since day one. They know what I've been pulling up.\n\nShe said it changes nothing. She's right. The debt is still real. The rig still works.\n\nI keep thinking about what's in the Deep Archive that Axiom wants so badly they'd pay for this.")
 		12:
-			journal_entries.append("Run 12.\n\nOkeke left a lure on my line. Basic hook, nothing special. No note.\n\nHe hasn't spoken to me in three runs. Either Marta got to him or he figured something out on his own.\n\nShe's offering to accelerate the debt. Won't say what for.\n\nI haven't said yes.")
+			journal_entries.append("Run 12.\n\nMarta's offering to make Axiom Credit disappear. Not the debt. The account.\n\nOne job, deep. She won't say what.\n\nOkeke would tell me not to, so I haven't told Okeke.")
 
 	if first_listened_entity_id != "" and "first_entity_listen" not in triggered_journal_events:
 		triggered_journal_events.append("first_entity_listen")
@@ -186,7 +195,7 @@ func _maybe_append_journal_entry() -> void:
 
 	if pressure_level >= 1 and "first_pressure" not in triggered_journal_events:
 		triggered_journal_events.append("first_pressure")
-		journal_entries.append("Run %d.\n\nSomeone came to the Meridian.\n\nDidn't say who sent them. Didn't have to. They looked at the rig, looked at me, and left without saying anything.\n\nMarta's way of reminding me the debt is real. Like I'd forgotten.\n\nI haven't forgotten." % run_count)
+		journal_entries.append("Run %d.\n\nSomeone came to the Meridian. Axiom jacket, no badge.\n\nLooked at the rig, looked at me, wrote something down and left.\n\nMarta says that's how they do it. A visit first. Then a notice. Then a boat that isn't yours." % run_count)
 
 	if debt < 40000 and "debt_half" not in triggered_journal_events:
 		triggered_journal_events.append("debt_half")
