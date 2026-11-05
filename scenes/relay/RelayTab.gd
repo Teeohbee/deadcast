@@ -17,6 +17,7 @@ var selected_contact := RelayScripts.CONTACT_MARTA
 var _job_offer_runner: RelayRunner = null
 
 var _contact_list: VBoxContainer
+var _contact_buttons: Dictionary = {} # contact -> Button
 var _thread_panel: TerminalPanel
 var _thread: RichTextLabel
 var _reply_block: VBoxContainer
@@ -32,6 +33,16 @@ func on_screen_shown() -> void:
 	if newest_unread != "":
 		selected_contact = newest_unread
 	_refresh()
+	var target := default_focus()
+	if target != null:
+		target.grab_focus()
+
+# A pending reply to Marta first, otherwise the contact being read.
+func default_focus() -> Control:
+	for child in _reply_block.get_children():
+		if not child.is_queued_for_deletion():
+			return child as Control
+	return _contact_buttons.get(selected_contact)
 
 func _refresh() -> void:
 	_open_job_offer_if_due()
@@ -106,6 +117,11 @@ func _newest_unread_contact() -> String:
 	return ""
 
 func _build_contact_list() -> void:
+	# Rebuilding frees the focused button, so carry pad focus over to the
+	# newly selected one when it was in the list.
+	var owner := get_viewport().gui_get_focus_owner() if is_inside_tree() else null
+	var refocus := owner != null and _contact_list.is_ancestor_of(owner)
+	_contact_buttons.clear()
 	for child in _contact_list.get_children():
 		_contact_list.remove_child(child)
 		child.queue_free()
@@ -126,7 +142,10 @@ func _build_contact_list() -> void:
 		button.pressed.connect(func() -> void: select_contact(contact_id))
 		_contact_list.add_child(button)
 		buttons.append(button)
+		_contact_buttons[contact] = button
 	DeckNav.chain_vertical(buttons)
+	if refocus and _contact_buttons.has(selected_contact):
+		(_contact_buttons[selected_contact] as Button).grab_focus()
 
 func contact_button_labels() -> Array[String]:
 	var labels: Array[String] = []

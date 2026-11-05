@@ -130,3 +130,37 @@ func test_a_cleared_account_reads_closed() -> void:
 	GameState.victory = true
 	var tab := _tab()
 	assert_string_contains(tab.account_text(), "ACCOUNT CLOSED")
+
+func _contact_button(tab: RelayTab, contact: String) -> Button:
+	var display: Dictionary = RelayScripts.CONTACT_DISPLAY.get(contact, {})
+	var caller: String = display.get("caller_id", contact).to_lower()
+	for b in tab._contact_list.get_children():
+		if (b as Button).text.contains(caller):
+			return b
+	return null
+
+func test_default_focus_is_the_selected_contact() -> void:
+	GameState.active_job_id = "steady_hands"  # no offer open
+	var tab := _tab()
+	assert_eq(tab.default_focus(), _contact_button(tab, tab.selected_contact))
+
+func test_default_focus_prefers_a_pending_reply_to_marta() -> void:
+	var tab := _tab()
+	assert_false(tab.job_offer_options().is_empty())
+	assert_eq(tab.default_focus(), tab._reply_block.get_child(0))
+
+func test_screen_shown_focuses_the_selected_contact() -> void:
+	GameState.active_job_id = "steady_hands"
+	var tab := _tab()
+	tab.on_screen_shown()
+	assert_true(_contact_button(tab, tab.selected_contact).has_focus())
+
+func test_selecting_a_contact_keeps_pad_focus_on_it() -> void:
+	GameState.active_job_id = "steady_hands"
+	var tab := _tab()
+	var contacts := tab.listed_contacts()
+	var other: String = contacts[contacts.size() - 1]
+	_contact_button(tab, contacts[0]).grab_focus()
+	tab.select_contact(other)
+	await get_tree().process_frame
+	assert_true(_contact_button(tab, other).has_focus())
