@@ -239,6 +239,11 @@ func _on_confirm_yes() -> void:
 	GameState.new_game()
 	get_tree().change_scene_to_file("res://scenes/boot/BootSequence.tscn")
 
+func _unhandled_input(event: InputEvent) -> void:
+	if confirm_panel.visible and event.is_action_pressed("ui_cancel"):
+		get_viewport().set_input_as_handled()
+		_on_confirm_no()
+
 func _on_confirm_no() -> void:
 	confirm_panel.visible = false
 	_set_main_actions_visible(true, true)

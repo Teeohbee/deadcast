@@ -118,6 +118,22 @@ func test_confirm_no_restores_main_actions() -> void:
 	assert_true(s.new_game_button.visible)
 	assert_eq(s.get_viewport().gui_get_focus_owner(), s.continue_button)
 
+func test_back_cancels_the_new_game_confirm() -> void:
+	if _skip_when_backup_unavailable():
+		return
+	_create_save()
+	var s := _make()
+	await get_tree().process_frame
+	s.new_game_button.pressed.emit()
+	await get_tree().process_frame
+	var back := InputEventAction.new()
+	back.action = "ui_cancel"
+	back.pressed = true
+	s._unhandled_input(back)
+	await get_tree().process_frame
+	assert_false(s.confirm_panel.visible)
+	assert_eq(s.get_viewport().gui_get_focus_owner(), s.continue_button)
+
 func test_title_shows_block_letter_wordmark() -> void:
 	var s := _make()
 	await get_tree().process_frame
