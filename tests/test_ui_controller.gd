@@ -7,8 +7,21 @@ var _saved_run_count: int
 class FakeScreen:
 	extends Control
 	var shown_count: int = 0
+	var button: Button
+	func _init() -> void:
+		button = Button.new()
+		button.focus_mode = Control.FOCUS_ALL
+		add_child(button)
 	func on_screen_shown() -> void:
 		shown_count += 1
+	func default_focus() -> Control:
+		return button
+
+func _action(action: String) -> InputEventAction:
+	var e := InputEventAction.new()
+	e.action = action
+	e.pressed = true
+	return e
 
 func before_each() -> void:
 	_zone2 = Control.new()
@@ -155,3 +168,46 @@ func test_fresh_tabs_clear_when_visited() -> void:
 	assert_eq(UIController.fresh_tabs, ["workshop", "vendors"] as Array[String], "zones are not tabs")
 	UIController.navigate_to("workshop")
 	assert_eq(UIController.fresh_tabs, ["vendors"] as Array[String])
+
+# --- pad back and focus recovery ---
+
+func test_back_returns_to_deck_from_a_hub_tab() -> void:
+	UIController.navigate_to("workshop")
+	UIController._unhandled_input(_action("ui_cancel"))
+	assert_eq(UIController.current_screen, "deck")
+
+func test_back_on_deck_stays_on_deck() -> void:
+	UIController.navigate_to("deck")
+	watch_signals(UIController)
+	UIController._unhandled_input(_action("ui_cancel"))
+	assert_eq(UIController.current_screen, "deck")
+	assert_signal_not_emitted(UIController, "screen_changed")
+
+func test_back_is_ignored_mid_dive() -> void:
+	UIController.navigate_to("dive")
+	UIController._unhandled_input(_action("ui_cancel"))
+	assert_eq(UIController.current_screen, "dive")
+
+func test_pad_input_with_nothing_focused_restores_the_screen_default() -> void:
+	UIController.navigate_to("bunk")
+	var screen: FakeScreen = UIController._current_node
+	screen.button.release_focus()
+	assert_null(get_viewport().gui_get_focus_owner())
+	UIController._unhandled_input(_action("ui_down"))
+	assert_true(screen.button.has_focus())
+
+func test_focus_recovery_works_mid_dive_too() -> void:
+	UIController.navigate_to("dive")
+	var screen: FakeScreen = UIController._current_node
+	screen.button.release_focus()
+	UIController._unhandled_input(_action("ui_accept"))
+	assert_true(screen.button.has_focus())
+
+func test_focus_recovery_skips_a_hidden_default() -> void:
+	UIController.navigate_to("bunk")
+	var screen: FakeScreen = UIController._current_node
+	screen.button.release_focus()
+	screen.button.visible = false
+	UIController._unhandled_input(_action("ui_down"))
+	assert_null(get_viewport().gui_get_focus_owner())
+
