@@ -31,6 +31,9 @@ var _job_outcome: Dictionary = {}
 var relay_dive_panel: RelayDivePanel
 var _contacts_presented := 0
 
+func default_focus() -> Control:
+	return session_log.default_focus()
+
 func _ready() -> void:
 	line_system.snapped.connect(_on_line_snapped)
 	line_system.tension_updated.connect(func(v: float) -> void: EventBus.tension_changed.emit(v))

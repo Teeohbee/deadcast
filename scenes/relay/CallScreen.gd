@@ -53,6 +53,13 @@ func _ready() -> void:
 func on_screen_shown() -> void:
 	start(UIController.pending_call)
 
+# The first reply on offer, if the call is waiting on one.
+func default_focus() -> Control:
+	for child in _live_block.get_children():
+		if not child.is_queued_for_deletion():
+			return child as Control
+	return null
+
 func _process(_delta: float) -> void:
 	if _call_started_msec > 0 and _duration_value != null:
 		_duration_value.text = format_duration((Time.get_ticks_msec() - _call_started_msec) / 1000)

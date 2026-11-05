@@ -184,3 +184,12 @@ func test_single_open_zone_opens_on_the_dive_button() -> void:
 	hub._zone_panel._cards["district7"].grab_focus()
 	hub.on_screen_shown()
 	assert_true(hub._dive_button.has_focus())
+
+func test_default_focus_names_the_selected_card_or_dive() -> void:
+	var hub := HUB.instantiate()
+	add_child_autofree(hub)
+	await get_tree().process_frame
+	assert_eq(hub.default_focus(), hub._zone_panel._cards["district7"])
+	GameState.run_count = 0
+	hub._zone_panel.refresh_unlocked()
+	assert_eq(hub.default_focus(), hub._dive_button)

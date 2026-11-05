@@ -155,8 +155,11 @@ func _on_zone_changed(zone_id: String) -> void:
 		(_names[id] as Label).add_theme_color_override(
 			"font_color", DeckStyle.GREEN if selected else DeckStyle.TEXT)
 
+func selected_card() -> Button:
+	return _cards.get(GameState.selected_zone)
+
 func focus_selected() -> void:
-	var btn: Button = _cards.get(GameState.selected_zone)
+	var btn := selected_card()
 	if btn:
 		btn.grab_focus()
 

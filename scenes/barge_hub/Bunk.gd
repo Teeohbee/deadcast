@@ -58,7 +58,10 @@ func _wire_focus_graph() -> void:
 func on_screen_shown() -> void:
 	# Keep the last-viewed mode; refresh its content for any new entries.
 	_refresh_content()
-	page_down_btn.grab_focus()
+	default_focus().grab_focus()
+
+func default_focus() -> Control:
+	return page_down_btn
 
 func _set_mode(mode: Mode) -> void:
 	_mode = mode

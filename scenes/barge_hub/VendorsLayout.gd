@@ -70,10 +70,15 @@ func _build_stock() -> void:
 	_focus_first_buyable()
 
 func _focus_first_buyable() -> void:
+	var target := default_focus()
+	if target != null:
+		target.grab_focus()
+
+func default_focus() -> Control:
 	for child in stock_container.get_children():
-		if child is Button and not (child as Button).disabled:
-			(child as Button).grab_focus()
-			return
+		if child is Button and not (child as Button).disabled and not child.is_queued_for_deletion():
+			return child
+	return null
 
 func _wire_inspect(btn: Button, kind: String, variant: int, item_name: String, description: String = "") -> void:
 	btn.focus_entered.connect(func(): _schematic.show_item(kind, variant, item_name, description))

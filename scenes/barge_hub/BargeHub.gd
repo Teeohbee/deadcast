@@ -36,7 +36,7 @@ func _ready() -> void:
 
 	await get_tree().process_frame
 	_wire_focus_graph()
-	_focus_default()
+	default_focus().grab_focus()
 
 func on_screen_shown() -> void:
 	# FreezerPanel and RigPanel don't listen to EventBus, so refresh them on
@@ -49,14 +49,13 @@ func on_screen_shown() -> void:
 	_zone_panel.refresh_unlocked()
 	_wire_focus_graph()
 	_on_zone_changed(GameState.selected_zone)
-	_focus_default()
+	default_focus().grab_focus()
 
 # With one zone open there is nothing to pick, so land on the dive itself.
-func _focus_default() -> void:
+func default_focus() -> Control:
 	if _zone_panel.open_zone_count() <= 1:
-		_dive_button.grab_focus()
-	else:
-		_zone_panel.focus_selected()
+		return _dive_button
+	return _zone_panel.selected_card()
 
 func _announce_new_unlocks() -> void:
 	var open_now := Unlocks.open_features()

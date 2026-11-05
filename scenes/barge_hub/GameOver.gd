@@ -14,5 +14,8 @@ func _ready() -> void:
 	message_label.text = "vessel recovered\n\naxiom credit recovered the meridian.\nyou made it %d runs." % GameState.run_count
 	return_button.grab_focus()
 
+func default_focus() -> Control:
+	return return_button
+
 func _on_return_pressed() -> void:
 	UIController.navigate_to_title()

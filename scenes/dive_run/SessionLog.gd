@@ -26,6 +26,13 @@ func log_line(text: String, color: Color) -> void:
 	log_text.append_text("[color=#%s]%s[/color]\n" % [color.to_html(false), safe])
 	_scroll_to_bottom()
 
+# The first live choice or continue button, if one is waiting.
+func default_focus() -> Control:
+	for child in live_block.get_children():
+		if child is Button and not child.is_queued_for_deletion():
+			return child
+	return null
+
 func present_choices(labels: Array[String], echoes: Array[String]) -> int:
 	clear_live()
 	for i in labels.size():
