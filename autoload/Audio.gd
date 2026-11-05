@@ -71,6 +71,36 @@ const CUES := {
 		"files": [SCI_FI + "laserRetro_000.ogg", SCI_FI + "laserRetro_001.ogg", SCI_FI + "laserRetro_002.ogg"],
 		"bus": "Events", "volume_db": -8.0, "pitch": 0.8, "pitch_variation": 0.05,
 	},
+	# Winch haul (scenes/dive_run/haul). Snap and creak reuse line_snap, signal_lost and line_strain.
+	"haul_grip": {
+		"files": [INTERFACE + "switch_005.ogg", INTERFACE + "switch_006.ogg", INTERFACE + "switch_007.ogg"],
+		"bus": "Events", "volume_db": -18.0, "pitch": 0.7, "pitch_variation": 0.05,
+	},
+	"haul_tell": {
+		"files": [INTERFACE + "bong_001.ogg"],
+		"bus": "Events", "volume_db": -6.0, "pitch": 1.5, "pitch_variation": 0.0,
+	},
+	"haul_hit": {
+		"files": [IMPACT + "impactMetal_heavy_003.ogg", IMPACT + "impactMetal_heavy_004.ogg"],
+		"bus": "Events", "volume_db": 0.0, "pitch": 0.7, "pitch_variation": 0.05,
+	},
+	"haul_absorbed": {
+		"files": [IMPACT + "impactMetal_heavy_003.ogg", IMPACT + "impactMetal_heavy_004.ogg"],
+		"bus": "Events", "volume_db": -18.0, "pitch": 0.5, "pitch_variation": 0.05,
+	},
+	"haul_red": {
+		"files": [SCI_FI + "forceField_003.ogg", SCI_FI + "forceField_004.ogg"],
+		"bus": "Events", "volume_db": -6.0, "pitch": 1.4, "pitch_variation": 0.03,
+	},
+	"haul_land": {
+		"files": [SCI_FI + "doorOpen_000.ogg", SCI_FI + "doorOpen_001.ogg", SCI_FI + "doorOpen_002.ogg"],
+		"bus": "Events", "volume_db": -4.0, "pitch": 1.1, "pitch_variation": 0.05,
+	},
+	"haul_decode": {
+		"files": [INTERFACE + "select_005.ogg", INTERFACE + "select_006.ogg",
+			INTERFACE + "select_007.ogg", INTERFACE + "select_008.ogg"],
+		"bus": "Events", "volume_db": -12.0, "pitch": 1.4, "pitch_variation": 0.05,
+	},
 	"haul_banked": {
 		"files": [RPG + "handleCoins.ogg", RPG + "handleCoins2.ogg"],
 		"bus": "Events", "volume_db": -4.0, "pitch": 1.0, "pitch_variation": 0.05,
