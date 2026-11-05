@@ -115,3 +115,35 @@ func test_the_view_draws_every_phase_without_errors() -> void:
 	await wait_process_frames(1)
 	assert_true(run.result_card.visible)
 	assert_eq(HaulView.ROWS, 18)
+
+func test_opening_prompt_leads_with_the_pad_button() -> void:
+	InputGlyphs.mode = InputGlyphs.Mode.PAD
+	var run := _run("tutorial")
+	assert_eq(run.view.status, "hold to haul")
+	assert_same(run.view.status_icon, InputGlyphs.icon("haul"))
+	assert_eq(run.view.hint, "hold to haul the payload up")
+	assert_same(run.view.hint_icon, InputGlyphs.icon("haul"))
+
+func test_opening_prompt_uses_the_keycap_on_a_keyboard() -> void:
+	InputGlyphs.mode = InputGlyphs.Mode.KEY
+	var run := _run("tutorial")
+	assert_eq(run.view.status, "[SPACE] hold to haul")
+	assert_null(run.view.status_icon)
+
+func test_later_status_lines_drop_the_icon() -> void:
+	InputGlyphs.mode = InputGlyphs.Mode.PAD
+	var run := _run()
+	run.tick(DT, false)
+	run.tick(DT, true)
+	assert_eq(run.view.status, "hauling")
+	assert_null(run.view.status_icon)
+
+func test_result_card_continue_prompt_is_device_aware() -> void:
+	InputGlyphs.mode = InputGlyphs.Mode.PAD
+	var run := _run()
+	_play(run)
+	var rows := run.result_card.find_children("*", "DeckPromptRow", true, false)
+	assert_eq(rows.size(), 1)
+	var row: DeckPromptRow = rows[0]
+	assert_eq(row.label.text, "continue")
+	assert_true(row.shows_icon())
