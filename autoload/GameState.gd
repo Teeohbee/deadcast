@@ -312,8 +312,30 @@ func pay_debt_early(amount: int) -> bool:
 	save()
 	return true
 
+# Axiom Credit's supplier notices bite: pressure 2 marks prices up, and from
+# pressure 3 Okeke only sells under the counter, at a premium.
+const PRESSURE_PRICE_MULTIPLIER: float = 1.2
+const UNDER_THE_COUNTER_MULTIPLIER: float = 1.5
+
 func get_vendor_price_multiplier() -> float:
-	return 1.2 if pressure_level >= 2 else 1.0
+	if pressure_level >= 3:
+		return UNDER_THE_COUNTER_MULTIPLIER
+	if pressure_level >= 2:
+		return PRESSURE_PRICE_MULTIPLIER
+	return 1.0
+
+func vendor_price(base_price: int) -> int:
+	return roundi(base_price * get_vendor_price_multiplier())
+
+func is_under_the_counter() -> bool:
+	return pressure_level >= 3
+
+# " (+20%)" while prices are marked up, "" otherwise.
+func vendor_markup_suffix() -> String:
+	var multiplier := get_vendor_price_multiplier()
+	if multiplier <= 1.0:
+		return ""
+	return " (+%d%%)" % roundi((multiplier - 1.0) * 100.0)
 
 # --- Persistence ---
 

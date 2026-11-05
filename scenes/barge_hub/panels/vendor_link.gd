@@ -20,8 +20,15 @@ func link_info() -> Dictionary:
 	return {
 		"dealer": "okeke",
 		"trust": "████░",
-		"channel": "open / warm",
+		"channel": _channel(),
 	}
+
+func _channel() -> String:
+	if GameState.is_under_the_counter():
+		return "under the counter"
+	if GameState.get_vendor_price_multiplier() > 1.0:
+		return "open / prices up"
+	return "open / warm"
 
 func refresh() -> void:
 	var info := link_info()

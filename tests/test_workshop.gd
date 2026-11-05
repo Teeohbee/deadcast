@@ -46,3 +46,12 @@ func test_schematic_updates_when_screen_shown() -> void:
 	GameState.current_rod = load("res://resources/rods/ghost_line.tres")
 	screen.on_screen_shown()
 	assert_string_contains(screen._schematic._caption.text, "ghost")
+
+func test_repair_costs_more_under_pressure() -> void:
+	var saved_pressure := GameState.pressure_level
+	GameState.current_rod = load("res://resources/rods/scrap_rod.tres")
+	GameState.rod_damaged = true
+	GameState.pressure_level = 2
+	var screen := _make()
+	assert_string_contains(screen.repair_button.text, "600cr")
+	GameState.pressure_level = saved_pressure
