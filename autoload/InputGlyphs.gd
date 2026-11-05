@@ -42,6 +42,13 @@ const MOUSE_WAKE_PX := 8.0
 
 var mode: int = Mode.KEY
 
+func _ready() -> void:
+	# Lands in godot.log on the Steam Machine: which pads the game can see.
+	for device in Input.get_connected_joypads():
+		print("joypad %d: %s" % [device, Input.get_joy_name(device)])
+	Input.joy_connection_changed.connect(func(device: int, connected: bool) -> void:
+		print("joypad %d %s: %s" % [device, "connected" if connected else "disconnected", Input.get_joy_name(device)]))
+
 func _input(event: InputEvent) -> void:
 	update_mode_from_event(event)
 
