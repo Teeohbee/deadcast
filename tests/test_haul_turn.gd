@@ -130,3 +130,21 @@ func test_a_haul_in_a_real_dive_pays_its_result_and_clears_the_screen() -> void:
 	assert_eq(dive._run_credits - credits_before, int(careful.credit_value * 0.8))
 	assert_almost_eq(dive.line_system.tension - tension_before, float(careful.tension_delta + 5), 0.01)
 	assert_false(is_instance_valid(run), "haul screen cleared")
+
+# --- District 7 data ---
+
+func test_district7_hauls_and_its_haul_contacts_are_ready_to_haul() -> void:
+	var zone: ZoneData = load("res://resources/zones/district7.tres")
+	assert_true(zone.haul_enabled)
+	var hauled := 0
+	for c in zone.catches:
+		if not c.haul_enabled:
+			continue
+		hauled += 1
+		assert_ne(c.behavior, CatchData.BehaviorType.AGGRESSIVE, c.catch_name + " fights, it doesn't haul")
+		assert_gt(c.fragments.size(), 0, c.catch_name + " has fragments")
+		assert_true(c.options.any(func(o: CatchOption) -> bool: return HaulTurn.hauls(zone, c, o)), c.catch_name + " has a hauled option")
+		for seed in range(1, 21):
+			var block := HaulFragments.new(c.fragments, HaulView.ROWS, HaulSim.Lcg.new(seed))
+			assert_eq(block.fragments.size(), c.fragments.size(), "%s fragments fit (seed %d)" % [c.catch_name, seed])
+	assert_gt(hauled, 5, "most District 7 contacts haul")

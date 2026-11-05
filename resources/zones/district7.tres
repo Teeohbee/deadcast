@@ -28,3 +28,4 @@ tag_tier = 0
 density = "64%"
 threat = "LOW"
 catches = [ExtResource("2_catch"), ExtResource("3_catch"), ExtResource("4_catch"), ExtResource("5_catch"), ExtResource("6_catch"), ExtResource("7_catch"), ExtResource("8_catch"), ExtResource("9_catch"), ExtResource("10_catch"), ExtResource("11_catch"), ExtResource("12_catch"), ExtResource("13_catch"), ExtResource("14_catch"), ExtResource("15_catch"), ExtResource("16_catch")]
+haul_enabled = true
