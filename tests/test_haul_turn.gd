@@ -1,5 +1,5 @@
 extends GutTest
-# The haul turn (District 7 spike): pick an option on the card, then haul it up. The
+# The haul turn: pick an option on the card, then haul it up. The
 # haul result scales what the option pays and costs, replacing the resist/fail dice.
 
 const PENSION := "res://resources/catches/district7/encrypted_pension_record.tres"
@@ -20,36 +20,29 @@ func _catch(haul := true) -> CatchData:
 	c.haul_erratic = false
 	return c
 
-func _zone(haul := true) -> ZoneData:
-	var z := ZoneData.new()
-	z.haul_enabled = haul
-	return z
-
 func _result(outcome: String, hits := 0) -> Dictionary:
 	return { "outcome": outcome, "hits": hits }
 
 # --- which options haul ---
 
-func test_options_that_pay_haul_in_a_haul_zone() -> void:
-	assert_true(HaulTurn.hauls(_zone(), _catch(), _option(200, 5)))
-	assert_true(HaulTurn.hauls(_zone(), _catch(), _option(150, 0)), "a free skim still has to come up")
+func test_options_that_pay_haul() -> void:
+	assert_true(HaulTurn.hauls(_catch(), _option(200, 5)))
+	assert_true(HaulTurn.hauls(_catch(), _option(150, 0)), "a free skim still has to come up")
 
-func test_release_cut_line_and_other_zones_skip_the_haul() -> void:
-	assert_false(HaulTurn.hauls(_zone(), _catch(), _option(0, 0)), "release")
-	assert_false(HaulTurn.hauls(_zone(), _catch(), _option(0, 0, true)), "cut line")
-	assert_false(HaulTurn.hauls(_zone(false), _catch(), _option(200, 5)), "zone without hauls")
-	assert_false(HaulTurn.hauls(_zone(), _catch(false), _option(200, 5)), "contact without haul data")
-	assert_false(HaulTurn.hauls(null, _catch(), _option(200, 5)))
+func test_release_and_cut_line_skip_the_haul() -> void:
+	assert_false(HaulTurn.hauls(_catch(), _option(0, 0)), "release")
+	assert_false(HaulTurn.hauls(_catch(), _option(0, 0, true)), "cut line")
+	assert_false(HaulTurn.hauls(_catch(false), _option(200, 5)), "contact without haul data")
 
 func test_ghosts_haul_only_when_you_tear_something_out() -> void:
 	var ghost := _catch()
 	ghost.catch_type = CatchData.CatchType.ENTITY
-	assert_true(HaulTurn.hauls(_zone(), ghost, _option(800, 15)), "harvest hauls")
-	assert_false(HaulTurn.hauls(_zone(), ghost, _option(350, 0)), "talking is free")
-	assert_false(HaulTurn.hauls(_zone(), ghost, _option(0, 0)), "leaving is free")
+	assert_true(HaulTurn.hauls(ghost, _option(800, 15)), "harvest hauls")
+	assert_false(HaulTurn.hauls(ghost, _option(350, 0)), "talking is free")
+	assert_false(HaulTurn.hauls(ghost, _option(0, 0)), "leaving is free")
 
 func test_cargo_hauls_even_without_strain() -> void:
-	assert_true(HaulTurn.hauls(_zone(), _catch(), _option(150, 0)))
+	assert_true(HaulTurn.hauls(_catch(), _option(150, 0)))
 
 # --- payout table ---
 
@@ -148,14 +141,13 @@ func test_a_haul_in_a_real_dive_pays_its_result_and_clears_the_screen() -> void:
 
 func _assert_zone_ready_to_haul(zone_path: String, min_hauled: int) -> void:
 	var zone: ZoneData = load(zone_path)
-	assert_true(zone.haul_enabled, zone_path + " hauls")
 	var hauled := 0
 	for c in zone.catches:
 		if not c.haul_enabled:
 			continue
 		hauled += 1
 		assert_ne(c.behavior, CatchData.BehaviorType.AGGRESSIVE, c.catch_name + " fights, it doesn't haul")
-		assert_true(c.options.any(func(o: CatchOption) -> bool: return HaulTurn.hauls(zone, c, o)), c.catch_name + " has a hauled option")
+		assert_true(c.options.any(func(o: CatchOption) -> bool: return HaulTurn.hauls(c, o)), c.catch_name + " has a hauled option")
 		assert_between(c.fragments.size(), 6, 8, c.catch_name + " fragment pool")
 		for w in c.fragments_always:
 			assert_has(c.fragments, w, c.catch_name + " always-included fragment is in the pool")
@@ -165,17 +157,14 @@ func _assert_zone_ready_to_haul(zone_path: String, min_hauled: int) -> void:
 			assert_eq(block.fragments.size(), drawn.size(), "%s fragments fit (seed %d)" % [c.catch_name, seed])
 	assert_gt(hauled, min_hauled, zone_path + " hauled contacts")
 
-func test_district7_hauls_and_its_haul_contacts_are_ready_to_haul() -> void:
-	_assert_zone_ready_to_haul("res://resources/zones/district7.tres", 10)
+const ZONES := ["res://resources/zones/district7.tres", "res://resources/zones/exchange.tres", "res://resources/zones/axiom.tres"]
 
-func test_exchange_hauls_and_its_haul_contacts_are_ready_to_haul() -> void:
-	_assert_zone_ready_to_haul("res://resources/zones/exchange.tres", 10)
-
-func test_axiom_hauls_and_its_haul_contacts_are_ready_to_haul() -> void:
-	_assert_zone_ready_to_haul("res://resources/zones/axiom.tres", 9)
+func test_every_zones_haul_contacts_are_ready_to_haul() -> void:
+	for path in ZONES:
+		_assert_zone_ready_to_haul(path, 9)
 
 func test_cargo_that_pays_and_strains_always_hauls() -> void:
-	for path in ["res://resources/zones/district7.tres", "res://resources/zones/exchange.tres", "res://resources/zones/axiom.tres"]:
+	for path in ZONES:
 		var zone: ZoneData = load(path)
 		for c in zone.catches:
 			var tears := c.options.any(func(o: CatchOption) -> bool: return o.credit_value > 0 and o.tension_delta > 0)
@@ -198,11 +187,6 @@ func _beaten_options(zone_path: String) -> Array[String]:
 					out.append("%s: %s loses to %s" % [c.catch_name, a.label, b.label])
 	return out
 
-func test_no_district7_option_is_strictly_beaten() -> void:
-	assert_eq(_beaten_options("res://resources/zones/district7.tres"), [])
-
-func test_no_exchange_option_is_strictly_beaten() -> void:
-	assert_eq(_beaten_options("res://resources/zones/exchange.tres"), [])
-
-func test_no_axiom_option_is_strictly_beaten() -> void:
-	assert_eq(_beaten_options("res://resources/zones/axiom.tres"), [])
+func test_no_option_is_strictly_beaten_in_any_zone() -> void:
+	for path in ZONES:
+		assert_eq(_beaten_options(path), [], path)
