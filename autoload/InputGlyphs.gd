@@ -43,6 +43,10 @@ const MOUSE_WAKE_PX := 8.0
 var mode: int = Mode.KEY
 
 func _ready() -> void:
+	# A pad already connected at launch (the Steam Machine) shows pad prompts
+	# from the first screen, not only after the first press.
+	if not Input.get_connected_joypads().is_empty():
+		set_mode(Mode.PAD)
 	# Lands in godot.log on the Steam Machine: which pads the game can see.
 	for device in Input.get_connected_joypads():
 		print("joypad %d: %s" % [device, Input.get_joy_name(device)])
@@ -65,6 +69,9 @@ func update_mode_from_event(event: InputEvent) -> void:
 		# A deliberate move, not a bumped desk, brings the cursor back.
 		if (event as InputEventMouseMotion).relative.length() >= MOUSE_WAKE_PX:
 			new_mode = Mode.KEY
+	set_mode(new_mode)
+
+func set_mode(new_mode: int) -> void:
 	if new_mode != mode:
 		mode = new_mode
 		Input.mouse_mode = mouse_mode_for(mode)
