@@ -17,7 +17,7 @@ func _run(overrides := {}) -> OverrideRun:
 		"tension": 30.0, "max_tension": 80.0, "rig": { "shock": 1 } }
 	config.merge(overrides, true)
 	var run := OverrideRun.new()
-	run.setup(config, "Axiom Security Drone", "class: [MECH]", OverrideArt.DRONE,
+	run.setup(config, "Axiom Security Drone", "class: [MECH]", "drone",
 		{ "break": "-1 anchor", "shock": "-2 anchor" }, HaulSim.Lcg.new(5))
 	add_child_autofree(run)
 	run.set_process(false)

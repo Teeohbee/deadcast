@@ -18,7 +18,7 @@ enum Layer { SHALLOWS, MID, DEEP }
 # Attacks it charges, cycled: "NAME|code", code in u/d/l/r (never a prefix of a rig code).
 @export var override_attacks: PackedStringArray = []
 @export var override_twist: String = "" # "", "ghost" (reversed/hidden), "requote"
-@export var override_art: String = ""   # OverrideArt portrait: drone, ghost, engine, core, swarm, payload, building
+@export var override_art: String = ""   # HostileWireframe model: drone, ghost, engine, core, swarm, payload, building
 @export var override_hit: int = 12      # T a landed attack puts on the line
 @export var entity_id: String = ""
 @export var returning_variants: Array[CatchData] = []

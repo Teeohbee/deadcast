@@ -32,7 +32,7 @@ func test_every_hostile_has_valid_attacks_in_the_order_they_are_entered() -> voi
 func test_every_hostile_has_a_twist_art_and_a_fight_length_anchor() -> void:
 	for c in _hostiles():
 		assert_true(c.override_twist in ["", OverrideSim.TWIST_GHOST, OverrideSim.TWIST_REQUOTE], c.catch_name)
-		assert_true(OverrideArt.BY_NAME.has(c.override_art), c.catch_name)
+		assert_true(c.override_art in HostileWireframe.MODELS, c.catch_name)
 		assert_between(c.anchor_strength, 10, 30, c.catch_name)
 
 func test_sig_garbles_and_hardens_the_attacks() -> void:
@@ -68,3 +68,8 @@ func test_the_guided_flag_is_saved() -> void:
 	assert_true(GameState.override_guided_done)
 	GameState._load_from(STATE_BACKUP)
 	DirAccess.remove_absolute(STATE_BACKUP)
+
+func test_wireframe_model_falls_back_by_catch_type() -> void:
+	assert_eq(HostileWireframe.model_for("core", CatchData.CatchType.ENTITY), "core")
+	assert_eq(HostileWireframe.model_for("", CatchData.CatchType.ENTITY), "ghost")
+	assert_eq(HostileWireframe.model_for("nope", CatchData.CatchType.MECH), "drone")

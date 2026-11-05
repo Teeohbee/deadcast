@@ -494,7 +494,7 @@ func _run_override(catch_data: CatchData) -> void:
 	run.setup(OverrideTurn.config(catch_data, line_system.tension, line_system.max_tension, line_system.corruption,
 			_override_rig(catch_data), not GameState.override_guided_done),
 		catch_data.catch_name, OverrideTurn.class_line(catch_data),
-		OverrideArt.portrait(catch_data.override_art, catch_data.catch_type), _override_fx(catch_data))
+		HostileWireframe.model_for(catch_data.override_art, catch_data.catch_type), _override_fx(catch_data))
 	run.tension_changed.connect(func(t: float) -> void: line_system.sync_tension(int(t)))
 	relay_dive_panel.hold()
 	$Margin/MainRow/LogPanel.add_child(run)
