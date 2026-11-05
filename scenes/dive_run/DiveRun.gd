@@ -192,10 +192,8 @@ func _present_catch(catch_data: CatchData) -> void:
 		var labels: Array[String] = []
 		var echoes: Array[String] = []
 		for i in augmented.options.size():
-			if hauled:
-				labels.append(DiveFormat.haul_option_label(i + 1, augmented.options[i]))
-			else:
-				labels.append(DiveFormat.option_label(i + 1, augmented.options[i], augmented.behavior))
+			labels.append(DiveFormat.option_label(i + 1, augmented.options[i], augmented.behavior,
+				HaulTurn.hauls(_zone_data, augmented, augmented.options[i])))
 			echoes.append(augmented.options[i].label.to_lower().replace(" ", "_"))
 
 		var lure_action := _contact_lure_action()

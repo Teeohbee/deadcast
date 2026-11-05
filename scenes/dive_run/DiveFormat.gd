@@ -62,11 +62,12 @@ static func contact_card(catch_data: CatchData, hauled: bool = false) -> String:
 		card += "\n│  hauls: %s" % HaulTurn.feel(catch_data)
 	return card
 
-## Options on a hauled contact: tells, not sums. The haul decides the odds, so the card
-## shows rough stakes - line strain and value - and exact numbers go to the log.
-static func haul_option_label(num: int, option: CatchOption) -> String:
+## Tells, not sums: rough stakes in words (line strain, value), and UNCERTAIN when the
+## option still rolls dice. Hauled options never do - the haul decides them. Exact
+## numbers go to the session log once the option resolves.
+static func option_label(num: int, option: CatchOption, behavior: CatchData.BehaviorType, hauled: bool = false) -> String:
 	if option.cuts_line:
-		return option_label(num, option, CatchData.BehaviorType.PASSIVE)
+		return "[%d] abort_connection  ·  vents half the strain  ·  costs signal  ·  no reward" % num
 	var parts: Array[String] = ["[%d] %s" % [num, option.label.to_lower().replace(" ", "_")]]
 	var strain := HaulTurn.strain_word(option.tension_delta)
 	if strain != "":
@@ -74,37 +75,17 @@ static func haul_option_label(num: int, option: CatchOption) -> String:
 	var value := HaulTurn.value_word(option.credit_value)
 	if value != "":
 		parts.append("value: " + value)
+	if not hauled and _rolls_dice(option, behavior):
+		parts.append("UNCERTAIN")
 	return "  ·  ".join(parts)
 
-static func option_label(num: int, option: CatchOption, behavior: CatchData.BehaviorType) -> String:
-	if option.cuts_line:
-		return "[%d] abort_connection  ·  vents half tension  ·  SIG -10%%  ·  no reward" % num
-
-	var t_str: String
-	if option.tension_delta > 0:
-		t_str = "+%dT" % option.tension_delta
-	elif option.tension_delta < 0:
-		t_str = "%dT" % option.tension_delta
-	else:
-		t_str = "+0T"
-
-	var parts: Array[String] = [t_str]
-	if option.credit_value > 0:
-		parts.append("+%dcr" % option.credit_value)
-
+static func _rolls_dice(option: CatchOption, behavior: CatchData.BehaviorType) -> bool:
 	match behavior:
 		CatchData.BehaviorType.RESISTANT:
-			if option.resist_chance > 0.0:
-				parts.append("%d%% resist (+%dT)" % [
-					int(option.resist_chance * 100), option.resist_tension_penalty])
+			return option.resist_chance > 0.0
 		CatchData.BehaviorType.NEGOTIATING:
-			if option.fail_chance > 0.0:
-				var fail_cr := "+%dcr" % option.fail_credit_value if option.fail_credit_value > 0 else "+0cr"
-				parts.append("%d%% fail (+%dT, %s)" % [
-					int(option.fail_chance * 100), option.fail_tension_delta, fail_cr])
-
-	var label := option.label.to_lower().replace(" ", "_")
-	return "[%d] %s  ·  %s" % [num, label, "  ·  ".join(parts)]
+			return option.fail_chance > 0.0
+	return false
 
 static func command_label(num: int, cmd: Dictionary) -> String:
 	match cmd.id:
