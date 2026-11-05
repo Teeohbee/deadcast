@@ -1,21 +1,19 @@
 # scenes/barge_hub/Workshop.gd
 extends Control
 
-const DEPTH_UPGRADE_BASE_COST: int = 2000
-const DEPTH_UPGRADE_AMOUNT: int = 50
 # The vendor's rod order doubles as the wireframe variant index.
 const VENDORS := preload("res://scenes/barge_hub/VendorsLayout.gd")
 
 @onready var rod_label: Label = $MarginContainer/HBox/LeftColumn/ControlPanel/VBox/RodLabel
 @onready var repair_button: Button = $MarginContainer/HBox/LeftColumn/ControlPanel/VBox/RepairButton
-@onready var depth_upgrade_button: Button = $MarginContainer/HBox/LeftColumn/ControlPanel/VBox/DepthUpgradeButton
+@onready var winch_button: Button = $MarginContainer/HBox/LeftColumn/ControlPanel/VBox/WinchButton
 @onready var message_label: Label = $MarginContainer/HBox/LeftColumn/ControlPanel/VBox/MessageLabel
 @onready var _tension_gauge: TensionGauge = $MarginContainer/HBox/RightColumn/TensionGauge
 @onready var _maintenance_log: MaintenanceLogPanel = $MarginContainer/HBox/RightColumn/MaintenanceLogPanel
 @onready var _schematic: ItemSchematic = $MarginContainer/HBox/LeftColumn/ItemSchematic
 
 func _ready() -> void:
-	for btn in [repair_button, depth_upgrade_button]:
+	for btn in [repair_button, winch_button]:
 		btn.focus_mode = Control.FOCUS_ALL
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		DeckStyle.apply_action_button(btn)
@@ -24,13 +22,13 @@ func _ready() -> void:
 	DeckStyle.apply_label(message_label, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
 
 	repair_button.pressed.connect(_on_repair_pressed)
-	depth_upgrade_button.pressed.connect(_on_depth_upgrade_pressed)
+	winch_button.pressed.connect(_on_winch_pressed)
 
 	_refresh()
 
 	await get_tree().process_frame
 	repair_button.grab_focus()
-	DeckNav.chain_vertical([repair_button, depth_upgrade_button])
+	DeckNav.chain_vertical([repair_button, winch_button])
 
 func on_screen_shown() -> void:
 	_refresh()
@@ -51,20 +49,19 @@ func _refresh() -> void:
 	var status = " [damaged]" if GameState.rod_damaged else " [ok]"
 	_schematic.show_item("rod", _rod_variant(rod), rod.rod_name + status, rod.description)
 	rod_label.text = "%s%s  ·  cap: %dT  ·  depth: %dft" % [
-		rod.rod_name.to_lower(), status, rod.tension_cap, rod.max_depth]
+		rod.rod_name.to_lower(), status, rod.tension_cap, GameState.line_rating_ft()]
 
 	var repair_cost := GameState.vendor_price(rod.repair_cost)
 	repair_button.text = "repair %s (%dcr%s)" % [rod.rod_name.to_lower(), repair_cost, GameState.vendor_markup_suffix()]
 	repair_button.disabled = not GameState.rod_damaged or GameState.credits < repair_cost
 
-	var maxed := GameState.depth_upgrade_count >= GameState.MAX_DEPTH_UPGRADES
-	var cost := _depth_upgrade_cost()
-	if maxed:
-		depth_upgrade_button.text = "depth upgrade — max reached"
-		depth_upgrade_button.disabled = true
+	if GameState.deep_winch_fitted:
+		winch_button.text = "deep winch fitted · reaches the deep layer (%dft)" % GameState.DEEP_WINCH_RATING_FT
+		winch_button.disabled = true
 	else:
-		depth_upgrade_button.text = "depth upgrade +%dft (%dcr)" % [DEPTH_UPGRADE_AMOUNT, cost]
-		depth_upgrade_button.disabled = GameState.credits < cost
+		winch_button.text = "fit deep winch · reach the deep layer (%dcr%s)" % [
+			_winch_cost(), GameState.vendor_markup_suffix()]
+		winch_button.disabled = GameState.credits < _winch_cost()
 
 func _on_repair_pressed() -> void:
 	var rod = GameState.current_rod
@@ -80,25 +77,18 @@ func _on_repair_pressed() -> void:
 		message_label.text = "not enough credits."
 		message_label.add_theme_color_override("font_color", DeckStyle.RED)
 
-func _on_depth_upgrade_pressed() -> void:
-	var cost := _depth_upgrade_cost()
-	if GameState.spend_credits(cost):
-		GameState.max_depth_bonus += DEPTH_UPGRADE_AMOUNT
-		GameState.depth_upgrade_count += 1
-		var rod = GameState.current_rod.duplicate()
-		rod.max_depth += DEPTH_UPGRADE_AMOUNT
-		GameState.current_rod = rod
-		GameState.save()
-		message_label.text = "depth increased to %dft." % rod.max_depth
+func _on_winch_pressed() -> void:
+	if GameState.fit_deep_winch(_winch_cost()):
+		message_label.text = "deep winch fitted. the deep layer is in reach."
 		message_label.add_theme_color_override("font_color", DeckStyle.GREEN)
-		_maintenance_log.append_line("DEPTH MOD: Extension coil fitted. New ceiling: %dft." % rod.max_depth)
+		_maintenance_log.append_line("WINCH: Deep cable spooled. New ceiling: %dft." % GameState.line_rating_ft())
 		_tension_gauge.refresh()
 		_refresh()
 	else:
 		message_label.text = "not enough credits."
 		message_label.add_theme_color_override("font_color", DeckStyle.RED)
 
-# Upgraded rods are duplicates with no resource_path, so match on name.
+# Match on name, so any duplicated rod still finds its wireframe.
 func _rod_variant(rod: RodData) -> int:
 	for index in VENDORS.ROD_PATHS.size():
 		var stock_rod: RodData = load(VENDORS.ROD_PATHS[index])
@@ -106,5 +96,5 @@ func _rod_variant(rod: RodData) -> int:
 			return index
 	return 0
 
-func _depth_upgrade_cost() -> int:
-	return GameState.vendor_price(DEPTH_UPGRADE_BASE_COST * (1 << GameState.depth_upgrade_count))
+func _winch_cost() -> int:
+	return GameState.vendor_price(GameState.DEEP_WINCH_COST)

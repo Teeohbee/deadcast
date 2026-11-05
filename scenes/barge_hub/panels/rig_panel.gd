@@ -80,7 +80,7 @@ func refresh() -> void:
 	var rod: RodData = GameState.current_rod
 	if rod:
 		_rod_name.text = rod.rod_name
-		_rod_meta.text = "DEPTH RATING: %dft  ·  TENSION CAP: %d" % [rod.max_depth, rod.tension_cap]
+		_rod_meta.text = "DEPTH RATING: %dft  ·  TENSION CAP: %d" % [GameState.line_rating_ft(), rod.tension_cap]
 	_rod_damage.visible = GameState.rod_damaged
 
 	var lure: LureData = GameState.current_lure

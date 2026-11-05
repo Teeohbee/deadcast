@@ -6,7 +6,6 @@
 script = ExtResource("1_rod")
 rod_name = "Ghost Line"
 tension_cap = 120
-max_depth = 250
 repair_cost = 1200
 purchase_cost = 6000
 description = "Reduces Corruption gain. Expensive."

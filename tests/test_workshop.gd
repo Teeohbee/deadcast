@@ -29,7 +29,6 @@ func test_schematic_shows_equipped_rod() -> void:
 
 func test_schematic_finds_upgraded_rod_by_name() -> void:
 	var upgraded: RodData = load("res://resources/rods/ghost_line.tres").duplicate()
-	upgraded.max_depth += 50
 	GameState.current_rod = upgraded
 	var screen := _make()
 	assert_eq(screen._schematic._view.variant, 2)
@@ -55,3 +54,18 @@ func test_repair_costs_more_under_pressure() -> void:
 	var screen := _make()
 	assert_string_contains(screen.repair_button.text, "600cr")
 	GameState.pressure_level = saved_pressure
+
+func test_the_deep_winch_is_one_purchase_that_reaches_the_deep_layer() -> void:
+	var saved_winch := GameState.deep_winch_fitted
+	var saved_credits := GameState.credits
+	GameState.deep_winch_fitted = false
+	GameState.credits = 3000
+	var screen := _make()
+	assert_string_contains(screen.winch_button.text, "2500cr")
+	screen.winch_button.pressed.emit()
+	assert_true(GameState.deep_winch_fitted)
+	assert_eq(GameState.credits, 500)
+	assert_eq(GameState.line_rating_ft(), 150)
+	assert_true(screen.winch_button.disabled, "nothing more to buy")
+	GameState.deep_winch_fitted = saved_winch
+	GameState.credits = saved_credits

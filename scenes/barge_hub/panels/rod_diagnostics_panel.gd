@@ -31,7 +31,7 @@ func _ready() -> void:
 	_tension_val   = _add_row("TENSION")
 	_depth_val     = _add_row("DEPTH")
 	_integrity_val = _add_row("INTEGRITY")
-	_upgrades_val  = _add_row("UPGRADES")
+	_upgrades_val  = _add_row("WINCH")
 
 	refresh()
 
@@ -64,7 +64,7 @@ func refresh() -> void:
 
 	_rod_name_val.text = rod.rod_name.to_lower()
 	_tension_val.text  = "%dT cap" % rod.tension_cap
-	_depth_val.text    = "%dft ceiling" % rod.max_depth
+	_depth_val.text    = "%dft ceiling" % GameState.line_rating_ft()
 
 	if GameState.rod_damaged:
 		_integrity_val.text = "[DAMAGED]"
@@ -73,9 +73,4 @@ func refresh() -> void:
 		_integrity_val.text = "[OK]"
 		_integrity_val.add_theme_color_override("font_color", DeckStyle.GREEN)
 
-	var maxed := GameState.depth_upgrade_count >= GameState.MAX_DEPTH_UPGRADES
-	_upgrades_val.text = "%d / %d%s" % [
-		GameState.depth_upgrade_count,
-		GameState.MAX_DEPTH_UPGRADES,
-		" (max)" if maxed else "",
-	]
+	_upgrades_val.text = "deep winch" if GameState.deep_winch_fitted else "standard"

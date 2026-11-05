@@ -87,21 +87,45 @@ func test_save_and_load_selected_zone() -> void:
 	GameState._load_from("user://save_test.cfg")
 	assert_eq(GameState.selected_zone, "axiom")
 
-func test_save_and_load_depth_upgrade_count() -> void:
-	GameState.depth_upgrade_count = 2
+func test_save_and_load_deep_winch() -> void:
+	GameState.deep_winch_fitted = true
 	GameState._save_to("user://save_test.cfg")
-	GameState.depth_upgrade_count = 0
+	GameState.deep_winch_fitted = false
 	GameState._load_from("user://save_test.cfg")
-	assert_eq(GameState.depth_upgrade_count, 2)
+	assert_true(GameState.deep_winch_fitted)
 
-func test_depth_upgrade_count_inferred_from_old_save() -> void:
-	GameState.max_depth_bonus = 100
-	GameState.depth_upgrade_count = 0
+func _legacy_save(rod_path: String, gear: Dictionary) -> void:
 	var cfg = ConfigFile.new()
-	cfg.set_value("gear", "max_depth_bonus", 100)
+	cfg.set_value("player", "credits", 1000)
+	cfg.set_value("gear", "current_rod_path", rod_path)
+	for key in gear:
+		cfg.set_value("gear", key, gear[key])
 	cfg.save("user://save_test.cfg")
+
+func test_old_scrap_rod_save_without_upgrades_has_no_winch() -> void:
+	_legacy_save("res://resources/rods/scrap_rod.tres", {})
 	GameState._load_from("user://save_test.cfg")
-	assert_eq(GameState.depth_upgrade_count, 2, "100 bonus / 50 per upgrade = 2")
+	assert_false(GameState.deep_winch_fitted)
+	assert_eq(GameState.credits, 1000)
+
+func test_old_first_depth_upgrade_becomes_the_winch() -> void:
+	_legacy_save("res://resources/rods/scrap_rod.tres", {"depth_upgrade_count": 1})
+	GameState._load_from("user://save_test.cfg")
+	assert_true(GameState.deep_winch_fitted)
+	assert_eq(GameState.credits, 1000, "the first upgrade did something, so no refund")
+
+func test_old_useless_depth_upgrades_are_refunded() -> void:
+	_legacy_save("res://resources/rods/scrap_rod.tres", {"depth_upgrade_count": 3})
+	GameState._load_from("user://save_test.cfg")
+	assert_true(GameState.deep_winch_fitted)
+	assert_eq(GameState.credits, 1000 + 4000 + 8000)
+	assert_true(GameState.relay_entries_for("okeke").size() > 0, "okeke explains the refund")
+
+func test_old_deep_rated_rod_gets_the_winch_and_every_upgrade_back() -> void:
+	_legacy_save("res://resources/rods/monocarbon_rig.tres", {"max_depth_bonus": 100})
+	GameState._load_from("user://save_test.cfg")
+	assert_true(GameState.deep_winch_fitted)
+	assert_eq(GameState.credits, 1000 + 2000 + 4000, "inferred two upgrades from the bonus")
 
 func test_freezer_base_and_multiplier_round_trip() -> void:
 	GameState.freezer_base = 1234

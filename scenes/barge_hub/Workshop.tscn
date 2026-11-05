@@ -51,8 +51,8 @@ text = ""
 [node name="RepairButton" type="Button" parent="MarginContainer/HBox/LeftColumn/ControlPanel/VBox"]
 text = "Repair Rod"
 
-[node name="DepthUpgradeButton" type="Button" parent="MarginContainer/HBox/LeftColumn/ControlPanel/VBox"]
-text = "Depth Upgrade"
+[node name="WinchButton" type="Button" parent="MarginContainer/HBox/LeftColumn/ControlPanel/VBox"]
+text = "Deep Winch"
 
 [node name="MessageLabel" type="Label" parent="MarginContainer/HBox/LeftColumn/ControlPanel/VBox"]
 text = ""

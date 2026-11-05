@@ -17,19 +17,20 @@ func _metre_depths(text: String) -> Array:
 	regex.compile("\\d[\\d,]*m\\b")
 	return regex.search_all(text).map(func(m: RegExMatch) -> String: return m.get_string())
 
-func test_header_shows_the_rods_line_rating_in_feet() -> void:
-	GameState.current_rod = load("res://resources/rods/scrap_rod.tres")
+func test_header_shows_the_winch_line_rating_in_feet() -> void:
+	GameState.deep_winch_fitted = false
 	var header := HEADER.instantiate()
 	add_child_autofree(header)
 	assert_eq(header.depth_label.text, "LINE RATING: 100ft")
 
-func test_header_follows_a_rod_change_on_the_next_screen() -> void:
-	GameState.current_rod = load("res://resources/rods/scrap_rod.tres")
+func test_header_follows_the_winch_on_the_next_screen() -> void:
+	GameState.deep_winch_fitted = false
 	var header := HEADER.instantiate()
 	add_child_autofree(header)
-	GameState.current_rod = load("res://resources/rods/monocarbon_rig.tres")
+	GameState.deep_winch_fitted = true
 	UIController.screen_changed.emit("deck")
-	assert_eq(header.depth_label.text, "LINE RATING: 180ft")
+	assert_eq(header.depth_label.text, "LINE RATING: 150ft")
+	GameState.deep_winch_fitted = false
 
 func test_hydrophone_lines_have_no_metre_depths() -> void:
 	for tier in HydrophonePanel.LINES:
