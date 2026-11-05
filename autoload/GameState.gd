@@ -77,6 +77,17 @@ var job_declined_run: int = -1
 # Onboarding: first-dive hints in the session log until one run is finished.
 var first_dive_hints_done: bool = false
 
+# The relay (planning/deadcast/2026-11-05-relay-plan.md): which RelayScripts
+# have played, and the thread of everything said, newest last. Each entry is
+# {"contact", "run", "kind", "script_id", "lines": [{"who", "text"}], "read"}.
+const RELAY_ENTRY_CALL := "call"
+const RELAY_ENTRY_MISSED_CALL := "missed_call"
+const RELAY_ENTRY_TEXT := "text"
+const RELAY_ENTRY_DIVE_LINE := "dive_line"
+const MAX_RELAY_ENTRIES_PER_CONTACT: int = 40
+var relay_played_script_ids: Array[String] = []
+var relay_entries: Array[Dictionary] = []
+
 func _ready() -> void:
 	call_deferred("_load_defaults")
 
@@ -292,6 +303,8 @@ func _save_to(path: String) -> void:
 	cfg.set_value("narrative", "run_logs", run_logs)
 	cfg.set_value("jobs", "active_job_id", active_job_id)
 	cfg.set_value("jobs", "declined_run", job_declined_run)
+	cfg.set_value("relay", "played_script_ids", relay_played_script_ids)
+	cfg.set_value("relay", "entries", relay_entries)
 	cfg.save(path)
 
 func _load_from(path: String) -> void:
@@ -347,6 +360,14 @@ func _load_from(path: String) -> void:
 	run_logs = cfg.get_value("narrative", "run_logs", [] as Array[Dictionary])
 	active_job_id = cfg.get_value("jobs", "active_job_id", "")
 	job_declined_run = cfg.get_value("jobs", "declined_run", -1)
+	if cfg.has_section("relay"):
+		relay_played_script_ids.assign(cfg.get_value("relay", "played_script_ids", []))
+		relay_entries.assign(cfg.get_value("relay", "entries", []))
+	else:
+		# Saves from before the relay: skip what the player has already moved
+		# past, so Continue doesn't replay the first call. No transcripts.
+		relay_played_script_ids = RelayDirector.script_ids_already_past(run_count)
+		relay_entries = []
 	EventBus.credits_changed.emit(credits)
 
 func new_game() -> void:
@@ -377,6 +398,8 @@ func new_game() -> void:
 	run_logs = []
 	active_job_id = ""
 	job_declined_run = -1
+	relay_played_script_ids = []
+	relay_entries = []
 	current_rod = load("res://resources/rods/scrap_rod.tres")
 	current_lure = load("res://resources/lures/basic_hook.tres")
 	save()
@@ -407,6 +430,41 @@ func resolve_job(job: JobData, met: bool) -> int:
 		debt = 0
 		victory = true
 	return relief
+
+# --- The relay ---
+
+func relay_has_played(script_id: String) -> bool:
+	return script_id in relay_played_script_ids
+
+func relay_mark_played(script_id: String) -> void:
+	if not relay_has_played(script_id):
+		relay_played_script_ids.append(script_id)
+
+# Files a finished call, text or dive line in the contact's thread, unread.
+# Only the newest MAX_RELAY_ENTRIES_PER_CONTACT entries per contact are kept.
+func relay_file_entry(contact: String, kind: String, script_id: String, lines: Array) -> void:
+	relay_entries.append({
+		"contact": contact,
+		"run": run_count,
+		"kind": kind,
+		"script_id": script_id,
+		"lines": lines.duplicate(true),
+		"read": false,
+	})
+	var contact_entries := relay_entries_for(contact)
+	var excess := contact_entries.size() - MAX_RELAY_ENTRIES_PER_CONTACT
+	for index in excess:
+		relay_entries.erase(contact_entries[index])
+
+func relay_entries_for(contact: String) -> Array[Dictionary]:
+	return relay_entries.filter(func(entry: Dictionary) -> bool: return entry.contact == contact)
+
+func relay_unread_count(contact: String) -> int:
+	return relay_entries_for(contact).filter(func(entry: Dictionary) -> bool: return not entry.read).size()
+
+func relay_mark_read(contact: String) -> void:
+	for entry in relay_entries_for(contact):
+		entry.read = true
 
 func has_new_marta_beat() -> bool:
 	return _beat_index(run_count) > _beat_index(marta_last_seen_run)
