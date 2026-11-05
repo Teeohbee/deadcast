@@ -28,8 +28,14 @@ func test_unknown_moment_has_no_hint_lines() -> void:
 
 func test_contact_hint_explains_tension_and_sig() -> void:
 	var text := "\n".join(DiveHints.lines_for(DiveHints.CONTACT, false))
-	assert_string_contains(text, "T ")
+	assert_string_contains(text, "strain")
 	assert_string_contains(text, "SIG")
+
+func test_cast_hint_explains_the_haul_and_never_claims_nothing_is_timed() -> void:
+	var text := "\n".join(DiveHints.lines_for(DiveHints.CAST, false)).to_lower()
+	assert_string_contains(text, "haul")
+	assert_string_contains(text, "amber")
+	assert_false(text.contains("nothing down here is timed"))
 
 func test_checkpoint_hint_explains_descend_and_surface() -> void:
 	var text := "\n".join(DiveHints.lines_for(DiveHints.CHECKPOINT, false)).to_lower()

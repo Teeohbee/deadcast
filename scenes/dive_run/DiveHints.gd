@@ -12,10 +12,10 @@ const MOMENTS: Array[String] = [CAST, CONTACT, CHECKPOINT]
 const _LINES := {
 	CAST: [
 		"first dive. each contact on the line gets a card and a set of options.",
-		"nothing down here is timed - read the card, then choose.",
+		"the card isn't timed - read it, then choose. then haul it up: hold, and let go on amber.",
 	],
 	CONTACT: [
-		"T is line tension. options add to it; past your rod's cap the line snaps.",
+		"strain is line tension. options add to it; past your rod's cap the line snaps.",
 		"SIG is signal integrity. corrupted catches wear it down; low SIG means stranger draws.",
 	],
 	CHECKPOINT: [
