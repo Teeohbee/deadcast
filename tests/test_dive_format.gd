@@ -149,3 +149,43 @@ func test_fake_signal_loss_only_at_ninety_corruption_and_above() -> void:
 func test_fake_signal_loss_is_a_chance_not_a_certainty() -> void:
 	assert_true(DiveFormat.should_fake_signal_loss(95.0, DiveFormat.FAKE_SIGNAL_LOSS_CHANCE - 0.01))
 	assert_false(DiveFormat.should_fake_signal_loss(95.0, DiveFormat.FAKE_SIGNAL_LOSS_CHANCE + 0.01))
+
+# --- haul cards: tells, not sums (District 7 spike) ---
+
+func _haul_catch() -> CatchData:
+	var c := CatchData.new()
+	c.catch_name = "Encrypted Pension Record"
+	c.flavor_text = "locked accounts."
+	c.haul_enabled = true
+	c.haul_slip = 0.6
+	return c
+
+func test_haul_card_says_how_the_contact_hauls() -> void:
+	var card := DiveFormat.contact_card(_haul_catch(), true)
+	assert_string_contains(card, "hauls: steady · slips slowly")
+
+func test_card_without_a_haul_has_no_haul_line() -> void:
+	assert_false(DiveFormat.contact_card(_haul_catch()).contains("hauls:"))
+
+func test_haul_option_shows_strain_and_worth_not_numbers() -> void:
+	var label := DiveFormat.haul_option_label(1, _make_option("Brute Force", 15, 550))
+	assert_eq(label, "[1] brute_force  ·  strain: heavy  ·  worth: good")
+
+func test_haul_option_without_strain_leaves_it_off() -> void:
+	assert_eq(DiveFormat.haul_option_label(2, _make_option("Skim", 0, 150)), "[2] skim  ·  worth: some")
+
+func test_haul_contact_release_is_just_its_name() -> void:
+	assert_eq(DiveFormat.haul_option_label(3, _make_option("Release", 0, 0)), "[3] release")
+
+func test_haul_contact_cut_line_keeps_its_warning() -> void:
+	var o := _make_option("Cut Line", 0, 0)
+	o.cuts_line = true
+	assert_string_starts_with(DiveFormat.haul_option_label(3, o), "[3] abort_connection")
+
+func test_recovered_fragments_mask_lost_and_unread() -> void:
+	var text := DiveFormat.recovered_fragments([
+		{ "word": "LOT 17", "state": HaulFragments.READ },
+		{ "word": "COLD", "state": HaulFragments.LOST },
+		{ "word": "4C", "state": HaulFragments.UNREAD },
+	])
+	assert_eq(text, "LOT 17  ·  ▓▓▓▓  ·  ░░")

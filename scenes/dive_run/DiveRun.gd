@@ -181,9 +181,10 @@ func _present_catch(catch_data: CatchData) -> void:
 		if using_shock:
 			augmented = _inject_shock_option(current)
 
+		var hauled := _zone_data != null and _zone_data.haul_enabled and augmented.haul_enabled
 		if need_card:
 			await _maybe_fake_signal_loss()
-			session_log.log_line(DiveFormat.contact_card(augmented), DeckStyle.TEXT)
+			session_log.log_line(DiveFormat.contact_card(augmented, hauled), DeckStyle.TEXT)
 			EventBus.contact_presented.emit(catch_data)
 			_log_hint(DiveHints.CONTACT)
 			need_card = false
@@ -191,7 +192,10 @@ func _present_catch(catch_data: CatchData) -> void:
 		var labels: Array[String] = []
 		var echoes: Array[String] = []
 		for i in augmented.options.size():
-			labels.append(DiveFormat.option_label(i + 1, augmented.options[i], augmented.behavior))
+			if hauled:
+				labels.append(DiveFormat.haul_option_label(i + 1, augmented.options[i]))
+			else:
+				labels.append(DiveFormat.option_label(i + 1, augmented.options[i], augmented.behavior))
 			echoes.append(augmented.options[i].label.to_lower().replace(" ", "_"))
 
 		var lure_action := _contact_lure_action()
