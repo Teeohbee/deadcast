@@ -1,6 +1,10 @@
 # scenes/barge_hub/panels/zone_panel.gd
 extends TerminalPanel
 
+# Pressing a card both selects the zone and confirms it: the deck moves focus
+# on to INITIATE DIVE, so picking a zone is always followed by a clear next step.
+signal zone_confirmed(zone_id: String)
+
 const ZONE_IDS: Array[String] = ["district7", "exchange", "axiom"]
 
 var _cards: Dictionary = {}       # zone_id -> Button
@@ -56,6 +60,8 @@ func refresh_unlocked() -> void:
 			if i < open_cards.size() - 1 else NodePath()
 	_hosts_label.text = "%d LOCAL HOST%s CONNECTED" % [
 		open_cards.size(), "" if open_cards.size() == 1 else "S"]
+	# Nothing to choose between with one host, so don't ask the player to.
+	_nav_hint.visible = open_cards.size() > 1
 	if not Unlocks.is_zone_open(GameState.selected_zone):
 		GameState.select_zone(ZONE_IDS[0])
 
@@ -136,6 +142,10 @@ func _build_card(zone_id: String, zone: ZoneData) -> Button:
 
 func _on_card_pressed(zone_id: String) -> void:
 	GameState.select_zone(zone_id)
+	zone_confirmed.emit(zone_id)
+
+func open_zone_count() -> int:
+	return focus_targets().size()
 
 func _on_zone_changed(zone_id: String) -> void:
 	for id in _cards:
