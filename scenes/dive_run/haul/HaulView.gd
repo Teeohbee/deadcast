@@ -33,7 +33,9 @@ var glyph := "[?]"
 var title := ""
 var status := ""
 var status_color := DeckStyle.TEXT
+var status_icon: Texture2D = null # a pad button drawn before the status
 var hint := ""
+var hint_icon: Texture2D = null
 
 var _font: Font = preload("res://fonts/IBMPlexMono-Regular.otf")
 var _ups: Array[Dictionary] = [] # hex riding up the line while you haul
@@ -112,10 +114,19 @@ func _draw() -> void:
 	if title != "":
 		draw_multiline_string(_font, Vector2(40, 52), title, HORIZONTAL_ALIGNMENT_LEFT, LEFT_COLUMN_W, 16, -1, DeckStyle.DIM)
 	if status != "":
-		draw_multiline_string(_font, Vector2(40, 150), status, HORIZONTAL_ALIGNMENT_LEFT, LEFT_COLUMN_W, 20, -1, status_color)
+		_draw_prompt(150.0, status, status_icon, 20, status_color)
 	if hint != "":
-		draw_multiline_string(_font, Vector2(40, 190), hint, HORIZONTAL_ALIGNMENT_LEFT, LEFT_COLUMN_W, 16, -1, DeckStyle.GREEN)
+		_draw_prompt(190.0, hint, hint_icon, 16, DeckStyle.GREEN)
 	draw_set_transform(Vector2.ZERO)
+
+## Left-column text at a baseline, led by a tinted button icon when there is one.
+func _draw_prompt(baseline: float, text: String, icon: Texture2D, font_size: int, color: Color) -> void:
+	var x := 40.0
+	if icon != null:
+		var px := float(DeckPromptRow.icon_px(font_size))
+		draw_texture_rect(icon, Rect2(x, baseline - px * 0.8, px, px), false, color)
+		x += px + 8.0
+	draw_multiline_string(_font, Vector2(x, baseline), text, HORIZONTAL_ALIGNMENT_LEFT, LEFT_COLUMN_W - (x - 40.0), font_size, -1, color)
 
 func _draw_block(py: float) -> void:
 	if fragments == null:

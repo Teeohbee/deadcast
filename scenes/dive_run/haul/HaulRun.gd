@@ -11,6 +11,7 @@ extends Control
 signal finished(result: Dictionary)
 
 const ACTION := "action_reel"
+const ACTION_GLYPH := "haul"
 const MAX_STEP := 0.05
 const CONTINUE_DELAY := 0.3 # s after the result before a press moves on
 const HUM_FILE := "res://audio/kenney_sci_fi/engineCircular_000.ogg"
@@ -81,9 +82,10 @@ func _ready() -> void:
 	_hum.play()
 
 	view.title = "%s %s" % [_glyph, _title]
-	_say("hold %s to haul" % InputGlyphs.glyph("haul"), DeckStyle.GREEN, 0.0)
+	_say(_prompt("hold to haul"), DeckStyle.GREEN, 0.0, InputGlyphs.icon(ACTION_GLYPH))
 	if sim.hints():
-		view.hint = "hold %s to haul the payload up" % InputGlyphs.glyph("haul")
+		view.hint = _prompt("hold to haul the payload up")
+		view.hint_icon = InputGlyphs.icon(ACTION_GLYPH)
 
 func _process(delta: float) -> void:
 	tick(minf(delta, MAX_STEP), Input.is_action_pressed(ACTION))
@@ -149,9 +151,15 @@ func _handle(events: Array[String]) -> void:
 			"snap", "land":
 				_finish()
 
-func _say(text: String, color: Color, hold: float) -> void:
+# Prompts lead with the button: an icon drawn before the text on a pad, the
+# keycap written into the text on a keyboard.
+func _prompt(caption: String) -> String:
+	return caption if InputGlyphs.icon(ACTION_GLYPH) else "%s %s" % [InputGlyphs.glyph(ACTION_GLYPH), caption]
+
+func _say(text: String, color: Color, hold: float, icon: Texture2D = null) -> void:
 	view.status = text
 	view.status_color = color
+	view.status_icon = icon
 	_banner_until = sim.t + hold
 
 func _hint(key: String, text: String) -> void:
@@ -159,6 +167,7 @@ func _hint(key: String, text: String) -> void:
 		return
 	_hints_done[key] = true
 	view.hint = text
+	view.hint_icon = null
 
 func _update_hum(pressed: bool, dt: float) -> void:
 	var live := sim.phase == HaulSim.LIVE and pressed
@@ -271,9 +280,6 @@ func _show_card() -> void:
 	DeckStyle.apply_label(stats, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 	box.add_child(stats)
 
-	var next := Label.new()
-	next.text = "%s continue" % InputGlyphs.glyph("haul")
-	DeckStyle.apply_label(next, DeckStyle.GREEN, DeckStyle.SIZE_BODY)
-	box.add_child(next)
+	box.add_child(DeckPromptRow.new(ACTION_GLYPH, "continue", DeckStyle.GREEN, DeckStyle.SIZE_BODY))
 
 	result_card.visible = true
