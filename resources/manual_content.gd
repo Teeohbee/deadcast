@@ -8,7 +8,7 @@ const SECTIONS: Array[Dictionary] = [
 	},
 	{
 		"title": "CATCH CLASSIFICATION",
-		"body": "four types:\n  DATA    archived records, encrypted files\n  BIO     organic specimens, tissue samples\n  MECH    machines, drones, automated systems\n  ENTITY  residual presences, signal ghosts\n\nfour behaviours:\n  PASSIVE      standard extraction, no countermeasures\n  RESISTANT    may push back on extraction attempts\n  NEGOTIATING  responsive to structured queries, outcomes vary\n  HOSTILE      active threat, requires terminal overload protocol",
+		"body": "four types:\n  DATA    archived records, encrypted files\n  BIO     organic specimens, tissue samples\n  MECH    machines, drones, automated systems\n  ENTITY  residual presences, signal ghosts\n\nfour behaviours:\n  PASSIVE      standard extraction, no countermeasures\n  RESISTANT    may push back on extraction attempts\n  NEGOTIATING  responsive to structured queries, outcomes vary\n  HOSTILE      active threat, break it with an override combo",
 	},
 	{
 		"title": "EQUIPMENT",

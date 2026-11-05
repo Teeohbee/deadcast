@@ -93,43 +93,6 @@ static func _rolls_dice(option: CatchOption, behavior: CatchData.BehaviorType) -
 			return option.fail_chance > 0.0
 	return false
 
-## Overload fight commands in words, built from the command's own numbers.
-static func command_label(num: int, cmd: Dictionary) -> String:
-	var parts: Array[String] = ["[%d] %s" % [num, cmd.id]]
-	if cmd.id == "DECOY_SLIP":
-		parts.append("slip it, draw something calmer")
-		parts.append("uses a decoy")
-		return "  ·  ".join(parts)
-	if cmd.id == "ISOLATE_FEED":
-		parts.append("emergency disconnect")
-		parts.append("lose the catch, keep the strain")
-		return "  ·  ".join(parts)
-	var cost: int = cmd.get("t_cost", 0)
-	if cost < 0:
-		parts.append("eases strain")
-	elif cost > 0:
-		parts.append("strain: " + HaulTurn.strain_word(cost))
-	var hit: int = cmd.get("anchor_hit", 0)
-	if hit < 0:
-		parts.append("breaks %d" % -hit)
-	parts.append(odds_word(cmd.get("success_rate", 1.0)))
-	if cmd.id == "OVERLOAD_CORE":
-		parts.append("uses a shock lure")
-	return "  ·  ".join(parts)
-
-static func odds_word(success_rate: float) -> String:
-	if success_rate >= 1.0:
-		return "SURE"
-	if success_rate > 0.5:
-		return "RISKY"
-	return "COIN FLIP"
-
-static func overload_status(anchor_current: int, anchor_strength: int, threat: float, turn: int) -> String:
-	var filled := "◆".repeat(anchor_current)
-	var empty := "◇".repeat(maxi(0, anchor_strength - anchor_current))
-	return "│  anchor %s%s  %d/%d  ·  threat ×%.2f  ·  turn %d" % [
-		filled, empty, anchor_current, anchor_strength, threat, turn]
-
 static func narrative_entry(catch_name: String, text: String) -> String:
 	var indented := "│  " + "\n│  ".join(text.split("\n"))
 	return "── LOG_ENTRY: %s\n%s" % [catch_name, indented]
