@@ -6,6 +6,6 @@
 script = ExtResource("1_opt")
 label = "Force It Open"
 tension_delta = 20
-credit_value = 500
+credit_value = 1200
 cuts_line = false
 flavor_text = "smash the seals. the biosamples don't care about gentle."

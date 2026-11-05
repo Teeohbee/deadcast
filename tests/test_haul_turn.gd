@@ -166,3 +166,20 @@ func test_district7_hauls_and_its_haul_contacts_are_ready_to_haul() -> void:
 			var block := HaulFragments.new(drawn, HaulView.ROWS, HaulSim.Lcg.new(seed))
 			assert_eq(block.fragments.size(), drawn.size(), "%s fragments fit (seed %d)" % [c.catch_name, seed])
 	assert_gt(hauled, 10, "cargo and ghosts with something to tear out")
+
+## Without dice, an option that costs more strain and pays less than another on the same
+## card is never worth picking.
+func _beaten_options(zone_path: String) -> Array[String]:
+	var zone: ZoneData = load(zone_path)
+	var out: Array[String] = []
+	for c in zone.catches:
+		var paying := c.options.filter(func(o: CatchOption) -> bool: return o.credit_value > 0)
+		for a in paying:
+			for b in paying:
+				if a != b and b.tension_delta <= a.tension_delta and b.credit_value >= a.credit_value \
+						and (b.tension_delta != a.tension_delta or b.credit_value != a.credit_value):
+					out.append("%s: %s loses to %s" % [c.catch_name, a.label, b.label])
+	return out
+
+func test_no_district7_option_is_strictly_beaten() -> void:
+	assert_eq(_beaten_options("res://resources/zones/district7.tres"), [])
