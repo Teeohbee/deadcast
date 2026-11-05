@@ -48,8 +48,9 @@ func _refresh() -> void:
 
 	var status = " [damaged]" if GameState.rod_damaged else " [ok]"
 	_schematic.show_item("rod", _rod_variant(rod), rod.rod_name + status, rod.description)
-	rod_label.text = "%s%s  ·  cap: %dT  ·  depth: %dft" % [
-		rod.rod_name.to_lower(), status, rod.tension_cap, GameState.line_rating_ft()]
+	rod_label.text = "%s%s  ·  cap: %dT%s  ·  depth: %dft" % [
+		rod.rod_name.to_lower(), status, rod.tension_cap,
+		("  ·  " + rod.trait_label().to_lower()) if rod.trait_label() != "" else "", GameState.line_rating_ft()]
 
 	var repair_cost := GameState.vendor_price(rod.repair_cost)
 	repair_button.text = "repair %s (%dcr%s)" % [rod.rod_name.to_lower(), repair_cost, GameState.vendor_markup_suffix()]

@@ -70,20 +70,20 @@ func _stock_text(s: Node) -> String:
 func test_prices_are_base_without_pressure() -> void:
 	var s := _make()
 	await get_tree().process_frame
-	assert_string_contains(_stock_text(s), "3000cr")
+	assert_string_contains(_stock_text(s), "2500cr")
 
 func test_pressure_two_marks_prices_up_a_fifth() -> void:
 	GameState.pressure_level = 2
 	var s := _make()
 	await get_tree().process_frame
-	assert_string_contains(_stock_text(s), "3600cr (+20%)")
+	assert_string_contains(_stock_text(s), "3000cr (+20%)")
 
 func test_pressure_three_sells_under_the_counter() -> void:
 	GameState.pressure_level = 3
 	var s := _make()
 	await get_tree().process_frame
 	var text := _stock_text(s)
-	assert_string_contains(text, "4500cr (+50%)")
+	assert_string_contains(text, "3750cr (+50%)")
 	assert_string_contains(text, "under the counter")
 
 func test_buying_charges_the_marked_up_price() -> void:
@@ -98,3 +98,10 @@ func test_buying_charges_the_marked_up_price() -> void:
 			break
 	assert_eq(GameState.credits, 10000 - 480)
 	GameState.lure_inventory["shock_lure"] = lure_count
+
+func test_rods_show_their_trait() -> void:
+	var s := _make()
+	await get_tree().process_frame
+	var text := _stock_text(s)
+	assert_string_contains(text, "monocarbon rig — 100T cap · BRAKE")
+	assert_string_contains(text, "ghost line — 110T cap · QUIET")

@@ -30,6 +30,7 @@ var _job_outcome: Dictionary = {}
 # Marta on the line, under the hydrophone on the rail.
 var relay_dive_panel: RelayDivePanel
 var _contacts_presented := 0
+var _brake_used := false
 
 func default_focus() -> Control:
 	return session_log.default_focus()
@@ -203,7 +204,7 @@ func _present_catch(catch_data: CatchData) -> void:
 		var hauled := augmented.haul_enabled
 		if need_card:
 			await _maybe_fake_signal_loss()
-			session_log.log_line(DiveFormat.contact_card(augmented, hauled), DeckStyle.TEXT)
+			session_log.log_line(DiveFormat.contact_card(augmented, hauled, _sig(augmented)), DeckStyle.TEXT)
 			EventBus.contact_presented.emit(catch_data)
 			_contacts_presented += 1
 			relay_dive_panel.on_moment(RelayDiveLines.MOMENT_CONTACT, {
@@ -287,10 +288,10 @@ func _present_catch(catch_data: CatchData) -> void:
 			_:
 				_apply_and_record(option, augmented)
 				_record_slot(augmented, echo, "",
-					option.credit_value, option.tension_delta, augmented.corruption_gain,
+					option.credit_value, option.tension_delta, _sig(augmented),
 					option.sets_entity_flag)
 				session_log.log_line(
-					DiveFormat.result_line(option.credit_value, option.tension_delta, augmented.corruption_gain),
+					DiveFormat.result_line(option.credit_value, option.tension_delta, _sig(augmented)),
 					DeckStyle.TEXT)
 				await _beat()
 				if _snapped:
@@ -352,11 +353,16 @@ func _resolve_haul(option: CatchOption, catch_data: CatchData, echo: String) -> 
 	add_child(run)
 	var result: Dictionary = await run.finished
 	run.queue_free()
+	var brake := HaulTurn.apply_brake(result, _brake_ready())
+	if brake.braked:
+		_brake_used = true
+		result = brake.result
+		session_log.log_line(">>> brake caught the line - haul lands messy", DeckStyle.AMBER)
 	relay_dive_panel.release()
 	relay_dive_panel.on_moment(RelayDiveLines.MOMENT_HAUL, {"outcome": result.outcome})
 
 	var pay := HaulTurn.payout(option, result)
-	line_system.add_corruption(catch_data.corruption_gain)
+	line_system.add_corruption(_sig(catch_data))
 	_run_credits += pay.credits
 	if catch_data.catch_type == CatchData.CatchType.BIO:
 		_bio_credits += pay.credits
@@ -365,13 +371,13 @@ func _resolve_haul(option: CatchOption, catch_data: CatchData, echo: String) -> 
 	var label := "haul %s" % outcome
 	if outcome == "messy":
 		label += " (%d hit%s)" % [result.hits, "" if result.hits == 1 else "s"]
-	_record_slot(catch_data, echo, label, pay.credits, pay.tension, catch_data.corruption_gain,
+	_record_slot(catch_data, echo, label, pay.credits, pay.tension, _sig(catch_data),
 		option.sets_entity_flag)
 	var color: Color = {"perfect": DeckStyle.SKY, "clean": DeckStyle.GREEN, "messy": DeckStyle.AMBER}.get(outcome, DeckStyle.RED)
 	session_log.log_line(">>> %s" % label, color)
 	if int(result.get("total", 0)) > 0:
 		session_log.log_line("│  recovered: %s" % DiveFormat.recovered_fragments(result.fragments), DeckStyle.TEXT)
-	session_log.log_line(DiveFormat.result_line(pay.credits, pay.tension, catch_data.corruption_gain), DeckStyle.TEXT)
+	session_log.log_line(DiveFormat.result_line(pay.credits, pay.tension, _sig(catch_data)), DeckStyle.TEXT)
 	line_system.apply_tension(pay.tension)
 	if _snapped:
 		return
@@ -383,18 +389,18 @@ func _resolve_haul(option: CatchOption, catch_data: CatchData, echo: String) -> 
 func _resolve_resistant(option: CatchOption, catch_data: CatchData, echo: String) -> void:
 	if option.resist_chance > 0.0 and randf() < option.resist_chance:
 		line_system.apply_tension(option.resist_tension_penalty)
-		line_system.add_corruption(catch_data.corruption_gain)
+		line_system.add_corruption(_sig(catch_data))
 		_record_slot(catch_data, echo, "resisted",
-			0, option.resist_tension_penalty, catch_data.corruption_gain, option.sets_entity_flag)
+			0, option.resist_tension_penalty, _sig(catch_data), option.sets_entity_flag)
 		session_log.log_line(">>> [!!! COUNTERMEASURE TRIGGERED !!!]", DeckStyle.AMBER)
 		session_log.log_line(">>> resisted  ·  +%dT  ·  no reward" % option.resist_tension_penalty,
 			DeckStyle.RED)
 	else:
 		_apply_and_record(option, catch_data)
 		_record_slot(catch_data, echo, "",
-			option.credit_value, option.tension_delta, catch_data.corruption_gain, option.sets_entity_flag)
+			option.credit_value, option.tension_delta, _sig(catch_data), option.sets_entity_flag)
 		session_log.log_line(
-			DiveFormat.result_line(option.credit_value, option.tension_delta, catch_data.corruption_gain),
+			DiveFormat.result_line(option.credit_value, option.tension_delta, _sig(catch_data)),
 			DeckStyle.TEXT)
 	await _beat()
 	if _snapped:
@@ -408,21 +414,21 @@ func _resolve_negotiating(option: CatchOption, catch_data: CatchData, echo: Stri
 		if catch_data.catch_type == CatchData.CatchType.BIO:
 			_bio_credits += option.fail_credit_value
 		EventBus.haul_changed.emit(_run_credits)
-		line_system.add_corruption(catch_data.corruption_gain)
+		line_system.add_corruption(_sig(catch_data))
 		_record_slot(catch_data, echo, "negotiation failed",
-			option.fail_credit_value, option.fail_tension_delta, catch_data.corruption_gain,
+			option.fail_credit_value, option.fail_tension_delta, _sig(catch_data),
 			option.sets_entity_flag)
 		session_log.log_line(">>> [!!! COUNTERMEASURE TRIGGERED !!!]", DeckStyle.AMBER)
 		session_log.log_line(
 			">>> negotiation failed  ·  " + DiveFormat.result_line(
-				option.fail_credit_value, option.fail_tension_delta, catch_data.corruption_gain).trim_prefix(">>> "),
+				option.fail_credit_value, option.fail_tension_delta, _sig(catch_data)).trim_prefix(">>> "),
 			DeckStyle.RED)
 	else:
 		_apply_and_record(option, catch_data)
 		_record_slot(catch_data, echo, "",
-			option.credit_value, option.tension_delta, catch_data.corruption_gain, option.sets_entity_flag)
+			option.credit_value, option.tension_delta, _sig(catch_data), option.sets_entity_flag)
 		session_log.log_line(
-			DiveFormat.result_line(option.credit_value, option.tension_delta, catch_data.corruption_gain),
+			DiveFormat.result_line(option.credit_value, option.tension_delta, _sig(catch_data)),
 			DeckStyle.TEXT)
 	await _beat()
 	if _snapped:
@@ -435,7 +441,7 @@ func _run_overload(catch_data: CatchData) -> void:
 		catch_data.anchor_strength, line_system.corruption, shock_ready)
 	var reward: CatchOption = catch_data.options[0]
 
-	session_log.log_line(DiveFormat.contact_card(catch_data), DeckStyle.RED)
+	session_log.log_line(DiveFormat.contact_card(catch_data, false, _sig(catch_data)), DeckStyle.RED)
 	EventBus.contact_presented.emit(catch_data)
 	_log_hint(DiveHints.CONTACT)
 	session_log.log_line("│  value: %s" % HaulTurn.value_word(reward.credit_value), DeckStyle.TEXT)
@@ -494,11 +500,11 @@ func _run_overload(catch_data: CatchData) -> void:
 			if catch_data.catch_type == CatchData.CatchType.BIO:
 				_bio_credits += reward.credit_value
 			EventBus.haul_changed.emit(_run_credits)
-			line_system.add_corruption(catch_data.corruption_gain)
-			_record_slot(catch_data, last_echo, "", reward.credit_value, 0, catch_data.corruption_gain, false)
+			line_system.add_corruption(_sig(catch_data))
+			_record_slot(catch_data, last_echo, "", reward.credit_value, 0, _sig(catch_data), false)
 			session_log.log_line(">>> %s captured" % catch_data.catch_name, DeckStyle.TEXT)
 			session_log.log_line(
-				DiveFormat.result_line(reward.credit_value, 0, catch_data.corruption_gain),
+				DiveFormat.result_line(reward.credit_value, 0, _sig(catch_data)),
 				DeckStyle.TEXT)
 			await _beat()
 			_advance_slot()
@@ -521,7 +527,7 @@ func _inject_shock_option(catch_data: CatchData) -> CatchData:
 
 func _apply_and_record(option: CatchOption, catch_data: CatchData) -> void:
 	line_system.apply_tension(option.tension_delta)
-	line_system.add_corruption(catch_data.corruption_gain)
+	line_system.add_corruption(_sig(catch_data))
 	_run_credits += option.credit_value
 	if catch_data.catch_type == CatchData.CatchType.BIO:
 		_bio_credits += option.credit_value
@@ -553,6 +559,15 @@ func _advance_slot() -> void:
 			DeckStyle.AMBER)
 	_column.advance()
 	_show_next_catch()
+
+# The contact's signal cost on the equipped line (Ghost Line halves it).
+func _sig(catch_data: CatchData) -> int:
+	if GameState.current_rod == null:
+		return catch_data.corruption_gain
+	return GameState.current_rod.scaled_sig(catch_data.corruption_gain)
+
+func _brake_ready() -> bool:
+	return not _brake_used and GameState.current_rod != null and GameState.current_rod.has_brake()
 
 func _shock_ready(catch_data: CatchData) -> bool:
 	return (GameState.current_lure != null and
