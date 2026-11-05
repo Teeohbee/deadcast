@@ -45,13 +45,14 @@ func test_title_shows_the_wordmark_and_tagline() -> void:
 func test_prompt_names_the_pad_button_on_a_pad() -> void:
 	InputGlyphs.mode = InputGlyphs.Mode.PAD
 	var title := _make()
-	assert_string_contains(title.prompt_label.text, "[A]")
+	assert_true(title.prompt_label.shows_icon())
+	assert_same(title.prompt_label.icon_rect.texture, InputGlyphs.icon("accept"))
 
 func test_prompt_names_the_key_on_a_keyboard() -> void:
 	InputGlyphs.mode = InputGlyphs.Mode.KEY
 	var title := _make()
 	title.refresh_prompt()
-	assert_string_contains(title.prompt_label.text, "[ENTER]")
+	assert_eq(title.prompt_label.label.text, "PRESS [ENTER]")
 
 func test_accept_starts_the_push_without_leaving_yet() -> void:
 	var title := _make()

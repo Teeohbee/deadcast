@@ -28,7 +28,7 @@ var shot: SkylineShot
 var overlay: Control
 var wordmark_label: Label
 var tagline_label: Label
-var prompt_label: Label
+var prompt_label: DeckPromptRow
 var terminal_viewport: SubViewport
 var terminal_title: Control
 # Swapped out in tests, which can't hand the scene tree over.
@@ -50,7 +50,7 @@ func _ready() -> void:
 	_fade_title_in()
 
 func refresh_prompt() -> void:
-	prompt_label.text = "PRESS %s" % InputGlyphs.glyph("accept")
+	prompt_label.refresh()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_action_pressed("ui_accept"):
@@ -159,15 +159,14 @@ func _build_overlay() -> void:
 	_add_glow(tagline_label, Color(0, 0, 0))
 	title_column.add_child(tagline_label)
 
-	prompt_label = Label.new()
+	prompt_label = DeckPromptRow.new("accept", "PRESS", DeckStyle.GREEN, DeckStyle.SIZE_BODY + 4, true)
 	prompt_label.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	prompt_label.anchor_left = 0.0
 	prompt_label.anchor_right = 1.0
 	prompt_label.offset_top = -90.0
 	prompt_label.offset_bottom = -60.0
-	prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	DeckStyle.apply_label(prompt_label, DeckStyle.GREEN, DeckStyle.SIZE_BODY + 4)
-	_add_glow(prompt_label, Color(0, 0, 0))
+	prompt_label.alignment = BoxContainer.ALIGNMENT_CENTER
+	_add_glow(prompt_label.label, Color(0, 0, 0))
 	overlay.add_child(prompt_label)
 	var blink := create_tween().set_loops()
 	blink.tween_property(prompt_label, "modulate:a", 0.25, PROMPT_BLINK_SECONDS)

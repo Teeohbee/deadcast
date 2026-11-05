@@ -33,8 +33,8 @@ func test_bumper_hints_use_glyphs() -> void:
 	InputGlyphs.mode = InputGlyphs.Mode.PAD
 	var f := _make()
 	await get_tree().process_frame
-	assert_string_contains(f._next_hint.text, "[R1]")
-	assert_string_contains(f._prev_hint.text, "[L1]")
+	assert_same(f._next_hint.icon_rect.texture, InputGlyphs.icon("next"))
+	assert_same(f._prev_hint.icon_rect.texture, InputGlyphs.icon("prev"))
 
 func test_tabs_use_readable_size() -> void:
 	var f := _make()

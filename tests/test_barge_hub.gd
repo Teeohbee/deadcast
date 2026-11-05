@@ -82,8 +82,8 @@ func test_dive_button_shows_pad_glyph_and_verb() -> void:
 	var hub := HUB.instantiate()
 	add_child_autofree(hub)
 	await get_tree().process_frame
-	assert_string_contains(hub._dive_button.text, "[A]")
-	assert_string_contains(hub._dive_button.text, "INITIATE DIVE")
+	assert_same(hub._dive_button.icon, InputGlyphs.icon("accept"))
+	assert_eq(hub._dive_button.text, "INITIATE DIVE")
 
 func test_dive_button_updates_on_device_change() -> void:
 	InputGlyphs.mode = InputGlyphs.Mode.PAD
