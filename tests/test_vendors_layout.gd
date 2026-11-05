@@ -7,6 +7,9 @@ func before_each() -> void:
 	GameState.credits = 50000
 	GameState.pressure_level = 0
 
+func after_each() -> void:
+	GameState.pressure_level = 0
+
 func _make() -> Node:
 	var s := SCREEN.instantiate()
 	add_child_autofree(s)
@@ -54,3 +57,44 @@ func test_reveal_in_same_frame_as_ready_builds_stock_once() -> void:
 		if child is Label and not child.is_queued_for_deletion() and child.text.begins_with("── rods"):
 			rod_headers += 1
 	assert_eq(rod_headers, 1, "stock should be built exactly once")
+
+# --- axiom pressure (shop economy plan, PR B1) ---
+
+func _stock_text(s: Node) -> String:
+	var text := ""
+	for child in s.stock_container.get_children():
+		if not child.is_queued_for_deletion() and (child is Button or child is Label):
+			text += child.text + "\n"
+	return text
+
+func test_prices_are_base_without_pressure() -> void:
+	var s := _make()
+	await get_tree().process_frame
+	assert_string_contains(_stock_text(s), "3000cr")
+
+func test_pressure_two_marks_prices_up_a_fifth() -> void:
+	GameState.pressure_level = 2
+	var s := _make()
+	await get_tree().process_frame
+	assert_string_contains(_stock_text(s), "3600cr (+20%)")
+
+func test_pressure_three_sells_under_the_counter() -> void:
+	GameState.pressure_level = 3
+	var s := _make()
+	await get_tree().process_frame
+	var text := _stock_text(s)
+	assert_string_contains(text, "4500cr (+50%)")
+	assert_string_contains(text, "under the counter")
+
+func test_buying_charges_the_marked_up_price() -> void:
+	GameState.pressure_level = 2
+	GameState.credits = 10000
+	var lure_count: int = GameState.lure_inventory.get("shock_lure", 0)
+	var s := _make()
+	await get_tree().process_frame
+	for child in s.stock_container.get_children():
+		if child is Button and child.text.begins_with("shock lure"):
+			child.pressed.emit()
+			break
+	assert_eq(GameState.credits, 10000 - 480)
+	GameState.lure_inventory["shock_lure"] = lure_count

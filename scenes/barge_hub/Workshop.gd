@@ -53,8 +53,9 @@ func _refresh() -> void:
 	rod_label.text = "%s%s  ·  cap: %dT  ·  depth: %dft" % [
 		rod.rod_name.to_lower(), status, rod.tension_cap, rod.max_depth]
 
-	repair_button.text = "repair %s (%dcr)" % [rod.rod_name.to_lower(), rod.repair_cost]
-	repair_button.disabled = not GameState.rod_damaged or GameState.credits < rod.repair_cost
+	var repair_cost := GameState.vendor_price(rod.repair_cost)
+	repair_button.text = "repair %s (%dcr%s)" % [rod.rod_name.to_lower(), repair_cost, GameState.vendor_markup_suffix()]
+	repair_button.disabled = not GameState.rod_damaged or GameState.credits < repair_cost
 
 	var maxed := GameState.depth_upgrade_count >= GameState.MAX_DEPTH_UPGRADES
 	var cost := _depth_upgrade_cost()
@@ -67,7 +68,7 @@ func _refresh() -> void:
 
 func _on_repair_pressed() -> void:
 	var rod = GameState.current_rod
-	if GameState.spend_credits(rod.repair_cost):
+	if GameState.spend_credits(GameState.vendor_price(rod.repair_cost)):
 		GameState.rod_damaged = false
 		GameState.save()
 		message_label.text = "%s repaired." % rod.rod_name.to_lower()
@@ -106,4 +107,4 @@ func _rod_variant(rod: RodData) -> int:
 	return 0
 
 func _depth_upgrade_cost() -> int:
-	return DEPTH_UPGRADE_BASE_COST * (1 << GameState.depth_upgrade_count)
+	return GameState.vendor_price(DEPTH_UPGRADE_BASE_COST * (1 << GameState.depth_upgrade_count))

@@ -36,16 +36,19 @@ func _build_stock() -> void:
 		child.queue_free()
 	_schematic.clear()
 
-	_add_dim_label("\"if you need it, i can get it. don't ask where from.\"\n— okeke")
+	if GameState.is_under_the_counter():
+		_add_dim_label("\"axiom's list says i can't sell to you. so this is under the counter, and the counter costs.\"\n— okeke")
+	else:
+		_add_dim_label("\"if you need it, i can get it. don't ask where from.\"\n— okeke")
 
 	_add_stock_header("── rods ─────────────────────────────────────────────────")
 	for path in ROD_PATHS:
 		var rod: RodData = load(path)
-		var price := rod.purchase_cost
+		var price := GameState.vendor_price(rod.purchase_cost)
 		var equipped := GameState.current_rod and GameState.current_rod.rod_name == rod.rod_name
-		var label := "%s%s — %dT cap / %dft — %dcr" % [
+		var label := "%s%s — %dT cap / %dft — %dcr%s" % [
 			"[equipped] " if equipped else "", rod.rod_name.to_lower(),
-			rod.tension_cap, rod.max_depth, price]
+			rod.tension_cap, rod.max_depth, price, _markup(price)]
 		var btn := _make_stock_btn(label, equipped or price == 0 or GameState.credits < price)
 		var rod_ref := rod
 		btn.pressed.connect(func(): _buy_rod(rod_ref, price))
@@ -55,11 +58,11 @@ func _build_stock() -> void:
 	_add_stock_header("── lures ────────────────────────────────────────────────")
 	for path in LURE_PATHS:
 		var lure: LureData = load(path)
-		var price := lure.purchase_cost
+		var price := GameState.vendor_price(lure.purchase_cost)
 		var qty: int = GameState.lure_inventory.get(GameState.get_lure_id(lure), 0)
 		var stock_str := "∞" if qty == GameState.INFINITE_STOCK else "x%d" % qty
 		var btn := _make_stock_btn(
-			"%s — %s in stock — %dcr" % [lure.lure_name.to_lower(), stock_str, price],
+			"%s — %s in stock — %dcr%s" % [lure.lure_name.to_lower(), stock_str, price, _markup(price)],
 			price == 0 or GameState.credits < price)
 		var lure_ref := lure
 		btn.pressed.connect(func(): _buy_lure(lure_ref, price))
@@ -84,13 +87,16 @@ func _wire_inspect(btn: Button, kind: String, variant: int, item_name: String, d
 	btn.focus_entered.connect(func(): _schematic.show_item(kind, variant, item_name, description))
 	btn.mouse_entered.connect(func(): _schematic.show_item(kind, variant, item_name, description))
 
+func _markup(price: int) -> String:
+	return GameState.vendor_markup_suffix() if price > 0 else ""
+
 func _make_stock_btn(text: String, disabled: bool) -> Button:
 	var btn := Button.new()
 	btn.focus_mode = Control.FOCUS_ALL
 	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	btn.text = text
 	btn.disabled = disabled
-	DeckStyle.apply_action_button(btn)
+	DeckStyle.apply_action_button(btn, DeckStyle.AMBER if GameState.get_vendor_price_multiplier() > 1.0 else DeckStyle.GREEN)
 	return btn
 
 func _add_stock_header(text: String) -> void:
