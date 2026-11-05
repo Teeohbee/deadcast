@@ -171,8 +171,11 @@ func test_district7_hauls_and_its_haul_contacts_are_ready_to_haul() -> void:
 func test_exchange_hauls_and_its_haul_contacts_are_ready_to_haul() -> void:
 	_assert_zone_ready_to_haul("res://resources/zones/exchange.tres", 10)
 
+func test_axiom_hauls_and_its_haul_contacts_are_ready_to_haul() -> void:
+	_assert_zone_ready_to_haul("res://resources/zones/axiom.tres", 9)
+
 func test_cargo_that_pays_and_strains_always_hauls() -> void:
-	for path in ["res://resources/zones/district7.tres", "res://resources/zones/exchange.tres"]:
+	for path in ["res://resources/zones/district7.tres", "res://resources/zones/exchange.tres", "res://resources/zones/axiom.tres"]:
 		var zone: ZoneData = load(path)
 		for c in zone.catches:
 			var tears := c.options.any(func(o: CatchOption) -> bool: return o.credit_value > 0 and o.tension_delta > 0)
@@ -200,3 +203,6 @@ func test_no_district7_option_is_strictly_beaten() -> void:
 
 func test_no_exchange_option_is_strictly_beaten() -> void:
 	assert_eq(_beaten_options("res://resources/zones/exchange.tres"), [])
+
+func test_no_axiom_option_is_strictly_beaten() -> void:
+	assert_eq(_beaten_options("res://resources/zones/axiom.tres"), [])
