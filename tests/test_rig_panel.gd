@@ -5,39 +5,31 @@ const PANEL := preload("res://scenes/barge_hub/panels/RigPanel.tscn")
 
 func before_each() -> void:
 	GameState.current_rod = load("res://resources/rods/scrap_rod.tres")
-	GameState.current_lure = load("res://resources/lures/basic_hook.tres")
 	GameState.rod_damaged = false
-	GameState.lure_inventory = {"basic_hook": GameState.INFINITE_STOCK}
+	GameState.lure_inventory = {"splice_kit": 2, "deep_pulse": 1}
+	GameState.loadout = ["splice_kit", ""] as Array[String]
 
 func _make_panel() -> Node:
 	var p := PANEL.instantiate()
 	add_child_autofree(p)
 	return p
 
-func test_owned_lures_skip_zero_stock() -> void:
-	GameState.lure_inventory = {
-		"basic_hook": GameState.INFINITE_STOCK,
-		"shock_lure": 0,
-		"decoy_swarm": 2,
-	}
+func test_two_slot_buttons_show_role_name_and_stock() -> void:
 	var p := _make_panel()
-	assert_eq(p.owned_lure_ids(), ["basic_hook", "decoy_swarm"])
+	assert_eq(p.slot_buttons().size(), 2)
+	assert_string_contains(p.slot_buttons()[0].text, "[SURVIVE] SPLICE KIT x2")
+	assert_string_contains(p.slot_buttons()[1].text, "empty")
 
-func test_cycle_advances_and_wraps() -> void:
-	GameState.lure_inventory = {
-		"basic_hook": GameState.INFINITE_STOCK,
-		"shock_lure": 2,
-	}
+func test_pressing_a_slot_cycles_it() -> void:
 	var p := _make_panel()
-	p.cycle_lure()
-	assert_eq(GameState.get_lure_id(GameState.current_lure), "shock_lure")
-	p.cycle_lure()
-	assert_eq(GameState.get_lure_id(GameState.current_lure), "basic_hook")
+	p.slot_buttons()[1].pressed.emit()
+	assert_eq(GameState.loadout[1], "deep_pulse")
+	assert_string_contains(p.slot_buttons()[1].text, "[SCOUT] DEEP PULSE x1")
 
-func test_cycle_with_single_lure_is_noop() -> void:
+func test_the_slots_are_the_rigs_focus_targets() -> void:
 	var p := _make_panel()
-	p.cycle_lure()
-	assert_eq(GameState.get_lure_id(GameState.current_lure), "basic_hook")
+	assert_eq(p.focus_targets(), p.slot_buttons())
+	assert_eq(p.slot_buttons()[0].focus_mode, Control.FOCUS_ALL)
 
 func test_damaged_rod_shows_tag() -> void:
 	GameState.rod_damaged = true
@@ -48,31 +40,11 @@ func test_undamaged_rod_hides_tag() -> void:
 	var p := _make_panel()
 	assert_false(p._rod_damage.visible)
 
-func test_lure_button_shows_name_and_stock() -> void:
-	var p := _make_panel()
-	assert_string_contains(p._lure_button.text, "BASIC HOOK")
-	assert_string_contains(p._lure_button.text, "∞")
-
 func test_rod_name_and_damage_use_body_tier() -> void:
 	GameState.rod_damaged = true
 	var p := _make_panel()
 	assert_eq(p._rod_name.get_theme_font_size("font_size"), DeckStyle.SIZE_BODY)
 	assert_eq(p._rod_damage.get_theme_font_size("font_size"), DeckStyle.SIZE_BODY)
-
-func test_rig_has_no_focus_targets() -> void:
-	# Rig is a read-only readout now: no Switch button, lure cycles via hotkey.
-	var p := _make_panel()
-	assert_eq(p.focus_targets(), [])
-
-func test_lure_button_is_not_focusable() -> void:
-	var p := _make_panel()
-	assert_eq(p._lure_button.focus_mode, Control.FOCUS_NONE)
-
-func test_cycle_hint_shows_cycle_lure_glyph() -> void:
-	InputGlyphs.mode = InputGlyphs.Mode.PAD
-	var p := _make_panel()
-	assert_same(p._cycle_hint.icon_rect.texture, InputGlyphs.icon("cycle_lure"))
-	assert_eq(p._cycle_hint.label.text, "CYCLE LURE")
 
 func test_depth_rating_uses_feet_like_the_rest_of_the_rig_ui() -> void:
 	var p := _make_panel()

@@ -1,14 +1,11 @@
 # scenes/barge_hub/panels/rig_panel.gd
 extends TerminalPanel
 
-const LURE_ORDER: Array[String] = ["basic_hook", "shock_lure", "decoy_swarm", "deep_pulse", "splice_kit", "ghost_bait"]
-
 var _rod_name: Label
 var _rod_meta: Label
 var _rod_damage: Label
-var _lure_button: Button
+var _slot_buttons: Array[Button] = []
 var _effect_value: Label
-var _cycle_hint: DeckPromptRow
 
 func _ready() -> void:
 	title = "active_rig_module"
@@ -35,21 +32,21 @@ func _build() -> void:
 	DeckStyle.apply_label(_rod_meta, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
 	root.add_child(_rod_meta)
 
-	# Not focusable: lure cycling is a global hotkey (see _input), not a focus
-	# stop. Mouse click still cycles for desktop convenience.
-	_lure_button = Button.new()
-	_lure_button.focus_mode = Control.FOCUS_NONE
-	_lure_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	DeckStyle.apply_action_button(_lure_button, DeckStyle.TEXT)
-	_lure_button.pressed.connect(cycle_lure)
-	root.add_child(_lure_button)
-
-	_cycle_hint = DeckPromptRow.new("cycle_lure", "CYCLE LURE", DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
-	root.add_child(_cycle_hint)
+	# Provision slots: press to cycle through owned lures (and empty). They are
+	# the rig's focus stops, so the pad reaches them from the zone list.
+	for slot in GameState.LOADOUT_SLOTS:
+		var button := Button.new()
+		button.focus_mode = Control.FOCUS_ALL
+		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		DeckStyle.apply_action_button(button, DeckStyle.TEXT)
+		var slot_index := slot
+		button.pressed.connect(func() -> void: cycle_slot(slot_index))
+		root.add_child(button)
+		_slot_buttons.append(button)
 
 	var cells := HBoxContainer.new()
 	cells.add_theme_constant_override("separation", 6)
-	_effect_value = _add_cell(cells, "EFFECT:")
+	_effect_value = _add_cell(cells, "PROVISIONS:")
 	root.add_child(cells)
 
 func _add_cell(parent: Container, caption: String) -> Label:
@@ -83,43 +80,31 @@ func refresh() -> void:
 		_rod_meta.text = "DEPTH RATING: %dft  ·  TENSION CAP: %d" % [GameState.line_rating_ft(), rod.tension_cap]
 	_rod_damage.visible = GameState.rod_damaged
 
-	var lure: LureData = GameState.current_lure
-	if lure:
-		var lure_id := GameState.get_lure_id(lure)
-		var qty: int = GameState.lure_inventory.get(lure_id, 0)
-		var stock := "∞" if qty == GameState.INFINITE_STOCK else "x%d" % qty
-		_lure_button.text = "LURE: %s (%s)" % [lure.lure_name.to_upper(), stock]
-		_effect_value.text = LureData.LureEffect.keys()[lure.effect]
+	var roles: Array[String] = []
+	for slot in _slot_buttons.size():
+		var lure_id: String = GameState.loadout[slot]
+		if lure_id == "":
+			_slot_buttons[slot].text = "SLOT %d: empty" % (slot + 1)
+			continue
+		var lure := GameState.lure_data(lure_id)
+		_slot_buttons[slot].text = "SLOT %d: [%s] %s x%d" % [
+			slot + 1, lure.role_label(), lure.lure_name.to_upper(), GameState.lure_stock(lure_id)]
+		roles.append(lure.role_label())
+	_effect_value.text = " · ".join(roles) if not roles.is_empty() else "none loaded"
 
-func owned_lure_ids() -> Array[String]:
-	var out: Array[String] = []
-	for id in LURE_ORDER:
-		var qty: int = GameState.lure_inventory.get(id, 0)
-		if qty == GameState.INFINITE_STOCK or qty > 0:
-			out.append(id)
-	return out
+func slot_buttons() -> Array[Button]:
+	return _slot_buttons
 
-func cycle_lure() -> void:
-	var owned := owned_lure_ids()
-	if owned.is_empty():
-		return
-	var current_id := GameState.get_lure_id(GameState.current_lure) if GameState.current_lure else ""
-	var next_id: String = owned[(owned.find(current_id) + 1) % owned.size()]
-	if next_id == current_id:
-		return
-	GameState.equip_lure(load("res://resources/lures/%s.tres" % next_id))
-	EventBus.deck_log.emit("RIGS: Lure module swapped to %s." % next_id.to_upper().replace("_", " "))
+func cycle_slot(slot: int) -> void:
+	var before: String = GameState.loadout[slot]
+	GameState.cycle_loadout_slot(slot)
+	var after: String = GameState.loadout[slot]
+	if after != before:
+		EventBus.deck_log.emit("RIGS: Slot %d %s." % [slot + 1,
+			"loaded with " + after.to_upper().replace("_", " ") if after != "" else "emptied"])
 	refresh()
 
-# Lure cycling is a global deck hotkey (X / Tab), not a focusable control. We
-# handle it in _input and consume the event so Tab does not also move UI focus.
-func _input(event: InputEvent) -> void:
-	if not is_visible_in_tree():
-		return
-	if event.is_action_pressed("cycle_lure"):
-		cycle_lure()
-		get_viewport().set_input_as_handled()
-
-# Rig is now a read-only readout - no focus stops (lure cycles via hotkey).
 func focus_targets() -> Array[Control]:
-	return []
+	var targets: Array[Control] = []
+	targets.assign(_slot_buttons)
+	return targets

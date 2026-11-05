@@ -66,15 +66,15 @@ func test_sell_button_descends_to_dive() -> void:
 	assert_eq(sell.get_node(sell.focus_neighbor_bottom), hub._dive_button)
 
 func test_zone_card_reaches_right_column() -> void:
-	# Rig is no longer a focus stop, so the right column is just the freezer's
-	# Sell button - a zone card's right neighbour resolves to it.
+	# The rig's provision slots head the right column, so a zone card's right
+	# neighbour is the first slot.
 	var hub := HUB.instantiate()
 	add_child_autofree(hub)
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var zone := hub.get_node("Margin/VBox/MainGrid/LeftColumn/ZonePanel")
 	var first_card: Button = zone.focus_targets()[0]
-	var right: Button = hub.get_node("Margin/VBox/MainGrid/RightColumn/FreezerPanel").focus_targets()[0]
+	var right: Button = hub._rig_panel.focus_targets()[0]
 	assert_eq(first_card.get_node(first_card.focus_neighbor_right), right)
 
 func test_dive_button_shows_pad_glyph_and_verb() -> void:
@@ -119,7 +119,9 @@ func test_freezer_is_hidden_for_a_new_operator() -> void:
 	assert_false(hub._freezer_panel.visible)
 	var district7: Button = hub._zone_panel._cards["district7"]
 	assert_eq(district7.get_node(district7.focus_neighbor_bottom), hub._dive_button)
-	assert_eq(hub._dive_button.get_node(hub._dive_button.focus_neighbor_top), district7)
+	var last_slot: Control = hub._rig_panel.focus_targets()[-1]
+	assert_eq(hub._dive_button.get_node(hub._dive_button.focus_neighbor_top), last_slot,
+		"with the freezer locked, the rig's last slot sits above the dive button")
 	GameState.freezer_base = saved_freezer_base
 
 func test_freezer_appears_with_its_first_deposit() -> void:

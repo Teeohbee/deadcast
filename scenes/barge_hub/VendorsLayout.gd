@@ -61,8 +61,7 @@ func _build_stock() -> void:
 	for path in LURE_PATHS:
 		var lure: LureData = load(path)
 		var price := GameState.vendor_price(lure.purchase_cost)
-		var qty: int = GameState.lure_inventory.get(GameState.get_lure_id(lure), 0)
-		var stock_str := "∞" if qty == GameState.INFINITE_STOCK else "x%d" % qty
+		var stock_str := "x%d" % GameState.lure_stock(GameState.get_lure_id(lure))
 		var btn := _make_stock_btn(
 			"%s — %s in stock — %dcr%s" % [lure.lure_name.to_lower(), stock_str, price, _markup(price)],
 			price == 0 or GameState.credits < price)
