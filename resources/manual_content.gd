@@ -20,7 +20,7 @@ const SECTIONS: Array[Dictionary] = [
 	},
 	{
 		"title": "DECRYPT BOX",
-		"body": "load credits into the decrypt queue.\nafter a set number of runs, decryption completes.\n\nresults vary.",
+		"body": "load one 1,000cr block at a time.\nafter three runs, decryption completes.\n\nresults vary. most blocks come back about even.",
 	},
 	{
 		"title": "DEBT",

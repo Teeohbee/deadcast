@@ -46,10 +46,12 @@ var decrypt_last_outcome: String = ""
 var decrypt_last_payout: int = 0
 const DECRYPT_THRESHOLD: int = 3
 var DECRYPT_OUTCOMES: Array = [
-	{"id": "corruption", "label": "[CORRUPTION_DETECTED]", "multiplier": 0.0,  "weight": 0.20},
-	{"id": "partial",    "label": "[PARTIAL_DECRYPT]",     "multiplier": 1.5,  "weight": 0.35},
-	{"id": "clean",      "label": "[DECRYPT_COMPLETE]",    "multiplier": 4.0,  "weight": 0.35},
-	{"id": "anomaly",    "label": "[ANOMALY_DETECTED]",    "multiplier": 6.0,  "weight": 0.10},
+	# One 1,000cr block at a time, about 1.15x expected: a small edge until the
+	# decryption rig replaces the box (shop economy plan, phase C).
+	{"id": "corruption", "label": "[CORRUPTION_DETECTED]", "multiplier": 0.0,  "weight": 0.25},
+	{"id": "partial",    "label": "[PARTIAL_DECRYPT]",     "multiplier": 1.0,  "weight": 0.45},
+	{"id": "clean",      "label": "[DECRYPT_COMPLETE]",    "multiplier": 2.2,  "weight": 0.25},
+	{"id": "anomaly",    "label": "[ANOMALY_DETECTED]",    "multiplier": 3.0,  "weight": 0.05},
 ]
 
 # Freezer

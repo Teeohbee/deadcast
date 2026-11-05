@@ -30,7 +30,7 @@ const ANNOUNCEMENTS := {
 	"vendors": "DECK COMM: Okeke's barge is in range. VENDORS open.",
 	"freezer": "DECK COMM: Freezer online. Bio catches keep here - sell before they spoil.",
 	"exchange": "DECK COMM: New host on the sonar: the voss exchange.",
-	"decrypt": "DECK COMM: Decrypt box powered. Feed it credits, wait three runs, gamble.",
+	"decrypt": "DECK COMM: Decrypt box powered. One block at a time, three runs, a small gamble.",
 	"axiom": "DECK COMM: Axiom sub-basement answering pings. Bring a better rod.",
 }
 
