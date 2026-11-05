@@ -26,12 +26,12 @@ func _start_dive() -> Node:
 func test_active_job_is_announced_at_the_cast() -> void:
 	GameState.active_job_id = "steady_hands"
 	var dive = await _start_dive()
-	assert_string_contains(dive.session_log.log_text.get_parsed_text(), "marta job: steady hands")
+	assert_string_contains(dive.session_log.log_text.get_parsed_text(), "job: steady hands")
 
 func test_no_job_line_without_a_job() -> void:
 	GameState.active_job_id = ""
 	var dive = await _start_dive()
-	assert_false(dive.session_log.log_text.get_parsed_text().contains("marta job"))
+	assert_false(dive.session_log.log_text.get_parsed_text().contains(">>> job:"))
 
 func test_met_job_clears_debt_and_lands_in_the_run_record() -> void:
 	GameState.active_job_id = "steady_hands"

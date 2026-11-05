@@ -43,7 +43,7 @@ func test_wallet_and_debt_text() -> void:
 func test_repossession_countdown() -> void:
 	GameState.runs_since_payment = 3
 	var p := _make_panel()
-	assert_eq(p._due_value.text, "in 2 runs")
+	assert_eq(p._due_value.text, "in 2 dives")
 
 func test_repossession_immediate_danger() -> void:
 	GameState.runs_since_payment = 5
@@ -79,9 +79,9 @@ func test_pressure_row_is_labelled_missed_payments() -> void:
 
 func test_due_row_names_the_payment_amount() -> void:
 	var p := _make_panel()
-	assert_eq(_caption_of(p._due_value), "NEXT PAYMENT (10,000cr):")
+	assert_eq(_caption_of(p._due_value), "NEXT INSTALMENT (10,000cr):")
 
 func test_due_row_shows_a_smaller_final_payment() -> void:
 	GameState.debt = 4000
 	var p := _make_panel()
-	assert_eq(_caption_of(p._due_value), "NEXT PAYMENT (4,000cr):")
+	assert_eq(_caption_of(p._due_value), "NEXT INSTALMENT (4,000cr):")

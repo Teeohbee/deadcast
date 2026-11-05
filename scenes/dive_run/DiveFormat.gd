@@ -134,8 +134,8 @@ static func archive_result(result: String, credits: int, tension: int, sig: int)
 
 static func job_result(title: String, met: bool, relief: int) -> String:
 	if met:
-		return "marta job: %s  ·  complete  ·  debt -%dcr" % [title, relief]
-	return "marta job: %s  ·  failed" % title
+		return "job: %s  ·  complete  ·  axiom balance -%dcr" % [title, relief]
+	return "job: %s  ·  failed" % title
 
 static func run_log_text(record: Dictionary) -> String:
 	var lines: Array[String] = []

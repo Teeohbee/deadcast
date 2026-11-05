@@ -11,7 +11,7 @@ func _ready() -> void:
 	DeckStyle.apply_action_button(return_button)
 	return_button.text = "return to title"
 	return_button.pressed.connect(_on_return_pressed)
-	message_label.text = "forced surrender\n\nmarta's people came for the meridian.\nyou made it %d runs." % GameState.run_count
+	message_label.text = "vessel recovered\n\naxiom credit recovered the meridian.\nyou made it %d runs." % GameState.run_count
 	return_button.grab_focus()
 
 func _on_return_pressed() -> void:

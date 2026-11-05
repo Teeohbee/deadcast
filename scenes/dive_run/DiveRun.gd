@@ -76,7 +76,7 @@ func _ready() -> void:
 			DeckStyle.AMBER)
 	var job := MartaJobs.find(GameState.active_job_id)
 	if job:
-		session_log.log_line(">>> marta job: %s  ·  %dcr off the debt if it holds" % [
+		session_log.log_line(">>> job: %s  ·  %dcr off axiom's balance if it holds" % [
 			job.title, job.debt_relief], DeckStyle.SKY)
 	_log_hint(DiveHints.CAST)
 	_show_next_catch()
@@ -655,11 +655,11 @@ func _show_inline_debrief() -> void:
 
 func _pressure_label(level: int) -> String:
 	match level:
-		1: return "marta is watching."
-		2: return "vendor prices up 20%."
-		3: return "okeke won't deal with you."
-		4: return "debt collector is coming."
-		5: return "forced surrender."
+		1: return "axiom credit is watching."
+		2: return "suppliers notified. prices up 20%."
+		3: return "okeke can't sell to you."
+		4: return "recovery agent assigned."
+		5: return "vessel recovered."
 		_: return ""
 
 func _initial_lure_label() -> String:
