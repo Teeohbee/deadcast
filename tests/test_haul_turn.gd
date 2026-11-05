@@ -146,14 +146,12 @@ func test_a_haul_in_a_real_dive_pays_its_result_and_clears_the_screen() -> void:
 
 # --- District 7 data ---
 
-func test_district7_hauls_and_its_haul_contacts_are_ready_to_haul() -> void:
-	var zone: ZoneData = load("res://resources/zones/district7.tres")
-	assert_true(zone.haul_enabled)
+func _assert_zone_ready_to_haul(zone_path: String, min_hauled: int) -> void:
+	var zone: ZoneData = load(zone_path)
+	assert_true(zone.haul_enabled, zone_path + " hauls")
 	var hauled := 0
 	for c in zone.catches:
 		if not c.haul_enabled:
-			assert_false(c.options.any(func(o: CatchOption) -> bool: return o.credit_value > 0 and o.tension_delta > 0 and c.catch_type != CatchData.CatchType.ENTITY and c.behavior != CatchData.BehaviorType.AGGRESSIVE),
-				c.catch_name + " pays and strains, so it should haul")
 			continue
 		hauled += 1
 		assert_ne(c.behavior, CatchData.BehaviorType.AGGRESSIVE, c.catch_name + " fights, it doesn't haul")
@@ -165,7 +163,23 @@ func test_district7_hauls_and_its_haul_contacts_are_ready_to_haul() -> void:
 			var drawn := HaulFragments.draw(c.fragments, c.fragments_always, HaulSim.Lcg.new(seed))
 			var block := HaulFragments.new(drawn, HaulView.ROWS, HaulSim.Lcg.new(seed))
 			assert_eq(block.fragments.size(), drawn.size(), "%s fragments fit (seed %d)" % [c.catch_name, seed])
-	assert_gt(hauled, 10, "cargo and ghosts with something to tear out")
+	assert_gt(hauled, min_hauled, zone_path + " hauled contacts")
+
+func test_district7_hauls_and_its_haul_contacts_are_ready_to_haul() -> void:
+	_assert_zone_ready_to_haul("res://resources/zones/district7.tres", 10)
+
+func test_exchange_hauls_and_its_haul_contacts_are_ready_to_haul() -> void:
+	_assert_zone_ready_to_haul("res://resources/zones/exchange.tres", 10)
+
+func test_cargo_that_pays_and_strains_always_hauls() -> void:
+	for path in ["res://resources/zones/district7.tres", "res://resources/zones/exchange.tres"]:
+		var zone: ZoneData = load(path)
+		for c in zone.catches:
+			var tears := c.options.any(func(o: CatchOption) -> bool: return o.credit_value > 0 and o.tension_delta > 0)
+			var exempt: bool = c.behavior == CatchData.BehaviorType.AGGRESSIVE or c.catch_type == CatchData.CatchType.ENTITY \
+				or c.catch_name == "Rival Fisher's Line" # a person on the other end, not cargo
+			if tears and not exempt:
+				assert_true(c.haul_enabled, c.catch_name + " pays and strains, so it hauls")
 
 ## Without dice, an option that costs more strain and pays less than another on the same
 ## card is never worth picking.
@@ -183,3 +197,6 @@ func _beaten_options(zone_path: String) -> Array[String]:
 
 func test_no_district7_option_is_strictly_beaten() -> void:
 	assert_eq(_beaten_options("res://resources/zones/district7.tres"), [])
+
+func test_no_exchange_option_is_strictly_beaten() -> void:
+	assert_eq(_beaten_options("res://resources/zones/exchange.tres"), [])
