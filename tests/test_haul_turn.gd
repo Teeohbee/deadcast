@@ -1,0 +1,132 @@
+extends GutTest
+# The haul turn (District 7 spike): pick an option on the card, then haul it up. The
+# haul result scales what the option pays and costs, replacing the resist/fail dice.
+
+const PENSION := "res://resources/catches/district7/encrypted_pension_record.tres"
+
+func _option(credits: int, tension: int, cuts := false) -> CatchOption:
+	var o := CatchOption.new()
+	o.credit_value = credits
+	o.tension_delta = tension
+	o.cuts_line = cuts
+	return o
+
+func _catch(haul := true) -> CatchData:
+	var c := CatchData.new()
+	c.haul_enabled = haul
+	c.haul_weight = 1.2
+	c.haul_slip = 0.6
+	c.haul_tempo = 1.0
+	c.haul_erratic = false
+	return c
+
+func _zone(haul := true) -> ZoneData:
+	var z := ZoneData.new()
+	z.haul_enabled = haul
+	return z
+
+func _result(outcome: String, hits := 0) -> Dictionary:
+	return { "outcome": outcome, "hits": hits }
+
+# --- which options haul ---
+
+func test_options_that_pay_haul_in_a_haul_zone() -> void:
+	assert_true(HaulTurn.hauls(_zone(), _catch(), _option(200, 5)))
+	assert_true(HaulTurn.hauls(_zone(), _catch(), _option(150, 0)), "a free skim still has to come up")
+
+func test_release_cut_line_and_other_zones_skip_the_haul() -> void:
+	assert_false(HaulTurn.hauls(_zone(), _catch(), _option(0, 0)), "release")
+	assert_false(HaulTurn.hauls(_zone(), _catch(), _option(0, 0, true)), "cut line")
+	assert_false(HaulTurn.hauls(_zone(false), _catch(), _option(200, 5)), "zone without hauls")
+	assert_false(HaulTurn.hauls(_zone(), _catch(false), _option(200, 5)), "contact without haul data")
+	assert_false(HaulTurn.hauls(null, _catch(), _option(200, 5)))
+
+# --- payout table ---
+
+func test_perfect_pays_a_quarter_extra() -> void:
+	assert_eq(HaulTurn.payout(_option(400, 5), _result("perfect")), { "credits": 500, "tension": 5 })
+
+func test_clean_pays_face_value() -> void:
+	assert_eq(HaulTurn.payout(_option(400, 5), _result("clean")), { "credits": 400, "tension": 5 })
+
+func test_messy_loses_a_fifth_per_hit_and_strains_the_line() -> void:
+	assert_eq(HaulTurn.payout(_option(500, 10), _result("messy", 1)), { "credits": 400, "tension": 15 })
+	assert_eq(HaulTurn.payout(_option(500, 10), _result("messy", 2)), { "credits": 300, "tension": 20 })
+
+func test_messy_never_drops_below_forty_percent() -> void:
+	assert_eq(HaulTurn.payout(_option(500, 10), _result("messy", 5)).credits, 200)
+
+func test_snap_loses_the_payload_and_jolts_the_line() -> void:
+	assert_eq(HaulTurn.payout(_option(500, 10), _result("snap")), { "credits": 0, "tension": 35 })
+
+# --- the haul nudge comes from strain ---
+
+func test_heavy_strain_options_load_half_as_fast_again() -> void:
+	var d := HaulTurn.dials(_catch(), _option(550, 15))
+	assert_almost_eq(d.weight, 1.8, 0.0001)
+	assert_eq(d.slip, 0.6)
+	assert_eq(d.tempo, 1.0)
+	assert_eq(d.erratic, false)
+
+func test_lighter_options_use_the_contacts_own_dials() -> void:
+	assert_almost_eq(HaulTurn.dials(_catch(), _option(200, 10)).weight, 1.2, 0.0001)
+
+# --- card words ---
+
+func test_strain_words() -> void:
+	assert_eq(HaulTurn.strain_word(0), "")
+	assert_eq(HaulTurn.strain_word(5), "light")
+	assert_eq(HaulTurn.strain_word(8), "moderate")
+	assert_eq(HaulTurn.strain_word(10), "moderate")
+	assert_eq(HaulTurn.strain_word(15), "heavy")
+	assert_eq(HaulTurn.strain_word(20), "heavy")
+
+func test_worth_words() -> void:
+	assert_eq(HaulTurn.worth_word(0), "")
+	assert_eq(HaulTurn.worth_word(150), "some")
+	assert_eq(HaulTurn.worth_word(300), "some")
+	assert_eq(HaulTurn.worth_word(550), "good")
+	assert_eq(HaulTurn.worth_word(600), "good")
+	assert_eq(HaulTurn.worth_word(800), "a lot")
+
+func test_haul_feel_reads_the_contacts_dials() -> void:
+	var c := _catch()
+	assert_eq(HaulTurn.feel(c), "steady · slips slowly")
+	c.haul_erratic = true
+	c.haul_slip = 1.6
+	c.haul_weight = 1.9
+	assert_eq(HaulTurn.feel(c), "erratic · slips fast · loads fast")
+	c.haul_erratic = false
+	c.haul_tempo = 0.6
+	c.haul_slip = 1.0
+	c.haul_weight = 0.7
+	assert_eq(HaulTurn.feel(c), "slow hits · loads light")
+
+func test_first_ever_dive_hauls_on_tutorial() -> void:
+	assert_eq(HaulTurn.difficulty(0), "tutorial")
+	assert_eq(HaulTurn.difficulty(1), "normal")
+
+# --- in a real dive ---
+
+func test_a_haul_in_a_real_dive_pays_its_result_and_clears_the_screen() -> void:
+	GameState.selected_zone = "district7"
+	var dive: Node = load("res://scenes/dive_run/DiveRun.tscn").instantiate()
+	add_child_autofree(dive)
+	await wait_process_frames(2)
+	var pension: CatchData = (load(PENSION) as CatchData).duplicate()
+	pension.haul_enabled = true
+	var careful: CatchOption = pension.options[1]
+	var credits_before: int = dive._run_credits
+	var tension_before: float = dive.line_system.tension
+	dive._resolve_haul(careful, pension, "careful_crack")
+	await wait_process_frames(2)
+	var runs := dive.get_children().filter(func(n: Node) -> bool: return n is HaulRun)
+	assert_eq(runs.size(), 1, "the haul is on screen")
+	if runs.is_empty():
+		return
+	var run: HaulRun = runs[0]
+	run.finished.emit({ "outcome": "messy", "hits": 1, "fragments": [], "read": 0, "total": 0 })
+	await wait_process_frames(2)
+	assert_eq(dive._run_credits - credits_before, int(careful.credit_value * 0.8))
+	assert_almost_eq(dive.line_system.tension - tension_before, float(careful.tension_delta + 5), 0.01)
+	assert_false(is_instance_valid(run), "haul screen cleared")

@@ -14,6 +14,26 @@ static func result_line(credits: int, tension_delta: int, corruption_gain: int) 
 		return ">>> no change"
 	return ">>> " + "  ·  ".join(parts)
 
+## The haul's fragments as plain log text: read words, scrambled ones, and blanks for unread.
+static func recovered_fragments(recovered: Array) -> String:
+	var parts: Array[String] = []
+	for f in recovered:
+		var word: String = f.word
+		match f.state:
+			HaulFragments.READ:
+				parts.append(word)
+			HaulFragments.LOST:
+				parts.append(_mask(word, "▓"))
+			_:
+				parts.append(_mask(word, "░"))
+	return "  ·  ".join(parts)
+
+static func _mask(word: String, ch: String) -> String:
+	var out := ""
+	for c in word:
+		out += " " if c == " " else ch
+	return out
+
 static func type_tag(catch_type: CatchData.CatchType) -> String:
 	match catch_type:
 		CatchData.CatchType.DATA:   return "[DATA_CONTAINER]"

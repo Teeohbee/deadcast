@@ -13,3 +13,6 @@ extends Resource
 @export var tag_tier: int = 0  # 0 = green, 1 = amber, 2 = red
 @export var density: String = ""
 @export var threat: String = ""
+
+# Winch haul spike: contacts with haul data in this zone are hauled up by hand.
+@export var haul_enabled: bool = false
