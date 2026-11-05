@@ -447,14 +447,14 @@ func relay_mark_played(script_id: String) -> void:
 
 # Files a finished call, text or dive line in the contact's thread, unread.
 # Only the newest MAX_RELAY_ENTRIES_PER_CONTACT entries per contact are kept.
-func relay_file_entry(contact: String, kind: String, script_id: String, lines: Array) -> void:
+func relay_file_entry(contact: String, kind: String, script_id: String, lines: Array, already_read: bool = false) -> void:
 	relay_entries.append({
 		"contact": contact,
 		"run": run_count,
 		"kind": kind,
 		"script_id": script_id,
 		"lines": lines.duplicate(true),
-		"read": false,
+		"read": already_read,
 	})
 	var contact_entries := relay_entries_for(contact)
 	var excess := contact_entries.size() - MAX_RELAY_ENTRIES_PER_CONTACT
