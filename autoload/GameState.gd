@@ -91,6 +91,8 @@ var job_declined_run: int = -1
 
 # Onboarding: first-dive hints in the session log until one run is finished.
 var first_dive_hints_done: bool = false
+# The first hostile of a save is a guided override fight (OverrideSim.guided).
+var override_guided_done: bool = false
 
 # The relay (planning/deadcast/2026-11-05-relay-plan.md): which RelayScripts
 # have played, and the thread of everything said, newest last. Each entry is
@@ -391,6 +393,7 @@ func _save_to(path: String) -> void:
 	cfg.set_value("player", "runs_since_payment", runs_since_payment)
 	cfg.set_value("player", "instalment_paid", instalment_paid)
 	cfg.set_value("player", "first_dive_hints_done", first_dive_hints_done)
+	cfg.set_value("player", "override_guided_done", override_guided_done)
 	cfg.set_value("gear", "rod_damaged", rod_damaged)
 	cfg.set_value("gear", "deep_winch_fitted", deep_winch_fitted)
 	cfg.set_value("gear", "selected_zone", selected_zone)
@@ -428,6 +431,7 @@ func _load_from(path: String) -> void:
 	instalment_paid = cfg.get_value("player", "instalment_paid", 0)
 	# Saves from before onboarding existed: anyone who has dived has seen the ropes.
 	first_dive_hints_done = cfg.get_value("player", "first_dive_hints_done", run_count > 0)
+	override_guided_done = cfg.get_value("player", "override_guided_done", false)
 	rod_damaged = cfg.get_value("gear", "rod_damaged", false)
 	selected_zone = cfg.get_value("gear", "selected_zone", "district7")
 	var rod_path = cfg.get_value("gear", "current_rod_path", "")
@@ -505,6 +509,7 @@ func new_game() -> void:
 	runs_since_payment = 0
 	instalment_paid = 0
 	first_dive_hints_done = false
+	override_guided_done = false
 	rod_damaged = false
 	deep_winch_fitted = false
 	lure_inventory = {}

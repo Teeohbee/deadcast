@@ -13,7 +13,13 @@ enum Layer { SHALLOWS, MID, DEEP }
 @export var options: Array[CatchOption] = []
 @export var flavor_text: String = ""
 @export var layer: Layer = Layer.SHALLOWS
-@export var anchor_strength: int = 3  # Used by AGGRESSIVE behavior: turns needed to reel in
+# Hostiles (AGGRESSIVE) fight the override combo - see scenes/dive_run/override/OverrideSim.gd.
+@export var anchor_strength: int = 12 # the hostile's anchor: BREAK damage needed to land it
+# Attacks it charges, cycled: "NAME|code", code in u/d/l/r (never a prefix of a rig code).
+@export var override_attacks: PackedStringArray = []
+@export var override_twist: String = "" # "", "ghost" (reversed/hidden), "requote"
+@export var override_art: String = ""   # OverrideArt portrait: drone, ghost, engine, core, swarm, payload, building
+@export var override_hit: int = 12      # T a landed attack puts on the line
 @export var entity_id: String = ""
 @export var returning_variants: Array[CatchData] = []
 

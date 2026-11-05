@@ -42,7 +42,7 @@ const WRONG_STRAIN := 2     # T for a wrong press
 const BREAK_STRAIN := 2     # T per BREAK
 const BREAK_DAMAGE := 1     # anchor, doubled while exposed
 const SHOCK_DAMAGE := 2     # anchor, doubled while exposed
-const SPLICE_VENT := 20     # T
+const SPLICE_VENT := LureData.SPLICE_VENT_T
 
 # Twists. "ghost": locks alternate reversed (enter right to left) and hidden (arrows
 # show as you reach them). "requote": half-way through, the unentered arrows change.
