@@ -169,10 +169,10 @@ func test_card_without_a_haul_has_no_haul_line() -> void:
 
 func test_haul_option_shows_strain_and_worth_not_numbers() -> void:
 	var label := DiveFormat.haul_option_label(1, _make_option("Brute Force", 15, 550))
-	assert_eq(label, "[1] brute_force  ·  strain: heavy  ·  worth: good")
+	assert_eq(label, "[1] brute_force  ·  strain: HEAVY  ·  value: MID")
 
 func test_haul_option_without_strain_leaves_it_off() -> void:
-	assert_eq(DiveFormat.haul_option_label(2, _make_option("Skim", 0, 150)), "[2] skim  ·  worth: some")
+	assert_eq(DiveFormat.haul_option_label(2, _make_option("Skim", 0, 150)), "[2] skim  ·  value: LOW")
 
 func test_haul_contact_release_is_just_its_name() -> void:
 	assert_eq(DiveFormat.haul_option_label(3, _make_option("Release", 0, 0)), "[3] release")

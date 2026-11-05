@@ -75,19 +75,22 @@ func test_lighter_options_use_the_contacts_own_dials() -> void:
 
 func test_strain_words() -> void:
 	assert_eq(HaulTurn.strain_word(0), "")
-	assert_eq(HaulTurn.strain_word(5), "light")
-	assert_eq(HaulTurn.strain_word(8), "moderate")
-	assert_eq(HaulTurn.strain_word(10), "moderate")
-	assert_eq(HaulTurn.strain_word(15), "heavy")
-	assert_eq(HaulTurn.strain_word(20), "heavy")
+	assert_eq(HaulTurn.strain_word(5), "LIGHT")
+	assert_eq(HaulTurn.strain_word(8), "MODERATE")
+	assert_eq(HaulTurn.strain_word(10), "MODERATE")
+	assert_eq(HaulTurn.strain_word(15), "HEAVY")
+	assert_eq(HaulTurn.strain_word(25), "HEAVY")
 
-func test_worth_words() -> void:
-	assert_eq(HaulTurn.worth_word(0), "")
-	assert_eq(HaulTurn.worth_word(150), "some")
-	assert_eq(HaulTurn.worth_word(300), "some")
-	assert_eq(HaulTurn.worth_word(550), "good")
-	assert_eq(HaulTurn.worth_word(600), "good")
-	assert_eq(HaulTurn.worth_word(800), "a lot")
+func test_value_bands_are_the_same_in_every_zone() -> void:
+	assert_eq(HaulTurn.value_word(0), "")
+	assert_eq(HaulTurn.value_word(150), "LOW")
+	assert_eq(HaulTurn.value_word(300), "LOW")
+	assert_eq(HaulTurn.value_word(301), "MID")
+	assert_eq(HaulTurn.value_word(800), "MID")
+	assert_eq(HaulTurn.value_word(801), "HIGH")
+	assert_eq(HaulTurn.value_word(1500), "HIGH")
+	assert_eq(HaulTurn.value_word(1501), "PRIME")
+	assert_eq(HaulTurn.value_word(4000), "PRIME")
 
 func test_haul_feel_reads_the_contacts_dials() -> void:
 	var c := _catch()

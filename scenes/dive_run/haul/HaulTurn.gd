@@ -51,24 +51,27 @@ static func glyph(catch_type: CatchData.CatchType) -> String:
 
 # --- card words: tells, not sums. Each word means one thing only. ---
 
-## Line strain (dive tension the option costs).
+## Line strain (dive tension the option costs). Caps: the DEADCAST_OS voice.
 static func strain_word(tension_delta: int) -> String:
 	if tension_delta <= 0:
 		return ""
 	if tension_delta <= 5:
-		return "light"
+		return "LIGHT"
 	if tension_delta < HEAVY_STRAIN:
-		return "moderate"
-	return "heavy"
+		return "MODERATE"
+	return "HEAVY"
 
-static func worth_word(credits: int) -> String:
+## What the option pays, in absolute bands shared by every zone.
+static func value_word(credits: int) -> String:
 	if credits <= 0:
 		return ""
 	if credits <= 300:
-		return "some"
-	if credits <= 600:
-		return "good"
-	return "a lot"
+		return "LOW"
+	if credits <= 800:
+		return "MID"
+	if credits <= 1500:
+		return "HIGH"
+	return "PRIME"
 
 ## How the contact hauls, from its dials.
 static func feel(c: CatchData) -> String:

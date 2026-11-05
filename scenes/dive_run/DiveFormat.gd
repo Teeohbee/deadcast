@@ -63,7 +63,7 @@ static func contact_card(catch_data: CatchData, hauled: bool = false) -> String:
 	return card
 
 ## Options on a hauled contact: tells, not sums. The haul decides the odds, so the card
-## shows rough stakes - line strain and worth - and exact numbers go to the log.
+## shows rough stakes - line strain and value - and exact numbers go to the log.
 static func haul_option_label(num: int, option: CatchOption) -> String:
 	if option.cuts_line:
 		return option_label(num, option, CatchData.BehaviorType.PASSIVE)
@@ -71,9 +71,9 @@ static func haul_option_label(num: int, option: CatchOption) -> String:
 	var strain := HaulTurn.strain_word(option.tension_delta)
 	if strain != "":
 		parts.append("strain: " + strain)
-	var worth := HaulTurn.worth_word(option.credit_value)
-	if worth != "":
-		parts.append("worth: " + worth)
+	var value := HaulTurn.value_word(option.credit_value)
+	if value != "":
+		parts.append("value: " + value)
 	return "  ·  ".join(parts)
 
 static func option_label(num: int, option: CatchOption, behavior: CatchData.BehaviorType) -> String:
