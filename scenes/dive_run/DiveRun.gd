@@ -125,7 +125,7 @@ func _show_next_catch() -> void:
 	EventBus.slot_changed.emit(_column.global_slot_index() + 1, _column.total_reachable_slots())
 
 	if catch_data.behavior == CatchData.BehaviorType.AGGRESSIVE:
-		_run_overload(catch_data)
+		_run_override(catch_data)
 		return
 
 	_present_catch(catch_data)
@@ -481,92 +481,95 @@ func _resolve_negotiating(option: CatchOption, catch_data: CatchData, echo: Stri
 		return
 	_advance_slot()
 
-func _run_overload(catch_data: CatchData) -> void:
-	var shock_ready := _shock_ready(catch_data)
-	var fight := OverloadFight.new(line_system.max_tension, int(line_system.tension),
-		catch_data.anchor_strength, line_system.corruption, shock_ready)
-	var reward: CatchOption = catch_data.options[0]
-
+# Hostiles fight the override combo (scenes/dive_run/override): the hostile charges
+# attacks behind d-pad locks, the player races BREAK codes against entering the lock.
+# The encounter covers the dive feed; the rail stays live through tension_changed.
+func _run_override(catch_data: CatchData) -> void:
+	var reward := _override_reward(catch_data)
 	session_log.log_line(DiveFormat.contact_card(catch_data, false, _sig(catch_data)), DeckStyle.RED)
 	EventBus.contact_presented.emit(catch_data)
 	_log_hint(DiveHints.CONTACT)
-	session_log.log_line("│  value: %s" % HaulTurn.value_word(reward.credit_value), DeckStyle.TEXT)
 
-	var last_echo := ""
-	while true:
-		var backlash := fight.apply_backlash()
-		line_system.sync_tension(fight.tension)
-		session_log.log_line(">>> backlash: +%dT" % backlash, DeckStyle.AMBER)
-		if fight.is_snapped():
-			_record_slot(catch_data, "overload", "tension exceeded", 0, backlash, 0, false)
-			_on_line_snapped()
-			return
-		session_log.log_line(
-			DiveFormat.overload_status(fight.anchor, catch_data.anchor_strength, fight.threat, fight.turn),
-			DeckStyle.TEXT)
+	var run := OverrideRun.new()
+	run.setup(OverrideTurn.config(catch_data, line_system.tension, line_system.max_tension, line_system.corruption,
+			_override_rig(catch_data), not GameState.override_guided_done),
+		catch_data.catch_name, OverrideTurn.class_line(catch_data),
+		OverrideArt.portrait(catch_data.override_art, catch_data.catch_type), _override_fx(catch_data))
+	run.tension_changed.connect(func(t: float) -> void: line_system.sync_tension(int(t)))
+	relay_dive_panel.hold()
+	$Margin/MainRow/LogPanel.add_child(run)
+	var result: Dictionary = await run.finished
+	run.queue_free()
+	relay_dive_panel.release()
+	if not GameState.override_guided_done:
+		GameState.override_guided_done = true
+		GameState.save()
+	for id in result.used:
+		if int(result.used[id]) > 0 and id != "decoy":
+			_consume_lure(_OVERRIDE_LURES[id])
+	line_system.sync_tension(int(result.tension))
 
-		var commands := fight.pick_commands()
-		if _lure_ready(LureData.LureEffect.DECOY):
-			commands.insert(commands.size() - 1, OverloadFight.DECOY_SLIP)
-		var labels: Array[String] = []
-		var echoes: Array[String] = []
-		for i in commands.size():
-			labels.append(DiveFormat.command_label(i + 1, commands[i]))
-			echoes.append(str(commands[i].id).to_lower())
-		var index: int = await session_log.present_choices(labels, echoes)
-		if _snapped:
-			return
-		var cmd: Dictionary = commands[index]
-		last_echo = str(cmd.id).to_lower()
-
-		if cmd.id == "DECOY_SLIP":
-			line_system.sync_tension(fight.tension)
-			var replacement := _fire_decoy()
-			if replacement == null:
-				_advance_slot()
-				return
-			_present_catch(replacement)
-			return
-
-		if cmd.id == "ISOLATE_FEED":
-			line_system.sync_tension(fight.tension)
-			session_log.log_line(">>> feed isolated  ·  catch lost  ·  tension holds at %dT" % fight.tension,
-				DeckStyle.TEXT)
-			_run_record.entries.append({"kind": "lure", "text": "feed isolated — catch lost"})
-			await _beat()
-			_advance_slot()
-			return
-
-		if cmd.id == "OVERLOAD_CORE":
-			_consume_lure(LureData.LureEffect.SHOCK)
-
-		var result: Dictionary = fight.execute(cmd)
-		line_system.sync_tension(fight.tension)
-		if result.succeeded:
-			session_log.log_line(">>> %s — EXECUTED" % cmd.id, DeckStyle.TEXT)
-		else:
-			session_log.log_line(">>> %s — FAILED  ·  +%dT backlash" % [cmd.id, int(cmd.fail_t)],
-				DeckStyle.RED)
-
-		if fight.is_snapped():
-			_record_slot(catch_data, last_echo, "tension exceeded", 0, 0, 0, false)
-			_on_line_snapped()
-			return
-		if fight.is_captured():
+	match str(result.outcome):
+		OverrideSim.WON:
 			_run_credits += reward.credit_value
 			if catch_data.catch_type == CatchData.CatchType.BIO:
 				_bio_credits += reward.credit_value
 			EventBus.haul_changed.emit(_run_credits)
 			line_system.add_corruption(_sig(catch_data))
-			_record_slot(catch_data, last_echo, "", reward.credit_value, 0, _sig(catch_data), false)
-			session_log.log_line(">>> %s captured" % catch_data.catch_name, DeckStyle.TEXT)
-			session_log.log_line(
-				DiveFormat.result_line(reward.credit_value, 0, _sig(catch_data)),
-				DeckStyle.TEXT)
+			_record_slot(catch_data, "override", "", reward.credit_value, 0, _sig(catch_data), false)
+			session_log.log_line(">>> %s landed  ·  anchor severed" % catch_data.catch_name, DeckStyle.TEXT)
+			session_log.log_line(DiveFormat.result_line(reward.credit_value, 0, _sig(catch_data)), DeckStyle.TEXT)
 			await _beat()
 			_advance_slot()
-			return
-		fight.next_turn()
+		OverrideSim.SNAP:
+			_record_slot(catch_data, "override", "tension exceeded", 0, 0, 0, false)
+			_on_line_snapped()
+		OverrideSim.FLED:
+			session_log.log_line(">>> feed isolated  ·  catch lost  ·  tension holds at %dT" % int(result.tension),
+				DeckStyle.TEXT)
+			_run_record.entries.append({"kind": "lure", "text": "feed isolated — catch lost"})
+			await _beat()
+			_advance_slot()
+		OverrideSim.SLIPPED:
+			var replacement := _fire_decoy()
+			if replacement == null:
+				_advance_slot()
+				return
+			_present_catch(replacement)
+
+const _OVERRIDE_LURES := {
+	"shock": LureData.LureEffect.SHOCK,
+	"splice": LureData.LureEffect.SPLICE,
+	"decoy": LureData.LureEffect.DECOY,
+}
+
+# Loaded provisions become codes: one use each a fight. SHOCK only bites machines.
+func _override_rig(catch_data: CatchData) -> Dictionary:
+	var rig := {}
+	if _shock_ready(catch_data):
+		rig["shock"] = 1
+	if _lure_ready(LureData.LureEffect.SPLICE):
+		rig["splice"] = 1
+	if _lure_ready(LureData.LureEffect.DECOY):
+		rig["decoy"] = 1
+	return rig
+
+func _override_fx(catch_data: CatchData) -> Dictionary:
+	return {
+		"break": "-2 anchor while it charges, else -1 · +%dT" % OverrideSim.BREAK_STRAIN,
+		"shock": "-%d anchor while it charges · x%d loaded" % [OverrideSim.SHOCK_DAMAGE * 2, _lure_count(LureData.LureEffect.SHOCK)],
+		"splice": "vent %dT · x%d loaded" % [OverrideSim.SPLICE_VENT, _lure_count(LureData.LureEffect.SPLICE)],
+		"decoy": "slip it · draw a calmer contact",
+		"isolate": "cut the feed · flee, catch lost",
+	}
+
+# The best thing a hostile pays (some carry a cut-line option too).
+func _override_reward(catch_data: CatchData) -> CatchOption:
+	var best: CatchOption = catch_data.options[0]
+	for option in catch_data.options:
+		if option.credit_value > best.credit_value:
+			best = option
+	return best
 
 func _apply_and_record(option: CatchOption, catch_data: CatchData) -> void:
 	line_system.apply_tension(option.tension_delta)
