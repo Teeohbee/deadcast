@@ -93,3 +93,21 @@ func test_fresh_tabs_are_marked_new_until_visited() -> void:
 	UIController.fresh_tabs.clear()
 	UIController.screen_changed.emit("workshop")
 	assert_eq(workshop.text, "WORKSHOP")
+
+func test_legend_renders_the_controller_legend() -> void:
+	var f := _make()
+	await get_tree().process_frame
+	f._render_legend([["accept", "SELECT"], ["cancel", "DECK"]])
+	var rows: Array = f._legend.get_children()
+	assert_eq(rows.size(), 2)
+	assert_eq((rows[0] as DeckPromptRow).action, "accept")
+	assert_eq((rows[1] as DeckPromptRow).caption, "DECK")
+
+func test_legend_rerenders_on_screen_change() -> void:
+	var f := _make()
+	await get_tree().process_frame
+	f._render_legend([["accept", "A"], ["cancel", "B"], ["scroll", "C"]])
+	f._render_legend([["accept", "SELECT"]])
+	await get_tree().process_frame
+	assert_eq(f._legend.get_child_count(), 1)
+

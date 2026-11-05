@@ -150,6 +150,9 @@ func mark_fresh_tabs(feature_ids: Array[String]) -> void:
 func navigate_to_title() -> void:
 	get_tree().change_scene_to_file("res://scenes/title_screen/TitleScreen.tscn")
 
+# Right stick / PgUp-PgDn scroll speed at full deflection, in pixels a second.
+const SCROLL_SPEED := 900.0
+
 const _FOCUS_ACTIONS: Array[String] = ["ui_up", "ui_down", "ui_left", "ui_right", "ui_accept"]
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -167,6 +170,17 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("ui_cancel") and _is_persistent(current_screen) and current_screen != "deck":
 		get_viewport().set_input_as_handled()
 		navigate_to("deck")
+
+# What the pad can do on the current screen, as [action, caption] pairs for
+# the footer legend. Derived from the same rules _unhandled_input and
+# apply_scroll follow, so the legend can't promise something that won't happen.
+func legend() -> Array:
+	var out: Array = [["accept", "SELECT"]]
+	if _current_node != null and is_instance_valid(_current_node) and _current_node.has_method("scroll_target"):
+		out.append(["scroll", "SCROLL"])
+	if _is_persistent(current_screen) and current_screen != "deck":
+		out.append(["cancel", "DECK"])
+	return out
 
 func _is_focus_press(event: InputEvent) -> bool:
 	for action in _FOCUS_ACTIONS:
@@ -186,6 +200,35 @@ func _restore_focus() -> bool:
 		return false
 	target.grab_focus()
 	return true
+
+func _process(delta: float) -> void:
+	var axis := Input.get_axis("scroll_up", "scroll_down")
+	if axis != 0.0:
+		apply_scroll(axis, delta)
+
+# Screens opt in to scrolling with scroll_target() -> Control, naming the
+# ScrollContainer or RichTextLabel worth reading back. Squaring the stick
+# keeps small pushes fine-grained and full pushes quick.
+func apply_scroll(axis: float, delta: float) -> void:
+	if _current_node == null or not is_instance_valid(_current_node) \
+			or not _current_node.has_method("scroll_target"):
+		return
+	var target: Control = _current_node.scroll_target()
+	if target == null or not target.is_visible_in_tree():
+		return
+	scroll_by(target, axis * absf(axis) * SCROLL_SPEED * delta)
+
+static func scroll_by(target: Control, px: float) -> void:
+	var bar: VScrollBar = null
+	if target is ScrollContainer:
+		bar = (target as ScrollContainer).get_v_scroll_bar()
+	elif target is RichTextLabel:
+		bar = (target as RichTextLabel).get_v_scroll_bar()
+	if bar == null:
+		return
+	# Accumulate fractions on the bar itself: ScrollContainer.scroll_vertical
+	# is an int and would swallow slow, sub-pixel stick pushes.
+	bar.value = clampf(bar.value + px, bar.min_value, maxf(bar.min_value, bar.max_value - bar.page))
 
 func _cycle_tab(direction: int) -> void:
 	var idx := _TAB_ORDER.find(current_screen)

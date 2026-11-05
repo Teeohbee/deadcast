@@ -53,6 +53,9 @@ func _ready() -> void:
 func on_screen_shown() -> void:
 	start(UIController.pending_call)
 
+func scroll_target() -> Control:
+	return _feed
+
 # The first reply on offer, if the call is waiting on one.
 func default_focus() -> Control:
 	for child in _live_block.get_children():

@@ -34,6 +34,9 @@ var _contacts_presented := 0
 func default_focus() -> Control:
 	return session_log.default_focus()
 
+func scroll_target() -> Control:
+	return session_log.scroll_target()
+
 func _ready() -> void:
 	line_system.snapped.connect(_on_line_snapped)
 	line_system.tension_updated.connect(func(v: float) -> void: EventBus.tension_changed.emit(v))

@@ -18,6 +18,8 @@ var _tab_buttons: Array[Button] = []
 var _dividers: Array[Label] = []
 var _prev_hint: DeckPromptRow
 var _next_hint: DeckPromptRow
+# What the pad does here, right-aligned after the tabs.
+var _legend: HBoxContainer
 
 func _ready() -> void:
 	DeckStyle.apply_label(sep_label, DeckStyle.BORDER)
@@ -48,6 +50,13 @@ func _ready() -> void:
 	_next_hint = DeckPromptRow.new("next", ">", DeckStyle.TEXT, DeckStyle.SIZE_BODY)
 	tab_row.add_child(_next_hint)
 
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	tab_row.add_child(spacer)
+	_legend = HBoxContainer.new()
+	_legend.add_theme_constant_override("separation", 18)
+	tab_row.add_child(_legend)
+
 	UIController.screen_changed.connect(_on_screen_changed)
 	_refresh_unlocked_tabs()
 
@@ -63,6 +72,7 @@ func _refresh_unlocked_tabs() -> void:
 func _on_screen_changed(id: String) -> void:
 	visible = _TABS.any(func(t: Dictionary) -> bool: return t["id"] == id)
 	_refresh_unlocked_tabs()
+	_render_legend(UIController.legend())
 
 	for i in _tab_buttons.size():
 		var btn: Button = _tab_buttons[i]
@@ -81,3 +91,10 @@ func _on_screen_changed(id: String) -> void:
 		else:
 			btn.text = base_label
 			btn.add_theme_color_override("font_color", DeckStyle.DIM)
+
+func _render_legend(pairs: Array) -> void:
+	for child in _legend.get_children():
+		_legend.remove_child(child)
+		child.queue_free()
+	for pair in pairs:
+		_legend.add_child(DeckPromptRow.new(pair[0], pair[1], DeckStyle.DIM, DeckStyle.SIZE_AMBIENT))

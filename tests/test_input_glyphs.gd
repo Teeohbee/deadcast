@@ -73,3 +73,9 @@ func test_mouse_jitter_does_not_switch_from_pad() -> void:
 	e.relative = Vector2(1, 1)
 	InputGlyphs.update_mode_from_event(e)
 	assert_eq(InputGlyphs.mode, InputGlyphs.Mode.PAD)
+
+func test_scroll_glyph_per_mode() -> void:
+	assert_eq(InputGlyphs.glyph("scroll"), "[PGUP/DN]")
+	InputGlyphs.mode = InputGlyphs.Mode.PAD
+	assert_not_null(InputGlyphs.icon("scroll"))
+

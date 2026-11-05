@@ -19,8 +19,10 @@ func _ready() -> void:
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		DeckStyle.apply_function_key(btn)
 
+	# The right stick scrolls the reader; the page buttons stay for the mouse
+	# but sit outside pad navigation.
 	for btn in [page_up_btn, page_down_btn]:
-		btn.focus_mode = Control.FOCUS_ALL
+		btn.focus_mode = Control.FOCUS_NONE
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		DeckStyle.apply_action_button(btn)
 
@@ -39,7 +41,7 @@ func _ready() -> void:
 		_set_mode(Mode.JOURNAL)
 
 	await get_tree().process_frame
-	page_down_btn.grab_focus()
+	default_focus().grab_focus()
 	_wire_focus_graph()
 
 func _wire_focus_graph() -> void:
@@ -47,13 +49,10 @@ func _wire_focus_graph() -> void:
 	DeckNav.link(manual_toggle, journal_toggle, SIDE_LEFT)
 	DeckNav.link(manual_toggle, log_toggle, SIDE_RIGHT)
 	DeckNav.link(log_toggle, manual_toggle, SIDE_LEFT)
-	DeckNav.link(page_up_btn, page_down_btn, SIDE_RIGHT)
-	DeckNav.link(page_down_btn, page_up_btn, SIDE_LEFT)
-	DeckNav.link(journal_toggle, page_down_btn, SIDE_BOTTOM)
-	DeckNav.link(manual_toggle, page_down_btn, SIDE_BOTTOM)
-	DeckNav.link(log_toggle, page_down_btn, SIDE_BOTTOM)
-	DeckNav.link(page_up_btn, journal_toggle, SIDE_TOP)
-	DeckNav.link(page_down_btn, journal_toggle, SIDE_TOP)
+	# Up/down stay on the toggle row rather than wandering off the screen.
+	for btn in [journal_toggle, manual_toggle, log_toggle]:
+		DeckNav.link(btn, btn, SIDE_TOP)
+		DeckNav.link(btn, btn, SIDE_BOTTOM)
 
 func on_screen_shown() -> void:
 	# Keep the last-viewed mode; refresh its content for any new entries.
@@ -61,7 +60,13 @@ func on_screen_shown() -> void:
 	default_focus().grab_focus()
 
 func default_focus() -> Control:
-	return page_down_btn
+	match _mode:
+		Mode.MANUAL: return manual_toggle
+		Mode.LOG: return log_toggle
+	return journal_toggle
+
+func scroll_target() -> Control:
+	return scroll_container
 
 func _set_mode(mode: Mode) -> void:
 	_mode = mode

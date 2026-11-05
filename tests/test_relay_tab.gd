@@ -164,3 +164,7 @@ func test_selecting_a_contact_keeps_pad_focus_on_it() -> void:
 	tab.select_contact(other)
 	await get_tree().process_frame
 	assert_true(_contact_button(tab, other).has_focus())
+
+func test_thread_is_the_scroll_target() -> void:
+	var tab := _tab()
+	assert_eq(tab.scroll_target(), tab._thread)
