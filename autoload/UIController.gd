@@ -31,6 +31,8 @@ var _cache: Dictionary = {}
 # Test seam: screen creation goes through an overridable factory so unit tests
 # can inject lightweight fakes instead of loading every real scene.
 var _scene_factory: Callable = _default_scene_factory
+# Built on first open, inside _zone2, so it lives and dies with the shell.
+var _menu: SystemMenu = null
 
 # The relay: a due call takes over the screen on hub arrival or when a tab is
 # first shown, then hands back to where the player was going.
@@ -44,6 +46,7 @@ var relay_calls_enabled := true
 
 func initialize(zone2: Control) -> void:
 	_zone2 = zone2
+	_menu = null
 	_cache.clear()
 	fresh_tabs.clear()
 	_current_node = null
@@ -156,6 +159,12 @@ const SCROLL_SPEED := 900.0
 const _FOCUS_ACTIONS: Array[String] = ["ui_up", "ui_down", "ui_left", "ui_right", "ui_accept"]
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Back on the title (or before the shell exists) there is nothing to drive.
+	if not _shell_alive():
+		return
+	if menu_open():
+		_menu_input(event)
+		return
 	# Focused controls consume navigation, so a nav press landing here with
 	# nothing focused means the pad has lost its place: hand it back.
 	if _is_focus_press(event) and _restore_focus():
@@ -163,13 +172,44 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if current_screen in ["dive", "call"]:
 		return
-	if event.is_action_pressed("tab_next"):
+	# Checked before ui_cancel: Esc is both, and on the hub it means the menu.
+	if event.is_action_pressed("system_menu") and _is_persistent(current_screen):
+		get_viewport().set_input_as_handled()
+		open_menu()
+	elif event.is_action_pressed("tab_next"):
 		_cycle_tab(1)
 	elif event.is_action_pressed("tab_prev"):
 		_cycle_tab(-1)
 	elif event.is_action_pressed("ui_cancel") and _is_persistent(current_screen) and current_screen != "deck":
 		get_viewport().set_input_as_handled()
 		navigate_to("deck")
+
+func _shell_alive() -> bool:
+	return _zone2 != null and is_instance_valid(_zone2) and _zone2.is_inside_tree()
+
+# The menu holds the pad: menu/back close it, tabs are swallowed, and focus
+# lost inside it goes back to RESUME.
+func _menu_input(event: InputEvent) -> void:
+	if event.is_action_pressed("system_menu") or event.is_action_pressed("ui_cancel"):
+		close_menu()
+	elif _is_focus_press(event) and get_viewport().gui_get_focus_owner() == null:
+		_menu.resume_button.grab_focus()
+	elif not (event.is_action_pressed("tab_next") or event.is_action_pressed("tab_prev")):
+		return
+	get_viewport().set_input_as_handled()
+
+func menu_open() -> bool:
+	return _menu != null and is_instance_valid(_menu) and _menu.is_open()
+
+func open_menu() -> void:
+	if _menu == null or not is_instance_valid(_menu):
+		_menu = SystemMenu.new()
+		_zone2.add_child(_menu)
+	_menu.open()
+
+func close_menu() -> void:
+	if menu_open():
+		_menu.close()
 
 # What the pad can do on the current screen, as [action, caption] pairs for
 # the footer legend. Derived from the same rules _unhandled_input and
@@ -180,6 +220,8 @@ func legend() -> Array:
 		out.append(["scroll", "SCROLL"])
 	if _is_persistent(current_screen) and current_screen != "deck":
 		out.append(["cancel", "DECK"])
+	if _is_persistent(current_screen):
+		out.append(["menu", "MENU"])
 	return out
 
 func _is_focus_press(event: InputEvent) -> bool:
