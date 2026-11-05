@@ -6,7 +6,7 @@
 script = ExtResource("1_opt")
 label = "Gain Its Confidence"
 tension_delta = 0
-credit_value = 1000
+credit_value = 500
 cuts_line = false
 fail_chance = 0.4
 fail_tension_delta = 30

@@ -6,5 +6,5 @@
 script = ExtResource("1_opt")
 label = "Extract Memories"
 tension_delta = 15
-credit_value = 700
+credit_value = 1400
 cuts_line = false
