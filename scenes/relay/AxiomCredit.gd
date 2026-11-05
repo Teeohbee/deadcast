@@ -9,6 +9,7 @@ const NOTICE_PAYMENT_RECEIVED := "axiom_payment_received"
 const NOTICE_BALANCE_HALF := "axiom_balance_half"
 const NOTICE_MISSED := "axiom_missed_%d"
 const NOTICE_ACCOUNT_CLOSED := "axiom_account_closed"
+const NOTICE_EARLY_PAYMENT := "axiom_early_payment"
 
 const MISSED_NOTICES := {
 	1: ["AXIOM CREDIT · MISSED INSTALMENT",
@@ -44,6 +45,19 @@ static func notify_payment_received(amount: int, balance: int) -> void:
 		"AXIOM CREDIT · PAYMENT RECEIVED",
 		"%scr collected. remaining balance: %scr." % [LedgerPanel.format_thousands(amount), LedgerPanel.format_thousands(balance)],
 		"thank you for your continued custom."])
+
+static func notify_early_payment(amount: int, balance: int, instalment_covered: bool, status_revised: bool) -> void:
+	var lines: Array = [
+		"AXIOM CREDIT · PAYMENT RECEIVED EARLY",
+		"%scr received ahead of schedule. remaining balance: %scr." % [
+			LedgerPanel.format_thousands(amount), LedgerPanel.format_thousands(balance)]]
+	if instalment_covered:
+		lines.append("your next instalment is satisfied. the collection interval has been reset.")
+	if status_revised:
+		lines.append("your operator profile has been reviewed. status revised.")
+	if not instalment_covered:
+		lines.append("we appreciate your enthusiasm.")
+	_file_notice(NOTICE_EARLY_PAYMENT, lines)
 
 static func notify_payment_missed(pressure_level: int) -> void:
 	var level := clampi(pressure_level, 1, 5)

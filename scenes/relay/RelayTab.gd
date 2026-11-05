@@ -11,7 +11,7 @@ extends Control
 const CONTACT_ORDER: Array[String] = [
 	RelayScripts.CONTACT_MARTA, RelayScripts.CONTACT_AXIOM_CREDIT, RelayScripts.CONTACT_OKEKE]
 const NAME_COLUMN_WIDTH := 7
-const INSTALMENT_EVERY_RUNS := 5
+const EARLY_PAYMENT_AMOUNTS: Array[int] = [1000, 5000, 10000]
 
 var selected_contact := RelayScripts.CONTACT_MARTA
 var _job_offer_runner: RelayRunner = null
@@ -23,6 +23,7 @@ var _thread: RichTextLabel
 var _reply_block: VBoxContainer
 var _case_rows: VBoxContainer
 var _account_rows: VBoxContainer
+var _pay_buttons: Array[Button] = []
 
 func _ready() -> void:
 	_build_layout()
@@ -251,16 +252,64 @@ func _fill_case_file() -> void:
 
 func _fill_account() -> void:
 	_clear(_account_rows)
+	_pay_buttons.clear()
 	if GameState.victory:
 		_account_rows.add_child(_row("BALANCE:", "0 cr", DeckStyle.GREEN))
 		_account_rows.add_child(_label("ACCOUNT CLOSED", DeckStyle.GREEN, DeckStyle.SIZE_BODY))
 		return
-	var dives_left := INSTALMENT_EVERY_RUNS - GameState.runs_since_payment
+	var dives_left := GameState.INSTALMENT_EVERY_RUNS - GameState.runs_since_payment
 	_account_rows.add_child(_row("BALANCE:", "%s cr" % LedgerPanel.format_thousands(GameState.debt), DeckStyle.RED))
 	_account_rows.add_child(_row("NEXT INSTALMENT:", "%s cr" % LedgerPanel.format_thousands(LedgerPanel.next_payment_amount()), DeckStyle.AMBER))
 	_account_rows.add_child(_row("DUE:", "in %d dive%s" % [dives_left, "" if dives_left == 1 else "s"], DeckStyle.AMBER))
 	_account_rows.add_child(_row("MISSED:", "%d / 5" % GameState.pressure_level,
 		DeckStyle.RED if GameState.pressure_level > 0 else DeckStyle.DIM))
+	_add_pay_buttons()
+
+# Early payments: each covers part of the next instalment; covering all of it
+# resets the clock and lowers pressure (GameState.pay_debt_early).
+func _add_pay_buttons() -> void:
+	_account_rows.add_child(_label("── pay early ──", DeckStyle.DIM, DeckStyle.SIZE_AMBIENT))
+	for amount in EARLY_PAYMENT_AMOUNTS:
+		var button := Button.new()
+		button.text = "pay %scr" % LedgerPanel.format_thousands(amount)
+		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		button.focus_mode = Control.FOCUS_ALL
+		button.disabled = GameState.credits < mini(amount, GameState.debt)
+		DeckStyle.apply_action_button(button)
+		var payment := amount
+		var index := _pay_buttons.size()
+		button.pressed.connect(func() -> void: _pay_early(payment, index))
+		_account_rows.add_child(button)
+		_pay_buttons.append(button)
+	_account_rows.add_child(_wrapped_label(
+		"covering the instalment resets the clock and lowers pressure by one.", DeckStyle.DIM, DeckStyle.SIZE_AMBIENT))
+	var focusable: Array[Control] = []
+	focusable.assign(_pay_buttons)
+	DeckNav.chain_vertical(focusable)
+	_link_contacts_to_account()
+
+func _link_contacts_to_account() -> void:
+	if _pay_buttons.is_empty() or _contact_buttons.is_empty():
+		return
+	var home: Control = _contact_buttons.get(selected_contact, _contact_buttons.values()[0])
+	for contact_button in _contact_buttons.values():
+		DeckNav.link(contact_button, _pay_buttons[0], SIDE_RIGHT)
+	for pay_button in _pay_buttons:
+		DeckNav.link(pay_button, home, SIDE_LEFT)
+
+func pay_buttons() -> Array[Button]:
+	return _pay_buttons.filter(func(button: Button) -> bool: return not button.is_queued_for_deletion())
+
+func _pay_early(amount: int, button_index: int) -> void:
+	if not GameState.pay_debt_early(amount):
+		return
+	selected_contact = RelayScripts.CONTACT_AXIOM_CREDIT
+	_refresh()
+	var buttons := pay_buttons()
+	if button_index < buttons.size() and not buttons[button_index].disabled:
+		buttons[button_index].grab_focus()
+	elif _contact_buttons.has(selected_contact):
+		(_contact_buttons[selected_contact] as Button).grab_focus()
 
 func account_text() -> String:
 	return _text_of(_account_rows)

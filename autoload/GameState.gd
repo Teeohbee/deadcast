@@ -33,6 +33,11 @@ var lure_inventory: Dictionary = {
 var run_count: int = 0
 var runs_since_payment: int = 0
 var pressure_level: int = 0
+const INSTALMENT_AMOUNT: int = 10000
+const INSTALMENT_EVERY_RUNS: int = 5
+# Paid early towards the current instalment (RELAY account). The instalment
+# collects only what's still due; covering it in full resets the clock.
+var instalment_paid: int = 0
 
 # Decrypt Box
 var decrypt_box_queue: int = 0
@@ -119,9 +124,10 @@ func on_run_complete(snapped: bool, bio_credits: int) -> void:
 			decrypt_box_runs = 0
 
 	# Debt payment every 5 runs, collected by Axiom Credit, who say so on the relay.
-	if runs_since_payment >= 5:
+	if runs_since_payment >= INSTALMENT_EVERY_RUNS:
 		runs_since_payment = 0
-		var payment = min(10000, debt)
+		var payment := instalment_remaining()
+		instalment_paid = 0
 		if spend_credits(payment):
 			debt -= payment
 			if debt <= 0:
@@ -132,8 +138,8 @@ func on_run_complete(snapped: bool, bio_credits: int) -> void:
 		else:
 			pressure_level = min(5, pressure_level + 1)
 			AxiomCredit.notify_payment_missed(pressure_level)
-	elif runs_since_payment == 4 and not victory:
-		AxiomCredit.notify_instalment_due(min(10000, debt))
+	elif runs_since_payment == INSTALMENT_EVERY_RUNS - 1 and not victory:
+		AxiomCredit.notify_instalment_due(instalment_remaining())
 	if not victory and debt < 40000:
 		AxiomCredit.notify_balance_below_half_once()
 	if victory:
@@ -269,6 +275,41 @@ func _roll_decrypt_outcome(roll: float) -> Dictionary:
 			return outcome
 	return DECRYPT_OUTCOMES[-1]
 
+# --- Axiom Credit: early payment ---
+
+# What the next instalment will still collect, after anything paid early.
+func instalment_remaining() -> int:
+	return maxi(0, mini(INSTALMENT_AMOUNT - instalment_paid, debt))
+
+# Pays the balance down from the wallet. Each instalment covered in full resets
+# the collection clock and lowers pressure by one. Returns false when the wallet
+# can't cover it or the account is closed.
+func pay_debt_early(amount: int) -> bool:
+	if victory or debt <= 0 or amount <= 0:
+		return false
+	var payment := mini(amount, debt)
+	if not spend_credits(payment):
+		return false
+	debt -= payment
+	instalment_paid += payment
+	var instalments_covered := 0
+	while instalment_paid >= INSTALMENT_AMOUNT:
+		instalment_paid -= INSTALMENT_AMOUNT
+		instalments_covered += 1
+	var pressure_relieved := mini(instalments_covered, pressure_level)
+	pressure_level -= pressure_relieved
+	if instalments_covered > 0:
+		runs_since_payment = 0
+	if debt <= 0:
+		debt = 0
+		instalment_paid = 0
+		victory = true
+	AxiomCredit.notify_early_payment(payment, debt, instalments_covered > 0, pressure_relieved > 0)
+	if victory:
+		AxiomCredit.notify_account_closed_once()
+	save()
+	return true
+
 func get_vendor_price_multiplier() -> float:
 	return 1.2 if pressure_level >= 2 else 1.0
 
@@ -288,6 +329,7 @@ func _save_to(path: String) -> void:
 	cfg.set_value("player", "pressure_level", pressure_level)
 	cfg.set_value("player", "run_count", run_count)
 	cfg.set_value("player", "runs_since_payment", runs_since_payment)
+	cfg.set_value("player", "instalment_paid", instalment_paid)
 	cfg.set_value("player", "first_dive_hints_done", first_dive_hints_done)
 	cfg.set_value("gear", "rod_damaged", rod_damaged)
 	cfg.set_value("gear", "max_depth_bonus", max_depth_bonus)
@@ -324,6 +366,7 @@ func _load_from(path: String) -> void:
 	pressure_level = cfg.get_value("player", "pressure_level", 0)
 	run_count = cfg.get_value("player", "run_count", 0)
 	runs_since_payment = cfg.get_value("player", "runs_since_payment", 0)
+	instalment_paid = cfg.get_value("player", "instalment_paid", 0)
 	# Saves from before onboarding existed: anyone who has dived has seen the ropes.
 	first_dive_hints_done = cfg.get_value("player", "first_dive_hints_done", run_count > 0)
 	rod_damaged = cfg.get_value("gear", "rod_damaged", false)
@@ -383,6 +426,7 @@ func new_game() -> void:
 	pressure_level = 0
 	run_count = 0
 	runs_since_payment = 0
+	instalment_paid = 0
 	first_dive_hints_done = false
 	rod_damaged = false
 	max_depth_bonus = 0
