@@ -23,7 +23,7 @@ func _build() -> void:
 	add_child(root)
 
 	_wallet_value = _add_row(root, "WALLET BALANCE:", DeckStyle.GREEN)
-	_debt_value = _add_row(root, "OUTSTANDING DEBT:", DeckStyle.RED)
+	_debt_value = _add_row(root, "OWED · AXIOM CREDIT:", DeckStyle.RED)
 
 	var ratio_row := HBoxContainer.new()
 	var plabel := Label.new()
@@ -46,7 +46,7 @@ func _build() -> void:
 		_segments.append(seg)
 	root.add_child(seg_row)
 
-	_due_value = _add_row(root, "NEXT PAYMENT (10,000cr):", DeckStyle.AMBER)
+	_due_value = _add_row(root, "NEXT INSTALMENT (10,000cr):", DeckStyle.AMBER)
 
 func _add_row(parent: Container, caption: String, value_color: Color) -> Label:
 	var row := HBoxContainer.new()
@@ -74,10 +74,10 @@ func refresh() -> void:
 	for i in SEGMENTS:
 		_segments[i].color = fill if i < GameState.pressure_level else SEGMENT_EMPTY
 
-	_due_caption().text = "NEXT PAYMENT (%scr):" % format_thousands(next_payment_amount())
+	_due_caption().text = "NEXT INSTALMENT (%scr):" % format_thousands(next_payment_amount())
 	var runs_left := 5 - GameState.runs_since_payment
 	if runs_left > 0:
-		_due_value.text = "in %d run%s" % [runs_left, "s" if runs_left != 1 else ""]
+		_due_value.text = "in %d dive%s" % [runs_left, "s" if runs_left != 1 else ""]
 		DeckStyle.apply_label(_due_value, DeckStyle.AMBER, DeckStyle.SIZE_VALUE)
 	else:
 		_due_value.text = "IMMEDIATE DANGER"
