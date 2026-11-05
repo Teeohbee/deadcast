@@ -11,5 +11,7 @@ func run() -> void:
 	var root := (Engine.get_main_loop() as SceneTree).root
 	root.get_node("GameState").save_path = TEST_SAVE_PATH
 	root.get_node("Settings").path = TEST_SETTINGS_PATH
+	# Relay calls would hijack every navigation test; relay tests opt back in.
+	root.get_node("UIController").relay_calls_enabled = false
 	DirAccess.remove_absolute(TEST_SAVE_PATH)
 	DirAccess.remove_absolute(TEST_SETTINGS_PATH)

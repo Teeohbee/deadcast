@@ -44,6 +44,7 @@ func _ready() -> void:
 	EventBus.zone_changed.connect(_on_zone_changed)
 	if GameState.run_count == 0:
 		append_line("DECK COMM: New operator registered. Pick a ruin and cast a line.")
+		append_line("DECK COMM: Operator manual on file in the BUNK.")
 	else:
 		append_line("DECK COMM: Welcome back, Diver. Keep your eye on the debt ledger.")
 
