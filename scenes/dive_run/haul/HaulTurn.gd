@@ -1,5 +1,5 @@
 # scenes/dive_run/haul/HaulTurn.gd
-# How a haul plugs into the dive turn (District 7 spike). Pick an option on the card,
+# How a haul plugs into the dive turn, in every zone. Pick an option on the card,
 # haul it up, and the haul result scales what the option pays and costs - skill in
 # place of the resist/fail dice. Static and pure, like DiveFormat.
 class_name HaulTurn
@@ -17,8 +17,8 @@ const HEAVY_WEIGHT_MULT := 1.5
 ## An option hauls if it pays and doesn't cut the line. Entities are the exception:
 ## talking to a ghost is free, only tearing something out of it (an option with
 ## strain - harvest, extract, pull) is a haul.
-static func hauls(zone: ZoneData, catch_data: CatchData, option: CatchOption) -> bool:
-	if zone == null or not zone.haul_enabled or not catch_data.haul_enabled:
+static func hauls(catch_data: CatchData, option: CatchOption) -> bool:
+	if not catch_data.haul_enabled:
 		return false
 	if option.credit_value <= 0 or option.cuts_line:
 		return false

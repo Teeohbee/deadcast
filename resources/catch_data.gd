@@ -17,8 +17,8 @@ enum Layer { SHALLOWS, MID, DEEP }
 @export var entity_id: String = ""
 @export var returning_variants: Array[CatchData] = []
 
-# Winch haul (District 7 spike): when the zone hauls and this is on, picking a paying
-# option runs the haul instead of the resist/fail dice. Dials are multipliers on the
+# Winch haul: when this is on, picking an option that hauls (HaulTurn.hauls) runs the
+# haul instead of the resist/fail dice. Dials are multipliers on the
 # haul's base rates - see scenes/dive_run/haul/HaulSim.gd.
 @export var haul_enabled: bool = false
 @export var haul_weight: float = 1.0  # how fast load builds while hauling

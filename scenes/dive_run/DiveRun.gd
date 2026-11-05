@@ -181,7 +181,7 @@ func _present_catch(catch_data: CatchData) -> void:
 		if using_shock:
 			augmented = _inject_shock_option(current)
 
-		var hauled := _zone_data != null and _zone_data.haul_enabled and augmented.haul_enabled
+		var hauled := augmented.haul_enabled
 		if need_card:
 			await _maybe_fake_signal_loss()
 			session_log.log_line(DiveFormat.contact_card(augmented, hauled), DeckStyle.TEXT)
@@ -193,7 +193,7 @@ func _present_catch(catch_data: CatchData) -> void:
 		var echoes: Array[String] = []
 		for i in augmented.options.size():
 			labels.append(DiveFormat.option_label(i + 1, augmented.options[i], augmented.behavior,
-				HaulTurn.hauls(_zone_data, augmented, augmented.options[i])))
+				HaulTurn.hauls(augmented, augmented.options[i])))
 			echoes.append(augmented.options[i].label.to_lower().replace(" ", "_"))
 
 		var lure_action := _contact_lure_action()
@@ -252,7 +252,7 @@ func _present_catch(catch_data: CatchData) -> void:
 			_advance_slot()
 			return
 
-		if HaulTurn.hauls(_zone_data, augmented, option):
+		if HaulTurn.hauls(augmented, option):
 			await _resolve_haul(option, augmented, echo)
 			return
 
@@ -318,7 +318,7 @@ func _fire_deep_pulse() -> void:
 	_run_record.entries.append({"kind": "lure", "text": summary})
 	session_log.log_line(">>> %s" % summary, DeckStyle.SKY)
 
-# Winch haul (District 7 spike): the player hauls the payload up by hand and the result
+# Winch haul: the player hauls the payload up by hand and the result
 # scales what the option pays and costs, in place of the resist/fail dice.
 func _resolve_haul(option: CatchOption, catch_data: CatchData, echo: String) -> void:
 	var run := HaulRun.new()
