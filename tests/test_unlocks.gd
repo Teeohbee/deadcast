@@ -17,12 +17,12 @@ func _open_after(runs: int) -> Array[String]:
 	GameState.run_count = runs
 	return Unlocks.open_features()
 
-func test_a_new_operator_sees_only_the_deck_bunk_and_district_7() -> void:
-	assert_eq(_open_after(0), ["deck", "bunk", "district7"] as Array[String])
+func test_a_new_operator_sees_the_deck_bunk_relay_and_district_7() -> void:
+	assert_eq(_open_after(0), ["deck", "bunk", "relay", "district7"] as Array[String])
 
-func test_first_run_opens_workshop_vendors_and_marta() -> void:
+func test_first_run_opens_workshop_and_vendors() -> void:
 	var opened := Unlocks.newly_opened(_open_after(0), _open_after(1))
-	assert_eq(opened, ["workshop", "vendors", "marta"] as Array[String])
+	assert_eq(opened, ["workshop", "vendors"] as Array[String])
 
 func test_second_run_opens_the_exchange_and_the_freezer() -> void:
 	var opened := Unlocks.newly_opened(_open_after(1), _open_after(2))
@@ -36,7 +36,7 @@ func test_fourth_run_opens_axiom() -> void:
 
 func test_an_established_save_sees_everything() -> void:
 	var features := _open_after(12)
-	for feature in ["deck", "bunk", "workshop", "vendors", "marta", "decrypt",
+	for feature in ["deck", "bunk", "workshop", "vendors", "relay", "decrypt",
 			"district7", "exchange", "axiom", "freezer"]:
 		assert_has(features, feature)
 
@@ -48,7 +48,7 @@ func test_freezer_opens_early_with_a_first_deposit() -> void:
 
 func test_every_feature_that_opens_later_has_an_announcement() -> void:
 	for feature in _open_after(12):
-		if feature in ["deck", "bunk", "district7"]:
+		if feature in ["deck", "bunk", "relay", "district7"]:
 			continue
 		assert_ne(Unlocks.announcement_for(feature), "", feature)
 

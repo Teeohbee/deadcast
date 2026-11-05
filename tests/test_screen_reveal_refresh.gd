@@ -70,18 +70,6 @@ func test_bunk_reveal_picks_up_new_run_log() -> void:
 	b.on_screen_shown()
 	assert_string_contains(b.content_label.text, "axiom")
 
-const MARTA := preload("res://scenes/barge_hub/MartaTerminal.tscn")
-
-func test_marta_reveal_updates_payment_countdown() -> void:
-	GameState.victory = false
-	GameState.runs_since_payment = 0
-	var m := _make(MARTA)
-	await get_tree().process_frame
-	assert_string_contains(m.payment_label.text, "5 run")
-	GameState.runs_since_payment = 4
-	m.on_screen_shown()
-	assert_string_contains(m.payment_label.text, "1 run")
-
 const DECRYPT := preload("res://scenes/barge_hub/DecryptBox.tscn")
 
 func test_decrypt_reveal_reflects_queue() -> void:
@@ -96,10 +84,3 @@ func test_decrypt_reveal_reflects_queue() -> void:
 	d.on_screen_shown()
 	assert_string_contains(d.status_label.text, "queued")
 
-func test_marta_visit_clears_new_beat_badge() -> void:
-	GameState.run_count = 1
-	GameState.marta_last_seen_run = -1
-	assert_true(GameState.has_new_marta_beat(), "precondition: a new beat is pending")
-	var m := _make(MARTA)
-	await get_tree().process_frame
-	assert_false(GameState.has_new_marta_beat(), "visiting marta should clear the new-beat badge")

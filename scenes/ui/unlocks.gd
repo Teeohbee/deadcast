@@ -11,7 +11,7 @@ const TAB_OPENS_AFTER_RUN := {
 	"bunk": 0,
 	"workshop": 1,
 	"vendors": 1,
-	"marta": 1,
+	"relay": 0,
 	"decrypt": 3,
 }
 const ZONE_OPENS_AFTER_RUN := {
@@ -28,7 +28,6 @@ const FREEZER := "freezer"
 const ANNOUNCEMENTS := {
 	"workshop": "DECK COMM: Credits logged. Workshop bay unlocked - repairs and depth upgrades.",
 	"vendors": "DECK COMM: Okeke's channel is open. Rods and lures in VENDORS.",
-	"marta": "DECK COMM: Marta's relay is live. She has work, if you want it.",
 	"freezer": "DECK COMM: Freezer online. Bio catches keep here - sell before they spoil.",
 	"exchange": "DECK COMM: New host on the sonar: the voss exchange.",
 	"decrypt": "DECK COMM: Decrypt box powered. Feed it credits, wait three runs, gamble.",

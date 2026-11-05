@@ -5,13 +5,14 @@ extends GutTest
 
 const AMBIENT_TITLES := ["sonar_hydro-scan", "hydrophone", "biosign", "life_support",
 	"market_ticker", "cipher_crack", "cipher_log", "tension_gauge", "maintenance_log",
-	"incoming_transmission"]
+	"relay_link"]
 const SCREENS := [
 	"res://scenes/barge_hub/BargeHub.tscn",
 	"res://scenes/barge_hub/Workshop.tscn",
 	"res://scenes/barge_hub/DecryptBox.tscn",
 	"res://scenes/barge_hub/Bunk.tscn",
-	"res://scenes/barge_hub/MartaTerminal.tscn",
+	"res://scenes/relay/RelayTab.tscn",
+	"res://scenes/relay/CallScreen.tscn",
 	"res://scenes/barge_hub/VendorsLayout.tscn",
 	"res://scenes/dive_run/DiveRun.tscn",
 ]

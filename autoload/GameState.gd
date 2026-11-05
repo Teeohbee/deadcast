@@ -60,7 +60,6 @@ func freezer_sale_value() -> int:
 	return int(round(freezer_base * freezer_multiplier))
 
 # Narrative
-var marta_last_seen_run: int = -1
 var journal_entries: Array[String] = []
 var encountered_entities: Dictionary = {}
 var triggered_journal_events: Array[String] = []
@@ -295,7 +294,6 @@ func _save_to(path: String) -> void:
 	cfg.set_value("freezer", "base", freezer_base)
 	cfg.set_value("freezer", "multiplier", freezer_multiplier)
 	cfg.set_value("freezer", "runs", freezer_runs)
-	cfg.set_value("narrative", "marta_last_seen_run", marta_last_seen_run)
 	cfg.set_value("narrative", "journal_entries", journal_entries)
 	cfg.set_value("narrative", "encountered_entities", encountered_entities)
 	cfg.set_value("narrative", "triggered_journal_events", triggered_journal_events)
@@ -352,7 +350,6 @@ func _load_from(path: String) -> void:
 		freezer_base = cfg.get_value("freezer", "value", 0)  # legacy migration
 	freezer_multiplier = cfg.get_value("freezer", "multiplier", 1.0)
 	freezer_runs = cfg.get_value("freezer", "runs", 0)
-	marta_last_seen_run = cfg.get_value("narrative", "marta_last_seen_run", -1)
 	journal_entries = cfg.get_value("narrative", "journal_entries", [] as Array[String])
 	encountered_entities = cfg.get_value("narrative", "encountered_entities", {})
 	triggered_journal_events = cfg.get_value("narrative", "triggered_journal_events", [] as Array[String])
@@ -390,7 +387,6 @@ func new_game() -> void:
 	freezer_runs = 0
 	freezer_multiplier = 1.0
 	selected_zone = "district7"
-	marta_last_seen_run = -1
 	encountered_entities = {}
 	triggered_journal_events = []
 	first_listened_entity_id = ""
@@ -462,19 +458,9 @@ func relay_entries_for(contact: String) -> Array[Dictionary]:
 func relay_unread_count(contact: String) -> int:
 	return relay_entries_for(contact).filter(func(entry: Dictionary) -> bool: return not entry.read).size()
 
+func relay_has_unread() -> bool:
+	return relay_entries.any(func(entry: Dictionary) -> bool: return not entry.read)
+
 func relay_mark_read(contact: String) -> void:
 	for entry in relay_entries_for(contact):
 		entry.read = true
-
-func has_new_marta_beat() -> bool:
-	return _beat_index(run_count) > _beat_index(marta_last_seen_run)
-
-static func _beat_index(run: int) -> int:
-	if run >= 12: return 7
-	if run >= 10: return 6
-	if run >= 8:  return 5
-	if run >= 6:  return 4
-	if run >= 5:  return 3
-	if run >= 3:  return 2
-	if run >= 1:  return 1
-	return 0
