@@ -4,12 +4,13 @@ extends GutTest
 var _saved := {}
 
 func before_each() -> void:
-	for key in ["active_job_id", "debt", "victory", "selected_zone", "first_dive_hints_done"]:
+	for key in ["active_job_id", "debt", "victory", "selected_zone", "first_dive_hints_done", "relay_entries"]:
 		_saved[key] = GameState.get(key)
 	GameState.selected_zone = "district7"
 	GameState.debt = 80000
 	GameState.victory = false
 	GameState.first_dive_hints_done = true
+	GameState.relay_entries = []
 
 func after_each() -> void:
 	for key in _saved:
@@ -66,3 +67,17 @@ func test_resolved_contacts_feed_the_run_facts() -> void:
 	dive._record_slot(catch_data, "listen", "", 0, 0, 0, true)
 	assert_true(dive._facts.entity_engaged)
 	assert_eq(dive._facts.corruption_per_contact.size(), 1)
+
+func test_marta_texts_the_outcome_of_a_met_job() -> void:
+	GameState.active_job_id = "steady_hands"
+	var dive = await _start_dive()
+	dive._resolve_active_job(false)
+	var filed: Array[Dictionary] = GameState.relay_entries_for("marta")
+	assert_eq(filed.size(), 1)
+	assert_string_contains(filed[0].lines[0].text, "2,500cr off what you owe axiom")
+
+func test_marta_texts_a_snapped_job_differently() -> void:
+	GameState.active_job_id = "steady_hands"
+	var dive = await _start_dive()
+	dive._resolve_active_job(true)
+	assert_string_contains(GameState.relay_entries_for("marta")[0].lines[0].text, "no line, no job")
