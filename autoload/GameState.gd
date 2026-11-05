@@ -20,9 +20,17 @@ var last_run_result: Dictionary = {}
 var current_rod: RodData = null
 var current_lure: LureData = null
 var rod_damaged: bool = false
-var max_depth_bonus: int = 0
-var depth_upgrade_count: int = 0
-const MAX_DEPTH_UPGRADES: int = 3
+# Depth is the Meridian's winch, not the rod: the cable reaches shallows and
+# mid; the deep winch reaches the deep layer (DiveColumn.LAYER_DEPTH_REQ).
+var deep_winch_fitted: bool = false
+const LINE_RATING_FT: int = 100
+const DEEP_WINCH_RATING_FT: int = 150
+const DEEP_WINCH_COST: int = 2500
+# Pre-winch saves: rods that reached the deep layer on their own, and what the
+# old depth upgrades cost (2000 doubling), for the migration refund.
+const LEGACY_DEEP_RODS: Array[String] = [
+	"res://resources/rods/monocarbon_rig.tres", "res://resources/rods/ghost_line.tres"]
+const LEGACY_DEPTH_UPGRADE_BASE_COST: int = 2000
 var selected_zone: String = "district7"
 
 var lure_inventory: Dictionary = {
@@ -243,13 +251,18 @@ func equip_lure(lure: LureData) -> void:
 	current_lure = lure
 
 func equip_rod(rod: RodData) -> void:
-	if max_depth_bonus > 0:
-		var upgraded = rod.duplicate()
-		upgraded.max_depth = rod.max_depth + max_depth_bonus
-		current_rod = upgraded
-	else:
-		current_rod = rod
+	current_rod = rod
 	rod_damaged = false
+
+func line_rating_ft() -> int:
+	return DEEP_WINCH_RATING_FT if deep_winch_fitted else LINE_RATING_FT
+
+func fit_deep_winch(price: int) -> bool:
+	if deep_winch_fitted or not spend_credits(price):
+		return false
+	deep_winch_fitted = true
+	save()
+	return true
 
 func get_lure_id(lure: LureData) -> String:
 	assert(lure.resource_path != "", "LureData must be loaded from a .tres file to derive an ID")
@@ -356,8 +369,7 @@ func _save_to(path: String) -> void:
 	cfg.set_value("player", "instalment_paid", instalment_paid)
 	cfg.set_value("player", "first_dive_hints_done", first_dive_hints_done)
 	cfg.set_value("gear", "rod_damaged", rod_damaged)
-	cfg.set_value("gear", "max_depth_bonus", max_depth_bonus)
-	cfg.set_value("gear", "depth_upgrade_count", depth_upgrade_count)
+	cfg.set_value("gear", "deep_winch_fitted", deep_winch_fitted)
 	cfg.set_value("gear", "selected_zone", selected_zone)
 	cfg.set_value("gear", "current_rod_path", current_rod.resource_path if current_rod else "")
 	cfg.set_value("gear", "current_lure_path", current_lure.resource_path if current_lure else "")
@@ -394,21 +406,10 @@ func _load_from(path: String) -> void:
 	# Saves from before onboarding existed: anyone who has dived has seen the ropes.
 	first_dive_hints_done = cfg.get_value("player", "first_dive_hints_done", run_count > 0)
 	rod_damaged = cfg.get_value("gear", "rod_damaged", false)
-	max_depth_bonus = cfg.get_value("gear", "max_depth_bonus", 0)
-	if cfg.has_section_key("gear", "depth_upgrade_count"):
-		depth_upgrade_count = cfg.get_value("gear", "depth_upgrade_count", 0)
-	else:
-		depth_upgrade_count = max_depth_bonus / 50
 	selected_zone = cfg.get_value("gear", "selected_zone", "district7")
 	var rod_path = cfg.get_value("gear", "current_rod_path", "")
 	if rod_path != "":
-		var base_rod = load(rod_path)
-		if max_depth_bonus > 0:
-			var upgraded = base_rod.duplicate()
-			upgraded.max_depth = base_rod.max_depth + max_depth_bonus
-			current_rod = upgraded
-		else:
-			current_rod = base_rod
+		current_rod = load(rod_path)
 	var lure_path = cfg.get_value("gear", "current_lure_path", "")
 	if lure_path != "":
 		current_lure = load(lure_path)
@@ -441,7 +442,31 @@ func _load_from(path: String) -> void:
 		# past, so Continue doesn't replay the first call. No transcripts.
 		relay_played_script_ids = RelayDirector.script_ids_already_past(run_count)
 		relay_entries = []
+	_load_or_migrate_deep_winch(cfg, rod_path)
 	EventBus.credits_changed.emit(credits)
+
+# Saves from before the winch kept depth as rod depth plus up to three 50ft
+# upgrades. Anyone who could reach the deep layer keeps it; upgrades that
+# did nothing (past 150ft) are refunded, with a word from Okeke.
+func _load_or_migrate_deep_winch(cfg: ConfigFile, rod_path: String) -> void:
+	if cfg.has_section_key("gear", "deep_winch_fitted"):
+		deep_winch_fitted = cfg.get_value("gear", "deep_winch_fitted", false)
+		return
+	var upgrade_count: int = cfg.get_value("gear", "depth_upgrade_count",
+		int(cfg.get_value("gear", "max_depth_bonus", 0)) / 50)
+	var rod_reached_deep := rod_path in LEGACY_DEEP_RODS
+	deep_winch_fitted = rod_reached_deep or upgrade_count >= 1
+	var refund := 0
+	for upgrade_index in upgrade_count:
+		var useful := upgrade_index == 0 and not rod_reached_deep
+		if not useful:
+			refund += LEGACY_DEPTH_UPGRADE_BASE_COST * (1 << upgrade_index)
+	if refund <= 0:
+		return
+	credits += refund
+	relay_file_entry(RelayScripts.CONTACT_OKEKE, RELAY_ENTRY_TEXT, "okeke_depth_refund", [
+		{"who": RelayScripts.CONTACT_OKEKE, "text": "those extension coils i fitted. turns out the sump stops at a hundred and fifty feet."},
+		{"who": RelayScripts.CONTACT_OKEKE, "text": "%scr back in your account. don't tell anyone i do refunds." % LedgerPanel.format_thousands(refund)}])
 
 func new_game() -> void:
 	credits = 0
@@ -453,8 +478,7 @@ func new_game() -> void:
 	instalment_paid = 0
 	first_dive_hints_done = false
 	rod_damaged = false
-	max_depth_bonus = 0
-	depth_upgrade_count = 0
+	deep_winch_fitted = false
 	lure_inventory = { "basic_hook": INFINITE_STOCK }
 	decrypt_box_queue = 0
 	decrypt_box_runs = 0

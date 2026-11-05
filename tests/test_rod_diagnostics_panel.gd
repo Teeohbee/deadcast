@@ -4,7 +4,7 @@ extends GutTest
 func before_each() -> void:
 	GameState.current_rod = load("res://resources/rods/scrap_rod.tres")
 	GameState.rod_damaged = false
-	GameState.depth_upgrade_count = 0
+	GameState.deep_winch_fitted = false
 
 func _panel() -> RodDiagnosticsPanel:
 	var p := preload("res://scenes/barge_hub/panels/RodDiagnosticsPanel.tscn").instantiate()

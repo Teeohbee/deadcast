@@ -6,7 +6,6 @@
 script = ExtResource("1_rod")
 rod_name = "Scrap Rod"
 tension_cap = 80
-max_depth = 100
 repair_cost = 500
 purchase_cost = 0
 description = "Starting gear. Breaks on snap."

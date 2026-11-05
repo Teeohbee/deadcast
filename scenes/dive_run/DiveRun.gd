@@ -62,8 +62,7 @@ func _ready() -> void:
 
 	_facts = RunFacts.new(zone_id)
 
-	var max_depth = GameState.current_rod.max_depth if GameState.current_rod else 100
-	_column = DiveColumn.new(zone_id, max_depth)
+	_column = DiveColumn.new(zone_id, GameState.line_rating_ft())
 	_column.generate_current_layer(line_system.corruption)
 
 	depth_column.setup(_column.reachable_layer_sizes())

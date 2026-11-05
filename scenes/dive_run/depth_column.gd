@@ -94,6 +94,4 @@ func _refresh() -> void:
 		_rows.add_child(row)
 
 func _pressure_label() -> String:
-	var rod := GameState.current_rod
-	var ceiling := rod.max_depth if rod else 100
-	return "%dft" % ceiling
+	return "%dft" % GameState.line_rating_ft()

@@ -46,9 +46,9 @@ func _build_stock() -> void:
 		var rod: RodData = load(path)
 		var price := GameState.vendor_price(rod.purchase_cost)
 		var equipped := GameState.current_rod and GameState.current_rod.rod_name == rod.rod_name
-		var label := "%s%s — %dT cap / %dft — %dcr%s" % [
+		var label := "%s%s — %dT cap — %dcr%s" % [
 			"[equipped] " if equipped else "", rod.rod_name.to_lower(),
-			rod.tension_cap, rod.max_depth, price, _markup(price)]
+			rod.tension_cap, price, _markup(price)]
 		var btn := _make_stock_btn(label, equipped or price == 0 or GameState.credits < price)
 		var rod_ref := rod
 		btn.pressed.connect(func(): _buy_rod(rod_ref, price))
