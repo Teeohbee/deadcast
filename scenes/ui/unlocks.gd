@@ -27,7 +27,7 @@ const FREEZER := "freezer"
 # DECK COMM line posted when each feature first opens.
 const ANNOUNCEMENTS := {
 	"workshop": "DECK COMM: Credits logged. Workshop bay unlocked - repairs and depth upgrades.",
-	"vendors": "DECK COMM: Okeke's channel is open. Rods and lures in VENDORS.",
+	"vendors": "DECK COMM: Okeke's barge is in range. VENDORS open.",
 	"freezer": "DECK COMM: Freezer online. Bio catches keep here - sell before they spoil.",
 	"exchange": "DECK COMM: New host on the sonar: the voss exchange.",
 	"decrypt": "DECK COMM: Decrypt box powered. Feed it credits, wait three runs, gamble.",
