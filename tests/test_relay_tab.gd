@@ -199,3 +199,13 @@ func test_selecting_a_contact_keeps_pad_focus_on_it() -> void:
 func test_thread_is_the_scroll_target() -> void:
 	var tab := _tab()
 	assert_eq(tab.scroll_target(), tab._thread)
+
+func test_pay_buttons_still_lead_left_to_a_live_contact_after_switching_contacts() -> void:
+	GameState.credits = 6000
+	var tab := _tab()
+	tab.select_contact("marta")
+	await wait_process_frames(1) # the old contact buttons are freed
+	for button in tab.pay_buttons():
+		var left := button.get_node_or_null(button.focus_neighbor_left)
+		assert_not_null(left, "pay button's left neighbour is a live contact button")
+		assert_true(tab._contact_list.is_ancestor_of(left))

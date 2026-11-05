@@ -148,6 +148,8 @@ func _build_contact_list() -> void:
 		buttons.append(button)
 		_contact_buttons[contact] = button
 	DeckNav.chain_vertical(buttons)
+	# The pay buttons point left at a contact button; rebuilding freed the old one.
+	_link_contacts_to_account()
 	if refocus and _contact_buttons.has(selected_contact):
 		(_contact_buttons[selected_contact] as Button).grab_focus()
 
