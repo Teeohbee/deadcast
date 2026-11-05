@@ -150,13 +150,42 @@ func mark_fresh_tabs(feature_ids: Array[String]) -> void:
 func navigate_to_title() -> void:
 	get_tree().change_scene_to_file("res://scenes/title_screen/TitleScreen.tscn")
 
+const _FOCUS_ACTIONS: Array[String] = ["ui_up", "ui_down", "ui_left", "ui_right", "ui_accept"]
+
 func _unhandled_input(event: InputEvent) -> void:
+	# Focused controls consume navigation, so a nav press landing here with
+	# nothing focused means the pad has lost its place: hand it back.
+	if _is_focus_press(event) and _restore_focus():
+		get_viewport().set_input_as_handled()
+		return
 	if current_screen in ["dive", "call"]:
 		return
 	if event.is_action_pressed("tab_next"):
 		_cycle_tab(1)
 	elif event.is_action_pressed("tab_prev"):
 		_cycle_tab(-1)
+	elif event.is_action_pressed("ui_cancel") and _is_persistent(current_screen) and current_screen != "deck":
+		get_viewport().set_input_as_handled()
+		navigate_to("deck")
+
+func _is_focus_press(event: InputEvent) -> bool:
+	for action in _FOCUS_ACTIONS:
+		if event.is_action_pressed(action):
+			return true
+	return false
+
+# Screens name where the pad should land via default_focus() -> Control.
+func _restore_focus() -> bool:
+	if get_viewport().gui_get_focus_owner() != null:
+		return false
+	if _current_node == null or not is_instance_valid(_current_node) \
+			or not _current_node.has_method("default_focus"):
+		return false
+	var target: Control = _current_node.default_focus()
+	if target == null or not target.is_visible_in_tree() or target.focus_mode == Control.FOCUS_NONE:
+		return false
+	target.grab_focus()
+	return true
 
 func _cycle_tab(direction: int) -> void:
 	var idx := _TAB_ORDER.find(current_screen)

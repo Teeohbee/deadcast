@@ -31,6 +31,9 @@ var _job_outcome: Dictionary = {}
 var relay_dive_panel: RelayDivePanel
 var _contacts_presented := 0
 
+func default_focus() -> Control:
+	return session_log.default_focus()
+
 func _ready() -> void:
 	line_system.snapped.connect(_on_line_snapped)
 	line_system.tension_updated.connect(func(v: float) -> void: EventBus.tension_changed.emit(v))
@@ -151,7 +154,8 @@ func _show_checkpoint() -> void:
 			GameState.has_lure_stock(GameState.current_lure))
 		if offer_ghost_bait:
 			var qty: int = GameState.lure_inventory.get(GameState.get_lure_id(GameState.current_lure), 0)
-			labels.append("[L] fire ghost_bait (x%d)  ·  bait the next layer — entities surface, aggression suppressed" % qty)
+			labels.append(DiveFormat.lure_label(labels.size() + 1,
+				"fire ghost_bait (x%d)  ·  bait the next layer — entities surface, aggression suppressed" % qty))
 			echoes.append("fire ghost_bait")
 
 		var index: int = await session_log.present_choices(labels, echoes)
@@ -215,7 +219,7 @@ func _present_catch(catch_data: CatchData) -> void:
 
 		var lure_action := _contact_lure_action()
 		if not lure_action.is_empty():
-			labels.append(lure_action.label)
+			labels.append(DiveFormat.lure_label(labels.size() + 1, lure_action.label))
 			echoes.append(lure_action.echo)
 
 		var index: int = await session_log.present_choices(labels, echoes)
@@ -300,7 +304,7 @@ func _contact_lure_action() -> Dictionary:
 	match GameState.current_lure.effect:
 		LureData.LureEffect.DECOY:
 			return {
-				"label": "[L] fire %s (x%d)  ·  slip this contact, draw a safer replacement" % [lure_id, qty],
+				"label": "fire %s (x%d)  ·  slip this contact, draw a safer replacement" % [lure_id, qty],
 				"echo": "fire %s" % lure_id,
 				"effect": LureData.LureEffect.DECOY,
 			}
@@ -308,7 +312,7 @@ func _contact_lure_action() -> Dictionary:
 			if _column.slot_in_layer + 1 >= _column.slots.size():
 				return {}
 			return {
-				"label": "[L] fire %s (x%d)  ·  scan remaining contacts in this layer" % [lure_id, qty],
+				"label": "fire %s (x%d)  ·  scan remaining contacts in this layer" % [lure_id, qty],
 				"echo": "fire %s" % lure_id,
 				"effect": LureData.LureEffect.DEEP_PULSE,
 			}

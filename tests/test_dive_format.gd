@@ -213,3 +213,9 @@ func test_recovered_fragments_mask_lost_and_unread() -> void:
 		{ "word": "4C", "state": HaulFragments.UNREAD },
 	])
 	assert_eq(text, "LOT 17  ·  ▓▓▓▓  ·  ░░")
+
+# Lure options are numbered like every other choice, not tagged [L], so the
+# list never reads as a key prompt next to real button glyphs.
+func test_lure_label_is_numbered_after_the_options() -> void:
+	assert_eq(DiveFormat.lure_label(3, "fire decoy (x2)  ·  slip this contact"),
+		"[3] fire decoy (x2)  ·  slip this contact")

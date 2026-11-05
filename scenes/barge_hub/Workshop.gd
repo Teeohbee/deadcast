@@ -35,7 +35,10 @@ func _ready() -> void:
 func on_screen_shown() -> void:
 	_refresh()
 	_tension_gauge.refresh()
-	repair_button.grab_focus()
+	default_focus().grab_focus()
+
+func default_focus() -> Control:
+	return repair_button
 
 func _refresh() -> void:
 	var rod = GameState.current_rod

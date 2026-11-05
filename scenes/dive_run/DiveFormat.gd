@@ -65,6 +65,9 @@ static func contact_card(catch_data: CatchData, hauled: bool = false) -> String:
 ## Tells, not sums: rough stakes in words (line strain, value), and UNCERTAIN when the
 ## option still rolls dice. Hauled options never do - the haul decides them. Exact
 ## numbers go to the session log once the option resolves.
+static func lure_label(num: int, text: String) -> String:
+	return "[%d] %s" % [num, text]
+
 static func option_label(num: int, option: CatchOption, behavior: CatchData.BehaviorType, hauled: bool = false) -> String:
 	if option.cuts_line:
 		return "[%d] abort_connection  ·  vents half the strain  ·  costs signal  ·  no reward" % num

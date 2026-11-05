@@ -34,6 +34,8 @@ const _ICONS := {
 	"haul":       "button_a",
 }
 
+const MOUSE_WAKE_PX := 8.0
+
 var mode: int = Mode.KEY
 
 func _input(event: InputEvent) -> void:
@@ -48,9 +50,18 @@ func update_mode_from_event(event: InputEvent) -> void:
 			new_mode = Mode.PAD
 	elif event is InputEventKey or event is InputEventMouseButton:
 		new_mode = Mode.KEY
+	elif event is InputEventMouseMotion:
+		# A deliberate move, not a bumped desk, brings the cursor back.
+		if (event as InputEventMouseMotion).relative.length() >= MOUSE_WAKE_PX:
+			new_mode = Mode.KEY
 	if new_mode != mode:
 		mode = new_mode
+		Input.mouse_mode = mouse_mode_for(mode)
 		device_changed.emit(mode)
+
+# The cursor is noise on a pad, so it hides until the mouse moves again.
+static func mouse_mode_for(p_mode: int) -> Input.MouseMode:
+	return Input.MOUSE_MODE_HIDDEN if p_mode == Mode.PAD else Input.MOUSE_MODE_VISIBLE
 
 func glyph(action: String) -> String:
 	return _GLYPHS.get(action, {}).get(mode, "")

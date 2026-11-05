@@ -55,7 +55,10 @@ func _refresh() -> void:
 
 func on_screen_shown() -> void:
 	_refresh()
-	load_button.grab_focus()
+	default_focus().grab_focus()
+
+func default_focus() -> Control:
+	return load_button
 
 func _update_crack() -> void:
 	var active := GameState.decrypt_box_queue > 0
