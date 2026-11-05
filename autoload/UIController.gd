@@ -171,6 +171,17 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		navigate_to("deck")
 
+# What the pad can do on the current screen, as [action, caption] pairs for
+# the footer legend. Derived from the same rules _unhandled_input and
+# apply_scroll follow, so the legend can't promise something that won't happen.
+func legend() -> Array:
+	var out: Array = [["accept", "SELECT"]]
+	if _current_node != null and is_instance_valid(_current_node) and _current_node.has_method("scroll_target"):
+		out.append(["scroll", "SCROLL"])
+	if _is_persistent(current_screen) and current_screen != "deck":
+		out.append(["cancel", "DECK"])
+	return out
+
 func _is_focus_press(event: InputEvent) -> bool:
 	for action in _FOCUS_ACTIONS:
 		if event.is_action_pressed(action):

@@ -20,6 +20,7 @@ const _GLYPHS := {
 	"navigate": {Mode.PAD: "[+]",     Mode.KEY: "[UP/DN]"},
 	"cycle_lure": {Mode.PAD: "[X]",   Mode.KEY: "[TAB]"},
 	"haul":     {Mode.PAD: "[A]",     Mode.KEY: "[SPACE]"},
+	"scroll":   {Mode.PAD: "[RS]",    Mode.KEY: "[PGUP/DN]"},
 }
 
 # Pad icons, by the Steam Deck file name under _ICON_DIR.
@@ -32,6 +33,7 @@ const _ICONS := {
 	"navigate":   "dpad_vertical",
 	"cycle_lure": "button_x",
 	"haul":       "button_a",
+	"scroll":     "stick_r_vertical",
 }
 
 const MOUSE_WAKE_PX := 8.0

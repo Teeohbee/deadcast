@@ -266,3 +266,22 @@ func test_scroll_by_moves_a_rich_text_label() -> void:
 	UIController.scroll_by(rtl, 120.0)
 	assert_gt(rtl.get_v_scroll_bar().value, 0.0)
 
+# --- button legend ---
+
+func _actions_of(legend: Array) -> Array:
+	return legend.map(func(p: Array) -> String: return p[0])
+
+func test_legend_on_deck_is_select_only() -> void:
+	UIController.navigate_to("deck")
+	assert_eq(_actions_of(UIController.legend()), ["accept"])
+
+func test_legend_off_deck_offers_back_to_deck() -> void:
+	UIController.navigate_to("workshop")
+	var legend := UIController.legend()
+	assert_has(_actions_of(legend), "cancel")
+	assert_has(legend, ["cancel", "DECK"])
+
+func test_legend_offers_scroll_when_the_screen_scrolls() -> void:
+	await _scrolling_screen()
+	assert_has(_actions_of(UIController.legend()), "scroll")
+
