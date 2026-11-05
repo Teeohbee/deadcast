@@ -14,9 +14,15 @@ const SNAP_TENSION := 25
 const HEAVY_STRAIN := 15
 const HEAVY_WEIGHT_MULT := 1.5
 
+## An option hauls if it pays and doesn't cut the line. Entities are the exception:
+## talking to a ghost is free, only tearing something out of it (an option with
+## strain - harvest, extract, pull) is a haul.
 static func hauls(zone: ZoneData, catch_data: CatchData, option: CatchOption) -> bool:
-	return zone != null and zone.haul_enabled and catch_data.haul_enabled \
-		and option.credit_value > 0 and not option.cuts_line
+	if zone == null or not zone.haul_enabled or not catch_data.haul_enabled:
+		return false
+	if option.credit_value <= 0 or option.cuts_line:
+		return false
+	return catch_data.catch_type != CatchData.CatchType.ENTITY or option.tension_delta > 0
 
 static func dials(catch_data: CatchData, option: CatchOption) -> Dictionary:
 	var weight := catch_data.haul_weight

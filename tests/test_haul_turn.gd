@@ -41,6 +41,16 @@ func test_release_cut_line_and_other_zones_skip_the_haul() -> void:
 	assert_false(HaulTurn.hauls(_zone(), _catch(false), _option(200, 5)), "contact without haul data")
 	assert_false(HaulTurn.hauls(null, _catch(), _option(200, 5)))
 
+func test_ghosts_haul_only_when_you_tear_something_out() -> void:
+	var ghost := _catch()
+	ghost.catch_type = CatchData.CatchType.ENTITY
+	assert_true(HaulTurn.hauls(_zone(), ghost, _option(800, 15)), "harvest hauls")
+	assert_false(HaulTurn.hauls(_zone(), ghost, _option(350, 0)), "talking is free")
+	assert_false(HaulTurn.hauls(_zone(), ghost, _option(0, 0)), "leaving is free")
+
+func test_cargo_hauls_even_without_strain() -> void:
+	assert_true(HaulTurn.hauls(_zone(), _catch(), _option(150, 0)))
+
 # --- payout table ---
 
 func test_perfect_pays_a_quarter_extra() -> void:
