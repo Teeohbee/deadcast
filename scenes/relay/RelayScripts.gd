@@ -261,6 +261,128 @@ const MARTA_RECOVERY_WARNING := {
 	],
 }
 
+# --- Marta's story beats (relay copy doc section 9) ---
+# Hub-arrival scripts from a given run. "after_fishing_zone" holds a beat back
+# until the player has dived that zone, so the line has something to point at.
+
+const MARTA_BEAT_EXCHANGE_SHARD := {
+	"id": "marta_beat_exchange_shard",
+	"contact": CONTACT_MARTA,
+	"channel": CHANNEL_TEXT,
+	"trigger": {"moment": TRIGGER_HUB_ARRIVAL, "from_run": 3, "after_fishing_zone": "exchange"},
+	"steps": [
+		{"say": "that shard you pulled from the exchange sub-level."},
+		{"say": "i've seen that serial number before."},
+		{"say": "don't worry about where."},
+	],
+}
+
+const MARTA_BEAT_FIVE_DIVES := {
+	"id": "marta_beat_five_dives",
+	"contact": CONTACT_MARTA,
+	"channel": CHANNEL_TEXT,
+	"trigger": {"moment": TRIGGER_HUB_ARRIVAL, "from_run": 5},
+	"steps": [
+		{"say": "five dives and the rod's still in one piece."},
+		{"say": "most people i stake don't get this far. i'm not saying i'm proud. i'm saying i've noticed."},
+	],
+}
+
+const MARTA_BEAT_ARCHIVE_MOVED := {
+	"id": "marta_beat_archive_moved",
+	"contact": CONTACT_MARTA,
+	"channel": CHANNEL_TEXT,
+	"trigger": {"moment": TRIGGER_HUB_ARRIVAL, "from_run": 6, "after_fishing_zone": "axiom"},
+	"steps": [
+		{"say": "the archive from the axiom sub-basement. the one with the specs in it."},
+		{"say": "good work. it's already moved."},
+		{"say": "you didn't read it. say you didn't read it."},
+	],
+}
+
+const MARTA_BEAT_TRANSPONDER := {
+	"id": "marta_beat_transponder",
+	"contact": CONTACT_MARTA,
+	"channel": CHANNEL_CALL,
+	"trigger": {"moment": TRIGGER_HUB_ARRIVAL, "from_run": 8},
+	"steps": [
+		{"say": "something you should hear from me before you hear it from okeke."},
+		{"say": "the meridian has a transponder. it was fitted before you ever touched the keys."},
+		{"say": "axiom's been paying me for your dive coordinates since the first night."},
+		{"replies": [
+			{"text": "you sold me out.", "then": [
+				{"say": "i sold your location. you're still here. that's not the same thing."},
+			]},
+			{"text": "why tell me now?", "then": [
+				{"say": "because okeke counts. and because you'd have found it. you're getting good."},
+			]},
+		], "silent": [
+			{"say": "yes. that's about what i expected."},
+		]},
+		{"say": "it changes nothing. the debt is real. the work is real. my thirty percent is very real."},
+		{"say": "if it helps, they never asked about you. only about where you were."},
+		{"say": "i'll leave you to decide whether that's better."},
+	],
+}
+
+const MARTA_BEAT_OKEKE_TALKS := {
+	"id": "marta_beat_okeke_talks",
+	"contact": CONTACT_MARTA,
+	"channel": CHANNEL_TEXT,
+	"trigger": {"moment": TRIGGER_HUB_ARRIVAL, "from_run": 10},
+	"steps": [
+		{"say": "okeke talks too much."},
+		{"say": "he's not wrong often. he's not right often enough."},
+		{"say": "count your money, by all means. count his too."},
+	],
+}
+
+const MARTA_BEAT_THE_OFFER := {
+	"id": "marta_beat_the_offer",
+	"contact": CONTACT_MARTA,
+	"channel": CHANNEL_CALL,
+	"trigger": {"moment": TRIGGER_HUB_ARRIVAL, "from_run": 12},
+	"steps": [
+		{"say": "i've got a proposal. sit down if the boat has anywhere to sit."},
+		{"say": "axiom credit is a department. departments have people. people owe me things."},
+		{"say": "i can make your account go away. not smaller. away."},
+		{"replies": [
+			{"text": "what's the price?", "then": [
+				{"say": "one job. deep. axiom water. i'll tell you more when you need to know it."},
+			]},
+			{"text": "why would you?", "then": [
+				{"say": "because what i need is further down than anyone else i know can reach."},
+			]},
+		], "silent": [
+			{"say": "take your time. you've got until your next instalment."},
+		]},
+		{"say": "don't answer now. answer when i call again."},
+		{"say": "and don't mention this to okeke. not because he'd talk. because he'd try to talk you out of it."},
+	],
+}
+
+const MARTA_VICTORY_CALL := {
+	"id": "marta_victory_call",
+	"contact": CONTACT_MARTA,
+	"channel": CHANNEL_CALL,
+	"trigger": {"moment": TRIGGER_HUB_ARRIVAL, "requires_victory": true},
+	"steps": [
+		{"say": "axiom's closed your account. i saw the notice before you did."},
+		{"say": "the meridian's yours. no mortgage, no instalments, no reply STOP."},
+		{"replies": [
+			{"text": "thank you.", "then": [
+				{"say": "don't. it was business. it was mostly business."},
+			]},
+			{"text": "what about your cut?", "then": [
+				{"say": "i was paid. i was always going to be paid."},
+			]},
+		], "silent": [
+			{"say": "yes. it's strange the first time."},
+		]},
+		{"say": "don't make me regret it. call me if you want work. you won't need to, and you'll call anyway."},
+	],
+}
+
 static func all_scripts() -> Array[Dictionary]:
 	return [
 		MARTA_FIRST_CALL,
@@ -268,6 +390,13 @@ static func all_scripts() -> Array[Dictionary]:
 		MARTA_AFTER_DIVE_ONE,
 		OKEKE_INTRO_CALL,
 		MARTA_RECOVERY_WARNING,
+		MARTA_VICTORY_CALL,
+		MARTA_BEAT_EXCHANGE_SHARD,
+		MARTA_BEAT_FIVE_DIVES,
+		MARTA_BEAT_ARCHIVE_MOVED,
+		MARTA_BEAT_TRANSPONDER,
+		MARTA_BEAT_OKEKE_TALKS,
+		MARTA_BEAT_THE_OFFER,
 	]
 
 static func find(script_id: String) -> Dictionary:
