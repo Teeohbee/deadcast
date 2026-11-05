@@ -84,6 +84,15 @@ static func make_chip(text: String, tier: int, font_size: int = SIZE_AMBIENT) ->
 	apply_label(chip, c, font_size)
 	return chip
 
+# The pad focus ring: bright and a pixel thicker than any border, so focus never
+# reads as selection (green) or as a plain border. Shared by every focusable
+# deck button so "where am I" looks the same on every screen.
+static func focus_ring(base: StyleBoxFlat) -> StyleBoxFlat:
+	var ring := base.duplicate() as StyleBoxFlat
+	ring.border_color = TEXT
+	ring.set_border_width_all(2)
+	return ring
+
 static func apply_action_button(btn: Button, color: Color = GREEN) -> void:
 	var normal := StyleBoxFlat.new()
 	normal.bg_color = Color(color.r, color.g, color.b, 0.08)
@@ -95,8 +104,7 @@ static func apply_action_button(btn: Button, color: Color = GREEN) -> void:
 	normal.content_margin_bottom = 3
 	var hover := normal.duplicate() as StyleBoxFlat
 	hover.bg_color = color
-	var focus := normal.duplicate() as StyleBoxFlat
-	focus.border_color = TEXT
+	var focus := focus_ring(normal)
 	btn.add_theme_stylebox_override("normal", normal)
 	btn.add_theme_stylebox_override("hover", hover)
 	btn.add_theme_stylebox_override("focus", focus)
@@ -115,12 +123,12 @@ static func apply_card(btn: Button, selected: bool) -> void:
 	normal.content_margin_right = 10
 	normal.content_margin_top = 6
 	normal.content_margin_bottom = 6
-	var focus := normal.duplicate() as StyleBoxFlat
-	focus.border_color = GREEN
+	var hover := normal.duplicate() as StyleBoxFlat
+	hover.border_color = GREEN
 	btn.add_theme_stylebox_override("normal", normal)
-	btn.add_theme_stylebox_override("hover", focus)
-	btn.add_theme_stylebox_override("focus", focus)
-	btn.add_theme_stylebox_override("pressed", focus)
+	btn.add_theme_stylebox_override("hover", hover)
+	btn.add_theme_stylebox_override("focus", focus_ring(normal))
+	btn.add_theme_stylebox_override("pressed", hover)
 
 static func apply_function_key(btn: Button) -> void:
 	var normal := StyleBoxFlat.new()
@@ -131,11 +139,9 @@ static func apply_function_key(btn: Button) -> void:
 	normal.content_margin_bottom = 5
 	var hover := normal.duplicate() as StyleBoxFlat
 	hover.bg_color = GREEN
-	var focus := normal.duplicate() as StyleBoxFlat
-	focus.border_color = GREEN
 	btn.add_theme_stylebox_override("normal", normal)
 	btn.add_theme_stylebox_override("hover", hover)
-	btn.add_theme_stylebox_override("focus", focus)
+	btn.add_theme_stylebox_override("focus", focus_ring(normal))
 	btn.add_theme_stylebox_override("pressed", hover)
 	btn.add_theme_color_override("font_hover_color", BG)
 	btn.add_theme_color_override("font_pressed_color", BG)
