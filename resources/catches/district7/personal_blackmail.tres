@@ -21,4 +21,4 @@ haul_weight = 1.1
 haul_slip = 1.0
 haul_tempo = 1.2
 haul_erratic = true
-fragments = PackedStringArray("COUNCIL", "PHOTOS", "PAID", "SILENCE")
+fragments = PackedStringArray("COUNCIL", "PHOTOS", "PAID", "SILENCE", "HOTEL", "COPIES", "MONTHLY")

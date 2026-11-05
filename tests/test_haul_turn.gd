@@ -152,12 +152,17 @@ func test_district7_hauls_and_its_haul_contacts_are_ready_to_haul() -> void:
 	var hauled := 0
 	for c in zone.catches:
 		if not c.haul_enabled:
+			assert_false(c.options.any(func(o: CatchOption) -> bool: return o.credit_value > 0 and o.tension_delta > 0 and c.catch_type != CatchData.CatchType.ENTITY and c.behavior != CatchData.BehaviorType.AGGRESSIVE),
+				c.catch_name + " pays and strains, so it should haul")
 			continue
 		hauled += 1
 		assert_ne(c.behavior, CatchData.BehaviorType.AGGRESSIVE, c.catch_name + " fights, it doesn't haul")
-		assert_gt(c.fragments.size(), 0, c.catch_name + " has fragments")
 		assert_true(c.options.any(func(o: CatchOption) -> bool: return HaulTurn.hauls(zone, c, o)), c.catch_name + " has a hauled option")
+		assert_between(c.fragments.size(), 6, 8, c.catch_name + " fragment pool")
+		for w in c.fragments_always:
+			assert_has(c.fragments, w, c.catch_name + " always-included fragment is in the pool")
 		for seed in range(1, 21):
-			var block := HaulFragments.new(c.fragments, HaulView.ROWS, HaulSim.Lcg.new(seed))
-			assert_eq(block.fragments.size(), c.fragments.size(), "%s fragments fit (seed %d)" % [c.catch_name, seed])
-	assert_gt(hauled, 5, "most District 7 contacts haul")
+			var drawn := HaulFragments.draw(c.fragments, c.fragments_always, HaulSim.Lcg.new(seed))
+			var block := HaulFragments.new(drawn, HaulView.ROWS, HaulSim.Lcg.new(seed))
+			assert_eq(block.fragments.size(), drawn.size(), "%s fragments fit (seed %d)" % [c.catch_name, seed])
+	assert_gt(hauled, 10, "cargo and ghosts with something to tear out")

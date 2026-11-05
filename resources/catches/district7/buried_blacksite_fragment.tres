@@ -19,4 +19,4 @@ haul_weight = 1.4
 haul_slip = 1.3
 haul_tempo = 1.1
 haul_erratic = true
-fragments = PackedStringArray("AXIOM", "SITE B", "SEALED", "NO RECORD")
+fragments = PackedStringArray("AXIOM", "SITE B", "SEALED", "NO RECORD", "SUBLEVEL", "QUARANTINE", "BADGE ONLY")

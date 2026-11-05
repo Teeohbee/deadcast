@@ -21,4 +21,5 @@ haul_weight = 1.9
 haul_slip = 0.3
 haul_tempo = 0.6
 haul_erratic = false
-fragments = PackedStringArray("MK II", "PATROL", "PING", "GATE 9")
+fragments = PackedStringArray("MK II", "PATROL", "PING", "GATE 9", "LOW BATT", "ROUTE 4", "HOMING")
+fragments_always = PackedStringArray("GATE 9")
