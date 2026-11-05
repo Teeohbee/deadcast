@@ -38,3 +38,20 @@ func test_small_stick_drift_does_not_switch() -> void:
 	e.axis_value = 0.1
 	InputGlyphs.update_mode_from_event(e)
 	assert_eq(InputGlyphs.mode, InputGlyphs.Mode.KEY)
+
+func test_icon_is_null_in_key_mode() -> void:
+	InputGlyphs.mode = InputGlyphs.Mode.KEY
+	assert_null(InputGlyphs.icon("accept"))
+
+func test_every_action_has_a_pad_icon() -> void:
+	InputGlyphs.mode = InputGlyphs.Mode.PAD
+	for action in InputGlyphs.actions():
+		assert_not_null(InputGlyphs.icon(action), "%s has no pad icon" % action)
+
+func test_icon_for_unknown_action_is_null() -> void:
+	InputGlyphs.mode = InputGlyphs.Mode.PAD
+	assert_null(InputGlyphs.icon("nope"))
+
+func test_accept_and_haul_share_the_a_button() -> void:
+	InputGlyphs.mode = InputGlyphs.Mode.PAD
+	assert_same(InputGlyphs.icon("accept"), InputGlyphs.icon("haul"))
