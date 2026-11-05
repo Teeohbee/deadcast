@@ -31,3 +31,12 @@ func test_crack_active_when_queued() -> void:
 	var s := _make()
 	await get_tree().process_frame
 	assert_true(s._cipher_crack._active)
+
+func test_one_block_at_a_time() -> void:
+	var s := _make()
+	await get_tree().process_frame
+	assert_false(s.load_button.disabled)
+	s.load_button.pressed.emit()
+	assert_eq(GameState.decrypt_box_queue, 1000)
+	assert_true(s.load_button.disabled, "a queued block locks the box until it pays out")
+	assert_eq(GameState.credits, 49000)

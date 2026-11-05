@@ -47,6 +47,9 @@ func _refresh() -> void:
 	if decrypting:
 		load_button.text = "decryption in progress"
 		load_button.disabled = true
+	elif GameState.decrypt_box_queue > 0:
+		load_button.text = "block queued · one at a time"
+		load_button.disabled = true
 	else:
 		load_button.text = "load %dcr of data" % LOAD_AMOUNT
 		load_button.disabled = GameState.credits < LOAD_AMOUNT

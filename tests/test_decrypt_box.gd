@@ -20,27 +20,27 @@ func test_roll_returns_corruption_at_low_roll() -> void:
 	assert_eq(outcome.id, "corruption")
 
 func test_roll_returns_corruption_just_before_boundary() -> void:
-	var outcome = GameState._roll_decrypt_outcome(0.199)
+	var outcome = GameState._roll_decrypt_outcome(0.249)
 	assert_eq(outcome.id, "corruption")
 
 func test_roll_returns_partial_at_boundary() -> void:
-	var outcome = GameState._roll_decrypt_outcome(0.20)
+	var outcome = GameState._roll_decrypt_outcome(0.25)
 	assert_eq(outcome.id, "partial")
 
 func test_roll_returns_partial_before_clean_boundary() -> void:
-	var outcome = GameState._roll_decrypt_outcome(0.549)
+	var outcome = GameState._roll_decrypt_outcome(0.699)
 	assert_eq(outcome.id, "partial")
 
 func test_roll_returns_clean_at_boundary() -> void:
-	var outcome = GameState._roll_decrypt_outcome(0.55)
+	var outcome = GameState._roll_decrypt_outcome(0.70)
 	assert_eq(outcome.id, "clean")
 
 func test_roll_returns_clean_before_anomaly_boundary() -> void:
-	var outcome = GameState._roll_decrypt_outcome(0.899)
+	var outcome = GameState._roll_decrypt_outcome(0.949)
 	assert_eq(outcome.id, "clean")
 
 func test_roll_returns_anomaly_at_boundary() -> void:
-	var outcome = GameState._roll_decrypt_outcome(0.90)
+	var outcome = GameState._roll_decrypt_outcome(0.95)
 	assert_eq(outcome.id, "anomaly")
 
 func test_roll_returns_anomaly_at_max() -> void:
@@ -57,9 +57,20 @@ func test_corruption_multiplier_is_zero() -> void:
 	var outcome = GameState._roll_decrypt_outcome(0.0)
 	assert_eq(outcome.multiplier, 0.0)
 
-func test_anomaly_multiplier_is_six() -> void:
-	var outcome = GameState._roll_decrypt_outcome(0.90)
-	assert_eq(outcome.multiplier, 6.0)
+func test_anomaly_multiplier_is_three() -> void:
+	var outcome = GameState._roll_decrypt_outcome(0.95)
+	assert_eq(outcome.multiplier, 3.0)
+
+# Stopgap until the decryption rig (shop economy plan, phase C): the box is a
+# small edge, not a money printer.
+func test_expected_return_is_a_small_edge() -> void:
+	var expected := 0.0
+	var total_weight := 0.0
+	for outcome in GameState.DECRYPT_OUTCOMES:
+		expected += outcome.weight * outcome.multiplier
+		total_weight += outcome.weight
+	assert_almost_eq(total_weight, 1.0, 0.0001)
+	assert_almost_eq(expected, 1.15, 0.0001)
 
 func test_decrypt_payout_clears_queue() -> void:
 	GameState.decrypt_box_queue = 1000
@@ -78,7 +89,7 @@ func test_decrypt_payout_sets_last_payout() -> void:
 	GameState.decrypt_box_queue = 1000
 	for i in 3:
 		GameState.on_run_complete(false, 0)
-	var valid_payouts = [0, 1500, 4000, 6000]
+	var valid_payouts = [0, 1000, 2200, 3000]
 	assert_true(GameState.decrypt_last_payout in valid_payouts)
 
 func test_decrypt_last_outcome_saved_and_loaded() -> void:
