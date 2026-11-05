@@ -160,12 +160,9 @@ func _show_checkpoint() -> void:
 			echoes.append("fire deep_pulse")
 			actions.append("pulse")
 
-		var offer_ghost_bait := (not ghost_bait_armed and
-			GameState.current_lure != null and
-			GameState.current_lure.effect == LureData.LureEffect.GHOST_BAIT and
-			GameState.has_lure_stock(GameState.current_lure))
+		var offer_ghost_bait := not ghost_bait_armed and _lure_ready(LureData.LureEffect.GHOST_BAIT)
 		if offer_ghost_bait:
-			var qty: int = GameState.lure_inventory.get(GameState.get_lure_id(GameState.current_lure), 0)
+			var qty := _lure_count(LureData.LureEffect.GHOST_BAIT)
 			labels.append(DiveFormat.lure_label(labels.size() + 1,
 				"fire ghost_bait (x%d)  ·  bait the next layer — entities surface, aggression suppressed" % qty))
 			echoes.append("fire ghost_bait")
@@ -188,7 +185,7 @@ func _show_checkpoint() -> void:
 			_fire_splice()
 			continue
 		if actions[index] == "ghost_bait":
-			GameState.consume_lure_use()
+			_consume_lure(LureData.LureEffect.GHOST_BAIT)
 			ghost_bait_armed = true
 			# A scan taken before the bait no longer shows what will be drawn.
 			if scanned:
@@ -243,8 +240,9 @@ func _present_catch(catch_data: CatchData) -> void:
 				HaulTurn.hauls(augmented, augmented.options[i])))
 			echoes.append(augmented.options[i].label.to_lower().replace(" ", "_"))
 
-		var lure_action := _contact_lure_action()
-		if not lure_action.is_empty():
+		var lure_actions := _contact_lure_actions()
+		var first_lure_index := labels.size()
+		for lure_action in lure_actions:
 			labels.append(DiveFormat.lure_label(labels.size() + 1, lure_action.label))
 			echoes.append(lure_action.echo)
 
@@ -252,8 +250,8 @@ func _present_catch(catch_data: CatchData) -> void:
 		if _snapped:
 			return
 
-		if not lure_action.is_empty() and index == labels.size() - 1:
-			match lure_action.effect:
+		if index >= first_lure_index:
+			match lure_actions[index - first_lure_index].effect:
 				LureData.LureEffect.DECOY:
 					current = _fire_decoy()
 					need_card = true
@@ -311,31 +309,30 @@ func _present_catch(catch_data: CatchData) -> void:
 				_advance_slot()
 		return
 
-func _contact_lure_action() -> Dictionary:
+func _contact_lure_actions() -> Array[Dictionary]:
+	var actions: Array[Dictionary] = []
 	if _lure_ready(LureData.LureEffect.DECOY):
-		return {
+		actions.append({
 			"label": "fire decoy_swarm (x%d)  ·  slip this contact, draw a calmer one" % _lure_count(LureData.LureEffect.DECOY),
 			"echo": "fire decoy_swarm",
 			"effect": LureData.LureEffect.DECOY,
-		}
+		})
 	if _splice_ready():
-		return {"label": _splice_label(), "echo": "fire splice_kit", "effect": LureData.LureEffect.SPLICE}
-	return {}
+		actions.append({"label": _splice_label(), "echo": "fire splice_kit", "effect": LureData.LureEffect.SPLICE})
+	return actions
 
 # --- lures: each answers one question (shop economy plan, PR B4) ---
 
 func _lure_ready(effect: LureData.LureEffect) -> bool:
-	return (GameState.current_lure != null and GameState.current_lure.effect == effect
-		and GameState.has_lure_stock(GameState.current_lure))
+	return GameState.loaded_lure_id(effect) != ""
 
 func _lure_count(effect: LureData.LureEffect) -> int:
-	if not _lure_ready(effect):
-		return 0
-	return GameState.lure_inventory.get(GameState.get_lure_id(GameState.current_lure), 0)
+	return GameState.lure_stock(GameState.loaded_lure_id(effect))
 
 func _consume_lure(effect: LureData.LureEffect) -> void:
-	if _lure_ready(effect):
-		GameState.consume_lure_use()
+	var lure_id := GameState.loaded_lure_id(effect)
+	if lure_id != "":
+		GameState.consume_lure(lure_id)
 
 func _splice_ready() -> bool:
 	return _lure_ready(LureData.LureEffect.SPLICE) and line_system.tension > 0.0
@@ -541,7 +538,7 @@ func _run_overload(catch_data: CatchData) -> void:
 			return
 
 		if cmd.id == "OVERLOAD_CORE":
-			GameState.consume_lure_use()
+			_consume_lure(LureData.LureEffect.SHOCK)
 
 		var result: Dictionary = fight.execute(cmd)
 		line_system.sync_tension(fight.tension)
@@ -616,9 +613,7 @@ func _brake_ready() -> bool:
 	return not _brake_used and GameState.current_rod != null and GameState.current_rod.has_brake()
 
 func _shock_ready(catch_data: CatchData) -> bool:
-	return (GameState.current_lure != null and
-		GameState.current_lure.effect == LureData.LureEffect.SHOCK and
-		GameState.has_lure_stock(GameState.current_lure) and
+	return (_lure_ready(LureData.LureEffect.SHOCK) and
 		catch_data.catch_type == CatchData.CatchType.MECH)
 
 func _pacify_entities_in_layer() -> void:
@@ -762,10 +757,4 @@ func _pressure_label(level: int) -> String:
 		_: return ""
 
 func _initial_lure_label() -> String:
-	if not GameState.current_lure:
-		return "—"
-	var lure_id := GameState.get_lure_id(GameState.current_lure)
-	var qty: int = GameState.lure_inventory.get(lure_id, 0)
-	if qty == GameState.INFINITE_STOCK:
-		return "%s ∞" % lure_id
-	return "%s x%d" % [lure_id, qty]
+	return GameState.loadout_label()

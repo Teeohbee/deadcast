@@ -4,7 +4,6 @@ extends Node
 const SAVE_PATH = "user://save.cfg"
 # Where save()/load_save() read and write; the test pre-run hook redirects it.
 var save_path: String = SAVE_PATH
-const INFINITE_STOCK: int = -1
 const OS_VERSION := "v2.1.4"
 
 # Transient UI state — not saved
@@ -18,7 +17,6 @@ var last_run_result: Dictionary = {}
 
 # Gear
 var current_rod: RodData = null
-var current_lure: LureData = null
 var rod_damaged: bool = false
 # Depth is the Meridian's winch, not the rod: the cable reaches shallows and
 # mid; the deep winch reaches the deep layer (DiveColumn.LAYER_DEPTH_REQ).
@@ -33,9 +31,12 @@ const LEGACY_DEEP_RODS: Array[String] = [
 const LEGACY_DEPTH_UPGRADE_BASE_COST: int = 2000
 var selected_zone: String = "district7"
 
-var lure_inventory: Dictionary = {
-	"basic_hook": INFINITE_STOCK,
-}
+var lure_inventory: Dictionary = {}
+# Two provision slots, chosen on the DECK before the cast (lure ids, "" = empty).
+# Everything loaded can be fired during the dive.
+const LOADOUT_SLOTS: int = 2
+const LURE_ORDER: Array[String] = ["deep_pulse", "decoy_swarm", "shock_lure", "splice_kit", "ghost_bait"]
+var loadout: Array[String] = ["", ""]
 
 # Progression
 var run_count: int = 0
@@ -107,7 +108,6 @@ func _ready() -> void:
 
 func _load_defaults() -> void:
 	current_rod = load("res://resources/rods/scrap_rod.tres")
-	current_lure = load("res://resources/lures/basic_hook.tres")
 	load_save()
 
 # --- Run lifecycle ---
@@ -247,8 +247,44 @@ func select_zone(zone_id: String) -> void:
 	EventBus.zone_changed.emit(zone_id)
 	save()
 
-func equip_lure(lure: LureData) -> void:
-	current_lure = lure
+func lure_stock(lure_id: String) -> int:
+	return int(lure_inventory.get(lure_id, 0))
+
+func owned_lure_ids() -> Array[String]:
+	return LURE_ORDER.filter(func(lure_id: String) -> bool: return lure_stock(lure_id) > 0)
+
+# Next owned lure the other slot isn't holding, then empty, then round again.
+func cycle_loadout_slot(slot: int) -> void:
+	var options: Array[String] = [""]
+	for lure_id in owned_lure_ids():
+		if not (lure_id in loadout and loadout.find(lure_id) != slot):
+			options.append(lure_id)
+	var current := options.find(loadout[slot])
+	loadout[slot] = options[(current + 1) % options.size()]
+	save()
+
+func lure_data(lure_id: String) -> LureData:
+	return load("res://resources/lures/%s.tres" % lure_id)
+
+# The loaded lure with this effect that still has stock, or "".
+func loaded_lure_id(effect: LureData.LureEffect) -> String:
+	for lure_id in loadout:
+		if lure_id != "" and lure_stock(lure_id) > 0 and lure_data(lure_id).effect == effect:
+			return lure_id
+	return ""
+
+func consume_lure(lure_id: String) -> void:
+	if lure_stock(lure_id) <= 0:
+		return
+	lure_inventory[lure_id] = lure_stock(lure_id) - 1
+	EventBus.lure_stock_changed.emit(lure_id, lure_inventory[lure_id])
+
+func loadout_label() -> String:
+	var parts: Array[String] = []
+	for lure_id in loadout:
+		if lure_id != "":
+			parts.append("%s x%d" % [lure_id, lure_stock(lure_id)])
+	return "—" if parts.is_empty() else " · ".join(parts)
 
 func equip_rod(rod: RodData) -> void:
 	current_rod = rod
@@ -268,19 +304,6 @@ func get_lure_id(lure: LureData) -> String:
 	assert(lure.resource_path != "", "LureData must be loaded from a .tres file to derive an ID")
 	return lure.resource_path.get_file().get_basename()
 
-func has_lure_stock(lure: LureData) -> bool:
-	var qty = lure_inventory.get(get_lure_id(lure), 0)
-	return qty == INFINITE_STOCK or qty > 0
-
-func consume_lure_use() -> void:
-	if current_lure == null:
-		return
-	var lure_id = get_lure_id(current_lure)
-	if lure_inventory.get(lure_id, 0) == INFINITE_STOCK:
-		return
-	if lure_inventory.has(lure_id):
-		lure_inventory[lure_id] = max(0, lure_inventory[lure_id] - 1)
-		EventBus.lure_stock_changed.emit(lure_id, lure_inventory[lure_id])
 
 func _roll_decrypt_outcome(roll: float) -> Dictionary:
 	var cumulative: float = 0.0
@@ -372,7 +395,7 @@ func _save_to(path: String) -> void:
 	cfg.set_value("gear", "deep_winch_fitted", deep_winch_fitted)
 	cfg.set_value("gear", "selected_zone", selected_zone)
 	cfg.set_value("gear", "current_rod_path", current_rod.resource_path if current_rod else "")
-	cfg.set_value("gear", "current_lure_path", current_lure.resource_path if current_lure else "")
+	cfg.set_value("gear", "loadout", loadout)
 	cfg.set_value("gear", "lure_inventory", lure_inventory)
 	cfg.set_value("decrypt", "box_queue", decrypt_box_queue)
 	cfg.set_value("decrypt", "box_runs", decrypt_box_runs)
@@ -410,13 +433,18 @@ func _load_from(path: String) -> void:
 	var rod_path = cfg.get_value("gear", "current_rod_path", "")
 	if rod_path != "":
 		current_rod = load(rod_path)
-	var lure_path = cfg.get_value("gear", "current_lure_path", "")
-	if lure_path != "":
-		current_lure = load(lure_path)
 	var saved_inventory = cfg.get_value("gear", "lure_inventory", {})
-	# Merge rather than replace: preserves defaults for lures added after an old save was written.
+	lure_inventory = {}
 	for key in saved_inventory:
-		lure_inventory[key] = saved_inventory[key]
+		if key != "basic_hook":  # the hook did nothing and is gone
+			lure_inventory[key] = saved_inventory[key]
+	if cfg.has_section_key("gear", "loadout"):
+		loadout.assign(cfg.get_value("gear", "loadout", ["", ""]))
+	else:
+		# Pre-loadout saves had one equipped lure: it moves into slot one.
+		var lure_path: String = cfg.get_value("gear", "current_lure_path", "")
+		var lure_id := lure_path.get_file().get_basename()
+		loadout.assign([lure_id if lure_id in LURE_ORDER else "", ""])
 	decrypt_box_queue = cfg.get_value("decrypt", "box_queue", 0)
 	decrypt_box_runs = cfg.get_value("decrypt", "box_runs", 0)
 	decrypt_last_outcome = cfg.get_value("decrypt", "last_outcome", "")
@@ -479,7 +507,8 @@ func new_game() -> void:
 	first_dive_hints_done = false
 	rod_damaged = false
 	deep_winch_fitted = false
-	lure_inventory = { "basic_hook": INFINITE_STOCK }
+	lure_inventory = {}
+	loadout = ["", ""] as Array[String]
 	decrypt_box_queue = 0
 	decrypt_box_runs = 0
 	decrypt_last_outcome = ""
@@ -498,7 +527,6 @@ func new_game() -> void:
 	relay_played_script_ids = []
 	relay_entries = []
 	current_rod = load("res://resources/rods/scrap_rod.tres")
-	current_lure = load("res://resources/lures/basic_hook.tres")
 	save()
 	EventBus.credits_changed.emit(credits)
 

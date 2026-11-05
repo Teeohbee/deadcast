@@ -1,14 +1,14 @@
 extends GutTest
 
-var _saved_lure: LureData
+var _saved_loadout: Array[String]
 var _saved_inventory: Dictionary
 
 func before_each() -> void:
-	_saved_lure = GameState.current_lure
+	_saved_loadout = GameState.loadout.duplicate()
 	_saved_inventory = GameState.lure_inventory.duplicate()
 
 func after_each() -> void:
-	GameState.current_lure = _saved_lure
+	GameState.loadout = _saved_loadout
 	GameState.lure_inventory = _saved_inventory
 
 func test_event_bus_has_new_signals() -> void:
@@ -16,18 +16,16 @@ func test_event_bus_has_new_signals() -> void:
 	assert_true(EventBus.has_signal("slot_revealed"))
 	assert_true(EventBus.has_signal("lure_stock_changed"))
 
-func test_consume_lure_use_emits_stock_changed() -> void:
-	GameState.current_lure = load("res://resources/lures/shock_lure.tres")
+func test_consume_lure_emits_stock_changed() -> void:
 	GameState.lure_inventory["shock_lure"] = 2
 	watch_signals(EventBus)
-	GameState.consume_lure_use()
+	GameState.consume_lure("shock_lure")
 	assert_signal_emitted_with_parameters(EventBus, "lure_stock_changed", ["shock_lure", 1])
 
-func test_consume_infinite_lure_does_not_emit() -> void:
-	GameState.current_lure = load("res://resources/lures/basic_hook.tres")
-	GameState.lure_inventory["basic_hook"] = GameState.INFINITE_STOCK
+func test_consume_an_empty_lure_does_not_emit() -> void:
+	GameState.lure_inventory["shock_lure"] = 0
 	watch_signals(EventBus)
-	GameState.consume_lure_use()
+	GameState.consume_lure("shock_lure")
 	assert_signal_not_emitted(EventBus, "lure_stock_changed")
 
 func test_starting_a_dive_signals_the_cast_and_first_contact() -> void:

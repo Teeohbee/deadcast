@@ -1,5 +1,5 @@
 # scenes/dive_run/dive_status_strip.gd
-# Log-panel header readout: the stakes (HAUL) and the equipped LURE, right next to
+# Log-panel header readout: the stakes (HAUL) and the loaded provisions (LURE), right next to
 # the choices. Tension reads off the biosign rail widget and SIG off hydrophone /
 # the global header, so they are no longer duplicated here. Static formatter for
 # testability; live values arrive over EventBus.
@@ -25,9 +25,8 @@ func _on_haul_changed(value: int) -> void:
 	_haul = value
 	_refresh()
 
-func _on_lure_stock_changed(lure_id: String, remaining: int) -> void:
-	if GameState.current_lure and GameState.get_lure_id(GameState.current_lure) == lure_id:
-		_lure_label = "%s x%d" % [lure_id, remaining]
+func _on_lure_stock_changed(_lure_id: String, _remaining: int) -> void:
+	_lure_label = GameState.loadout_label()
 	_refresh()
 
 func _refresh() -> void:
