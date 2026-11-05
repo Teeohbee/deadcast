@@ -62,65 +62,57 @@ static func contact_card(catch_data: CatchData, hauled: bool = false) -> String:
 		card += "\n│  hauls: %s" % HaulTurn.feel(catch_data)
 	return card
 
-## Options on a hauled contact: tells, not sums. The haul decides the odds, so the card
-## shows rough stakes - line strain and worth - and exact numbers go to the log.
-static func haul_option_label(num: int, option: CatchOption) -> String:
+## Tells, not sums: rough stakes in words (line strain, value), and UNCERTAIN when the
+## option still rolls dice. Hauled options never do - the haul decides them. Exact
+## numbers go to the session log once the option resolves.
+static func option_label(num: int, option: CatchOption, behavior: CatchData.BehaviorType, hauled: bool = false) -> String:
 	if option.cuts_line:
-		return option_label(num, option, CatchData.BehaviorType.PASSIVE)
+		return "[%d] abort_connection  ·  vents half the strain  ·  costs signal  ·  no reward" % num
 	var parts: Array[String] = ["[%d] %s" % [num, option.label.to_lower().replace(" ", "_")]]
 	var strain := HaulTurn.strain_word(option.tension_delta)
 	if strain != "":
 		parts.append("strain: " + strain)
-	var worth := HaulTurn.worth_word(option.credit_value)
-	if worth != "":
-		parts.append("worth: " + worth)
+	var value := HaulTurn.value_word(option.credit_value)
+	if value != "":
+		parts.append("value: " + value)
+	if not hauled and _rolls_dice(option, behavior):
+		parts.append("UNCERTAIN")
 	return "  ·  ".join(parts)
 
-static func option_label(num: int, option: CatchOption, behavior: CatchData.BehaviorType) -> String:
-	if option.cuts_line:
-		return "[%d] abort_connection  ·  vents half tension  ·  SIG -10%%  ·  no reward" % num
-
-	var t_str: String
-	if option.tension_delta > 0:
-		t_str = "+%dT" % option.tension_delta
-	elif option.tension_delta < 0:
-		t_str = "%dT" % option.tension_delta
-	else:
-		t_str = "+0T"
-
-	var parts: Array[String] = [t_str]
-	if option.credit_value > 0:
-		parts.append("+%dcr" % option.credit_value)
-
+static func _rolls_dice(option: CatchOption, behavior: CatchData.BehaviorType) -> bool:
 	match behavior:
 		CatchData.BehaviorType.RESISTANT:
-			if option.resist_chance > 0.0:
-				parts.append("%d%% resist (+%dT)" % [
-					int(option.resist_chance * 100), option.resist_tension_penalty])
+			return option.resist_chance > 0.0
 		CatchData.BehaviorType.NEGOTIATING:
-			if option.fail_chance > 0.0:
-				var fail_cr := "+%dcr" % option.fail_credit_value if option.fail_credit_value > 0 else "+0cr"
-				parts.append("%d%% fail (+%dT, %s)" % [
-					int(option.fail_chance * 100), option.fail_tension_delta, fail_cr])
+			return option.fail_chance > 0.0
+	return false
 
-	var label := option.label.to_lower().replace(" ", "_")
-	return "[%d] %s  ·  %s" % [num, label, "  ·  ".join(parts)]
-
+## Overload fight commands in words, built from the command's own numbers.
 static func command_label(num: int, cmd: Dictionary) -> String:
-	match cmd.id:
-		"DECRYPT_NODE":
-			return "[%d] DECRYPT_NODE          +10T  ·  -1 anchor  ·  guaranteed" % num
-		"BRUTE_FORCE_OVERRIDE":
-			return "[%d] BRUTE_FORCE_OVERRIDE  +25T  ·  -2 anchor  ·  60%%  (fail: +40T)" % num
-		"SYNGAS_FLOOD":
-			return "[%d] SYNGAS_FLOOD          +0T   ·  -1 anchor  ·  50%%  (fail: +30T)" % num
-		"SIGNAL_DAMPEN":
-			return "[%d] SIGNAL_DAMPEN         -15T  ·  no effect  ·  guaranteed" % num
-		"OVERLOAD_CORE":
-			return "[%d] OVERLOAD_CORE [shock] +15T  ·  -2 anchor  ·  guaranteed" % num
-		"ISOLATE_FEED":
-			return "[%d] ISOLATE_FEED          emergency disconnect  (lose catch, keep tension)" % num
-	return ""
+	var parts: Array[String] = ["[%d] %s" % [num, cmd.id]]
+	if cmd.id == "ISOLATE_FEED":
+		parts.append("emergency disconnect")
+		parts.append("lose the catch, keep the strain")
+		return "  ·  ".join(parts)
+	var cost: int = cmd.get("t_cost", 0)
+	if cost < 0:
+		parts.append("eases strain")
+	elif cost > 0:
+		parts.append("strain: " + HaulTurn.strain_word(cost))
+	var hit: int = cmd.get("anchor_hit", 0)
+	if hit < 0:
+		parts.append("breaks %d" % -hit)
+	parts.append(odds_word(cmd.get("success_rate", 1.0)))
+	if cmd.id == "OVERLOAD_CORE":
+		parts.append("uses a shock lure")
+	return "  ·  ".join(parts)
+
+static func odds_word(success_rate: float) -> String:
+	if success_rate >= 1.0:
+		return "SURE"
+	if success_rate > 0.5:
+		return "RISKY"
+	return "COIN FLIP"
 
 static func overload_status(anchor_current: int, anchor_strength: int, threat: float, turn: int) -> String:
 	var filled := "◆".repeat(anchor_current)

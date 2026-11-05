@@ -19,4 +19,5 @@ haul_weight = 1.0
 haul_slip = 0.6
 haul_tempo = 1.0
 haul_erratic = false
-fragments = PackedStringArray("PAYROLL", "0447-K", "TRANSFER", "KESSLER", "VOID")
+fragments = PackedStringArray("PAYROLL", "0447-K", "TRANSFER", "KESSLER", "VOID", "FROZEN", "WIDOW", "BENEFIT")
+fragments_always = PackedStringArray("KESSLER")

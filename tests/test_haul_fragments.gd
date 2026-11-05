@@ -114,3 +114,35 @@ func test_no_words_is_a_plain_hex_block() -> void:
 	var b := _block([])
 	assert_eq(b.fragments.size(), 0)
 	assert_eq(b.update(0.1, ROWS, true), [])
+
+# --- pools: each haul draws a few, so two of the same contact read differently ---
+
+const POOL := ["MANIFEST 7", "UNLOGGED", "NIGHT SHIFT", "CRATE 31", "GATE 9", "AXIOM", "DOCK 4", "SEALED"]
+
+func test_a_draw_takes_three_or_four_from_the_pool_in_pool_order() -> void:
+	for seed in range(1, 51):
+		var got := HaulFragments.draw(PackedStringArray(POOL), PackedStringArray(), HaulSim.Lcg.new(seed))
+		assert_between(got.size(), 3, 4, "seed %d" % seed)
+		var last := -1
+		for w in got:
+			var i := POOL.find(w)
+			assert_gt(i, last, "%s in pool order, no repeats (seed %d)" % [w, seed])
+			last = i
+
+func test_always_included_fragments_survive_every_draw() -> void:
+	for seed in range(1, 51):
+		var got := HaulFragments.draw(PackedStringArray(POOL), PackedStringArray(["GATE 9"]), HaulSim.Lcg.new(seed))
+		assert_has(got, "GATE 9", "seed %d" % seed)
+
+func test_two_hauls_of_the_same_contact_usually_read_differently() -> void:
+	var seen := {}
+	for seed in range(1, 21):
+		seen[" · ".join(HaulFragments.draw(PackedStringArray(POOL), PackedStringArray(), HaulSim.Lcg.new(seed)))] = true
+	assert_gt(seen.size(), 10)
+
+func test_a_small_pool_is_drawn_whole() -> void:
+	var small := PackedStringArray(["COLD", "VIABLE", "4C"])
+	assert_eq(HaulFragments.draw(small, PackedStringArray(), HaulSim.Lcg.new(1)), small)
+
+func test_an_empty_pool_draws_nothing() -> void:
+	assert_eq(HaulFragments.draw(PackedStringArray(), PackedStringArray(), HaulSim.Lcg.new(1)).size(), 0)

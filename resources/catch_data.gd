@@ -25,5 +25,8 @@ enum Layer { SHALLOWS, MID, DEEP }
 @export var haul_slip: float = 1.0    # how fast it sinks back when you let go
 @export var haul_tempo: float = 1.0   # how often hits come
 @export var haul_erratic: bool = false # unpredictable hit timing
-# Hidden in the hex block; read as the payload rises. Hints, not always sentences.
+# Fragment pool: each haul draws 3-4 (HaulFragments.draw) and hides them in the hex
+# block, so two hauls of the same contact read differently. Hints, not sentences.
 @export var fragments: PackedStringArray = []
+# Pool entries every haul carries, e.g. a thread that runs across zones.
+@export var fragments_always: PackedStringArray = []

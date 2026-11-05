@@ -22,31 +22,55 @@ func _make_option(label: String, t: int, cr: int) -> CatchOption:
 func test_option_label_passive() -> void:
 	var o := _make_option("Reel In", 15, 800)
 	assert_eq(DiveFormat.option_label(1, o, CatchData.BehaviorType.PASSIVE),
-		"[1] reel_in  ·  +15T  ·  +800cr")
+		"[1] reel_in  ·  strain: HEAVY  ·  value: MID")
 
 func test_option_label_cuts_line() -> void:
 	var o := CatchOption.new()
 	o.cuts_line = true
 	assert_eq(DiveFormat.option_label(3, o, CatchData.BehaviorType.PASSIVE),
-		"[3] abort_connection  ·  vents half tension  ·  SIG -10%  ·  no reward")
+		"[3] abort_connection  ·  vents half the strain  ·  costs signal  ·  no reward")
+
+func _cmd(id: String) -> Dictionary:
+	for c in OverloadFight.BASE_COMMANDS:
+		if c.id == id:
+			return c
+	return OverloadFight.ISOLATE_FEED if id == "ISOLATE_FEED" else OverloadFight.OVERLOAD_CORE
 
 func test_command_label_isolate_keeps_tension() -> void:
-	assert_string_contains(DiveFormat.command_label(4, {"id": "ISOLATE_FEED"}), "keep tension")
+	assert_string_contains(DiveFormat.command_label(4, _cmd("ISOLATE_FEED")), "keep the strain")
 
-func test_option_label_resistant_shows_odds() -> void:
+func test_command_labels_are_words_not_odds() -> void:
+	assert_eq(DiveFormat.command_label(1, _cmd("DECRYPT_NODE")), "[1] DECRYPT_NODE  ·  strain: MODERATE  ·  breaks 1  ·  SURE")
+	assert_eq(DiveFormat.command_label(2, _cmd("BRUTE_FORCE_OVERRIDE")), "[2] BRUTE_FORCE_OVERRIDE  ·  strain: HEAVY  ·  breaks 2  ·  RISKY")
+	assert_eq(DiveFormat.command_label(3, _cmd("SYNGAS_FLOOD")), "[3] SYNGAS_FLOOD  ·  breaks 1  ·  COIN FLIP")
+	assert_eq(DiveFormat.command_label(4, _cmd("SIGNAL_DAMPEN")), "[4] SIGNAL_DAMPEN  ·  eases strain  ·  SURE")
+	assert_string_contains(DiveFormat.command_label(5, _cmd("OVERLOAD_CORE")), "shock lure")
+	for c in OverloadFight.BASE_COMMANDS:
+		assert_false(DiveFormat.command_label(1, c).contains("%"))
+
+func test_a_dice_option_says_uncertain_not_its_odds() -> void:
 	var o := _make_option("Brute Decrypt", 15, 550)
 	o.resist_chance = 0.45
 	o.resist_tension_penalty = 35
 	var label := DiveFormat.option_label(1, o, CatchData.BehaviorType.RESISTANT)
-	assert_string_contains(label, "45% resist (+35T)")
+	assert_eq(label, "[1] brute_decrypt  ·  strain: HEAVY  ·  value: MID  ·  UNCERTAIN")
+	var n := _make_option("Negotiate Access", 10, 800)
+	n.fail_chance = 0.3
+	assert_string_ends_with(DiveFormat.option_label(2, n, CatchData.BehaviorType.NEGOTIATING), "UNCERTAIN")
 
-func test_option_label_negotiating_shows_odds() -> void:
-	var o := _make_option("Negotiate Access", 10, 800)
-	o.fail_chance = 0.3
-	o.fail_tension_delta = 25
-	o.fail_credit_value = 0
-	var label := DiveFormat.option_label(2, o, CatchData.BehaviorType.NEGOTIATING)
-	assert_string_contains(label, "30% fail (+25T, +0cr)")
+func test_a_hauled_option_is_never_uncertain() -> void:
+	var o := _make_option("Brute Decrypt", 15, 550)
+	o.resist_chance = 0.45
+	assert_false(DiveFormat.option_label(1, o, CatchData.BehaviorType.RESISTANT, true).contains("UNCERTAIN"))
+
+func test_no_option_label_prints_numbers() -> void:
+	var o := _make_option("Harvest", 20, 1800)
+	o.fail_chance = 0.4
+	o.fail_tension_delta = 30
+	for hauled in [false, true]:
+		var label := DiveFormat.option_label(1, o, CatchData.BehaviorType.NEGOTIATING, hauled)
+		var digits := RegEx.create_from_string("\\d")
+		assert_eq(digits.search_all(label.trim_prefix("[1]")).size(), 0, label)
 
 func test_contact_card_contains_identity_and_sig() -> void:
 	var c := CatchData.new()
@@ -73,8 +97,8 @@ func test_overload_status_line() -> void:
 	assert_eq(line, "│  anchor ◆◆◇  2/3  ·  threat ×1.15  ·  turn 4")
 
 func test_command_label_known_command() -> void:
-	assert_string_contains(DiveFormat.command_label(1, {"id": "DECRYPT_NODE"}), "DECRYPT_NODE")
-	assert_string_contains(DiveFormat.command_label(4, {"id": "ISOLATE_FEED"}), "emergency disconnect")
+	assert_string_contains(DiveFormat.command_label(1, _cmd("DECRYPT_NODE")), "DECRYPT_NODE")
+	assert_string_contains(DiveFormat.command_label(4, _cmd("ISOLATE_FEED")), "emergency disconnect")
 
 func test_narrative_entry_indents_lines() -> void:
 	var entry := DiveFormat.narrative_entry("SOLACE-7", "line one\nline two")
@@ -168,19 +192,19 @@ func test_card_without_a_haul_has_no_haul_line() -> void:
 	assert_false(DiveFormat.contact_card(_haul_catch()).contains("hauls:"))
 
 func test_haul_option_shows_strain_and_worth_not_numbers() -> void:
-	var label := DiveFormat.haul_option_label(1, _make_option("Brute Force", 15, 550))
-	assert_eq(label, "[1] brute_force  ·  strain: heavy  ·  worth: good")
+	var label := DiveFormat.option_label(1, _make_option("Brute Force", 15, 550), CatchData.BehaviorType.PASSIVE, true)
+	assert_eq(label, "[1] brute_force  ·  strain: HEAVY  ·  value: MID")
 
 func test_haul_option_without_strain_leaves_it_off() -> void:
-	assert_eq(DiveFormat.haul_option_label(2, _make_option("Skim", 0, 150)), "[2] skim  ·  worth: some")
+	assert_eq(DiveFormat.option_label(2, _make_option("Skim", 0, 150), CatchData.BehaviorType.PASSIVE, true), "[2] skim  ·  value: LOW")
 
 func test_haul_contact_release_is_just_its_name() -> void:
-	assert_eq(DiveFormat.haul_option_label(3, _make_option("Release", 0, 0)), "[3] release")
+	assert_eq(DiveFormat.option_label(3, _make_option("Release", 0, 0), CatchData.BehaviorType.PASSIVE, true), "[3] release")
 
 func test_haul_contact_cut_line_keeps_its_warning() -> void:
 	var o := _make_option("Cut Line", 0, 0)
 	o.cuts_line = true
-	assert_string_starts_with(DiveFormat.haul_option_label(3, o), "[3] abort_connection")
+	assert_string_starts_with(DiveFormat.option_label(3, o, CatchData.BehaviorType.PASSIVE, true), "[3] abort_connection")
 
 func test_recovered_fragments_mask_lost_and_unread() -> void:
 	var text := DiveFormat.recovered_fragments([

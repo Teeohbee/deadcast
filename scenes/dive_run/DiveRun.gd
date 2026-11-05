@@ -192,10 +192,8 @@ func _present_catch(catch_data: CatchData) -> void:
 		var labels: Array[String] = []
 		var echoes: Array[String] = []
 		for i in augmented.options.size():
-			if hauled:
-				labels.append(DiveFormat.haul_option_label(i + 1, augmented.options[i]))
-			else:
-				labels.append(DiveFormat.option_label(i + 1, augmented.options[i], augmented.behavior))
+			labels.append(DiveFormat.option_label(i + 1, augmented.options[i], augmented.behavior,
+				HaulTurn.hauls(_zone_data, augmented, augmented.options[i])))
 			echoes.append(augmented.options[i].label.to_lower().replace(" ", "_"))
 
 		var lure_action := _contact_lure_action()
@@ -325,7 +323,8 @@ func _fire_deep_pulse() -> void:
 func _resolve_haul(option: CatchOption, catch_data: CatchData, echo: String) -> void:
 	var run := HaulRun.new()
 	run.setup(HaulTurn.dials(catch_data, option), HaulTurn.difficulty(GameState.run_count),
-		catch_data.fragments, HaulTurn.glyph(catch_data.catch_type), catch_data.catch_name.to_lower())
+		HaulFragments.draw(catch_data.fragments, catch_data.fragments_always),
+		HaulTurn.glyph(catch_data.catch_type), catch_data.catch_name.to_lower())
 	add_child(run)
 	var result: Dictionary = await run.finished
 	run.queue_free()
@@ -413,7 +412,7 @@ func _run_overload(catch_data: CatchData) -> void:
 	session_log.log_line(DiveFormat.contact_card(catch_data), DeckStyle.RED)
 	EventBus.contact_presented.emit(catch_data)
 	_log_hint(DiveHints.CONTACT)
-	session_log.log_line("│  est. yield: ~%dcr" % reward.credit_value, DeckStyle.TEXT)
+	session_log.log_line("│  value: %s" % HaulTurn.value_word(reward.credit_value), DeckStyle.TEXT)
 
 	var last_echo := ""
 	while true:

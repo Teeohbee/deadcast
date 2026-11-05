@@ -19,4 +19,5 @@ haul_weight = 1.2
 haul_slip = 0.8
 haul_tempo = 1.0
 haul_erratic = false
-fragments = PackedStringArray("FLOOD NIGHT", "GATE 9 OPEN", "EVAC LIST", "247 NAMES", "M. VOSS")
+fragments = PackedStringArray("FLOOD NIGHT", "GATE 9 OPEN", "EVAC LIST", "247 NAMES", "STATEMENT", "REDACTED", "SWORN")
+fragments_always = PackedStringArray("GATE 9 OPEN")

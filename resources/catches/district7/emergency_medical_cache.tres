@@ -19,4 +19,4 @@ haul_weight = 1.0
 haul_slip = 1.2
 haul_tempo = 0.9
 haul_erratic = false
-fragments = PackedStringArray("SALINE", "EXPIRED", "TRIAGE")
+fragments = PackedStringArray("SALINE", "EXPIRED", "TRIAGE", "INSULIN", "SPLINTS", "MORPHINE", "FIELD KIT")

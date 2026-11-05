@@ -20,4 +20,4 @@ haul_weight = 0.9
 haul_slip = 0.8
 haul_tempo = 1.0
 haul_erratic = false
-fragments = PackedStringArray("LEDGER", "Q3", "WRITE-OFF", "SHELL CO")
+fragments = PackedStringArray("LEDGER", "Q3", "WRITE-OFF", "SHELL CO", "OFFSHORE", "AUDIT", "ROUTED OUT")

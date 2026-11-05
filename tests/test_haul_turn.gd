@@ -41,6 +41,16 @@ func test_release_cut_line_and_other_zones_skip_the_haul() -> void:
 	assert_false(HaulTurn.hauls(_zone(), _catch(false), _option(200, 5)), "contact without haul data")
 	assert_false(HaulTurn.hauls(null, _catch(), _option(200, 5)))
 
+func test_ghosts_haul_only_when_you_tear_something_out() -> void:
+	var ghost := _catch()
+	ghost.catch_type = CatchData.CatchType.ENTITY
+	assert_true(HaulTurn.hauls(_zone(), ghost, _option(800, 15)), "harvest hauls")
+	assert_false(HaulTurn.hauls(_zone(), ghost, _option(350, 0)), "talking is free")
+	assert_false(HaulTurn.hauls(_zone(), ghost, _option(0, 0)), "leaving is free")
+
+func test_cargo_hauls_even_without_strain() -> void:
+	assert_true(HaulTurn.hauls(_zone(), _catch(), _option(150, 0)))
+
 # --- payout table ---
 
 func test_perfect_pays_a_quarter_extra() -> void:
@@ -75,19 +85,22 @@ func test_lighter_options_use_the_contacts_own_dials() -> void:
 
 func test_strain_words() -> void:
 	assert_eq(HaulTurn.strain_word(0), "")
-	assert_eq(HaulTurn.strain_word(5), "light")
-	assert_eq(HaulTurn.strain_word(8), "moderate")
-	assert_eq(HaulTurn.strain_word(10), "moderate")
-	assert_eq(HaulTurn.strain_word(15), "heavy")
-	assert_eq(HaulTurn.strain_word(20), "heavy")
+	assert_eq(HaulTurn.strain_word(5), "LIGHT")
+	assert_eq(HaulTurn.strain_word(8), "MODERATE")
+	assert_eq(HaulTurn.strain_word(10), "MODERATE")
+	assert_eq(HaulTurn.strain_word(15), "HEAVY")
+	assert_eq(HaulTurn.strain_word(25), "HEAVY")
 
-func test_worth_words() -> void:
-	assert_eq(HaulTurn.worth_word(0), "")
-	assert_eq(HaulTurn.worth_word(150), "some")
-	assert_eq(HaulTurn.worth_word(300), "some")
-	assert_eq(HaulTurn.worth_word(550), "good")
-	assert_eq(HaulTurn.worth_word(600), "good")
-	assert_eq(HaulTurn.worth_word(800), "a lot")
+func test_value_bands_are_the_same_in_every_zone() -> void:
+	assert_eq(HaulTurn.value_word(0), "")
+	assert_eq(HaulTurn.value_word(150), "LOW")
+	assert_eq(HaulTurn.value_word(300), "LOW")
+	assert_eq(HaulTurn.value_word(301), "MID")
+	assert_eq(HaulTurn.value_word(800), "MID")
+	assert_eq(HaulTurn.value_word(801), "HIGH")
+	assert_eq(HaulTurn.value_word(1500), "HIGH")
+	assert_eq(HaulTurn.value_word(1501), "PRIME")
+	assert_eq(HaulTurn.value_word(4000), "PRIME")
 
 func test_haul_feel_reads_the_contacts_dials() -> void:
 	var c := _catch()
@@ -139,12 +152,34 @@ func test_district7_hauls_and_its_haul_contacts_are_ready_to_haul() -> void:
 	var hauled := 0
 	for c in zone.catches:
 		if not c.haul_enabled:
+			assert_false(c.options.any(func(o: CatchOption) -> bool: return o.credit_value > 0 and o.tension_delta > 0 and c.catch_type != CatchData.CatchType.ENTITY and c.behavior != CatchData.BehaviorType.AGGRESSIVE),
+				c.catch_name + " pays and strains, so it should haul")
 			continue
 		hauled += 1
 		assert_ne(c.behavior, CatchData.BehaviorType.AGGRESSIVE, c.catch_name + " fights, it doesn't haul")
-		assert_gt(c.fragments.size(), 0, c.catch_name + " has fragments")
 		assert_true(c.options.any(func(o: CatchOption) -> bool: return HaulTurn.hauls(zone, c, o)), c.catch_name + " has a hauled option")
+		assert_between(c.fragments.size(), 6, 8, c.catch_name + " fragment pool")
+		for w in c.fragments_always:
+			assert_has(c.fragments, w, c.catch_name + " always-included fragment is in the pool")
 		for seed in range(1, 21):
-			var block := HaulFragments.new(c.fragments, HaulView.ROWS, HaulSim.Lcg.new(seed))
-			assert_eq(block.fragments.size(), c.fragments.size(), "%s fragments fit (seed %d)" % [c.catch_name, seed])
-	assert_gt(hauled, 5, "most District 7 contacts haul")
+			var drawn := HaulFragments.draw(c.fragments, c.fragments_always, HaulSim.Lcg.new(seed))
+			var block := HaulFragments.new(drawn, HaulView.ROWS, HaulSim.Lcg.new(seed))
+			assert_eq(block.fragments.size(), drawn.size(), "%s fragments fit (seed %d)" % [c.catch_name, seed])
+	assert_gt(hauled, 10, "cargo and ghosts with something to tear out")
+
+## Without dice, an option that costs more strain and pays less than another on the same
+## card is never worth picking.
+func _beaten_options(zone_path: String) -> Array[String]:
+	var zone: ZoneData = load(zone_path)
+	var out: Array[String] = []
+	for c in zone.catches:
+		var paying := c.options.filter(func(o: CatchOption) -> bool: return o.credit_value > 0)
+		for a in paying:
+			for b in paying:
+				if a != b and b.tension_delta <= a.tension_delta and b.credit_value >= a.credit_value \
+						and (b.tension_delta != a.tension_delta or b.credit_value != a.credit_value):
+					out.append("%s: %s loses to %s" % [c.catch_name, a.label, b.label])
+	return out
+
+func test_no_district7_option_is_strictly_beaten() -> void:
+	assert_eq(_beaten_options("res://resources/zones/district7.tres"), [])

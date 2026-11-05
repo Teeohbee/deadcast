@@ -19,4 +19,4 @@ haul_weight = 0.7
 haul_slip = 0.5
 haul_tempo = 0.9
 haul_erratic = false
-fragments = PackedStringArray("BLOCK C", "TENANCY", "ARREARS")
+fragments = PackedStringArray("BLOCK C", "TENANCY", "ARREARS", "FLAT 9", "EVICTED", "NO KIN", "KEYCARD")
