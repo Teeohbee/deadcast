@@ -52,8 +52,8 @@ func _start() -> void:
 		_run.set_process(false)
 
 func _process(delta: float) -> void:
+	_clock += delta
 	if _bot:
-		_clock += delta
 		var press := _clock > 0.2 and (_run.sim.phase != HaulSim.DONE) and HaulSim.prompt(_run.sim, _bot_mem)
 		_run.tick(minf(delta, 0.05), press)
 	if _shot_at >= 0.0 and _clock >= _shot_at:
