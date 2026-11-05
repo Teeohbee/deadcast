@@ -2,18 +2,19 @@
 extends GutTest
 
 const TEST_SAVE := "user://relay_log_test.cfg"
-var _saved := {}
+# Loading test saves and new_game() touch all of GameState, so the whole
+# state is snapshotted to disk and restored after each test.
+const STATE_BACKUP := "user://relay_log_state_backup.cfg"
 
 func before_each() -> void:
-	for key in ["relay_played_script_ids", "relay_entries", "run_count"]:
-		_saved[key] = GameState.get(key)
+	GameState._save_to(STATE_BACKUP)
 	GameState.relay_played_script_ids = []
 	GameState.relay_entries = []
 	GameState.run_count = 2
 
 func after_each() -> void:
-	for key in _saved:
-		GameState.set(key, _saved[key])
+	GameState._load_from(STATE_BACKUP)
+	DirAccess.remove_absolute(STATE_BACKUP)
 	DirAccess.remove_absolute(TEST_SAVE)
 
 func _lines(text: String) -> Array[Dictionary]:
@@ -80,3 +81,33 @@ func test_new_game_clears_the_relay() -> void:
 	GameState.save_path = saved_path
 	assert_eq(GameState.relay_played_script_ids.size(), 0)
 	assert_eq(GameState.relay_entries.size(), 0)
+
+# --- saves from before the relay ---
+
+func _write_pre_relay_save(run_count: int) -> void:
+	var cfg := ConfigFile.new()
+	cfg.set_value("player", "run_count", run_count)
+	cfg.set_value("player", "debt", 70000)
+	cfg.save(TEST_SAVE)
+
+func test_an_old_save_mid_game_doesnt_replay_the_first_call() -> void:
+	_write_pre_relay_save(5)
+	GameState._load_from(TEST_SAVE)
+	assert_true(GameState.relay_has_played("marta_first_call"))
+	assert_true(GameState.relay_has_played("marta_after_dive_one"))
+	assert_false(GameState.relay_has_played("okeke_intro_call"))
+	assert_eq(GameState.relay_entries.size(), 0)
+	assert_eq(GameState.debt, 70000)
+	assert_true(RelayDirector.due_call(RelayScripts.TRIGGER_HUB_ARRIVAL).is_empty())
+
+func test_an_old_save_that_never_dived_still_gets_the_first_call() -> void:
+	_write_pre_relay_save(0)
+	GameState._load_from(TEST_SAVE)
+	assert_eq(GameState.relay_played_script_ids.size(), 0)
+	assert_eq(RelayDirector.due_call(RelayScripts.TRIGGER_HUB_ARRIVAL).id, "marta_first_call")
+
+func test_a_relay_save_is_loaded_as_saved_not_migrated() -> void:
+	GameState.run_count = 5
+	GameState._save_to(TEST_SAVE)
+	GameState._load_from(TEST_SAVE)
+	assert_eq(GameState.relay_played_script_ids.size(), 0)

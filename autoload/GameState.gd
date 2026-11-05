@@ -360,8 +360,14 @@ func _load_from(path: String) -> void:
 	run_logs = cfg.get_value("narrative", "run_logs", [] as Array[Dictionary])
 	active_job_id = cfg.get_value("jobs", "active_job_id", "")
 	job_declined_run = cfg.get_value("jobs", "declined_run", -1)
-	relay_played_script_ids.assign(cfg.get_value("relay", "played_script_ids", []))
-	relay_entries.assign(cfg.get_value("relay", "entries", []))
+	if cfg.has_section("relay"):
+		relay_played_script_ids.assign(cfg.get_value("relay", "played_script_ids", []))
+		relay_entries.assign(cfg.get_value("relay", "entries", []))
+	else:
+		# Saves from before the relay: skip what the player has already moved
+		# past, so Continue doesn't replay the first call. No transcripts.
+		relay_played_script_ids = RelayDirector.script_ids_already_past(run_count)
+		relay_entries = []
 	EventBus.credits_changed.emit(credits)
 
 func new_game() -> void:
