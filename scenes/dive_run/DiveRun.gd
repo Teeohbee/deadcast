@@ -325,7 +325,8 @@ func _fire_deep_pulse() -> void:
 func _resolve_haul(option: CatchOption, catch_data: CatchData, echo: String) -> void:
 	var run := HaulRun.new()
 	run.setup(HaulTurn.dials(catch_data, option), HaulTurn.difficulty(GameState.run_count),
-		catch_data.fragments, HaulTurn.glyph(catch_data.catch_type), catch_data.catch_name.to_lower())
+		HaulFragments.draw(catch_data.fragments, catch_data.fragments_always),
+		HaulTurn.glyph(catch_data.catch_type), catch_data.catch_name.to_lower())
 	add_child(run)
 	var result: Dictionary = await run.finished
 	run.queue_free()

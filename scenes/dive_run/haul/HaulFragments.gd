@@ -40,6 +40,29 @@ static func clean(word: String) -> String:
 			out += ch
 	return out
 
+## Picks what one haul carries from a contact's pool: 3 or 4 fragments (all of a smaller
+## pool), always including `always`, kept in pool order so sequences still read top down.
+static func draw(pool: PackedStringArray, always: PackedStringArray, rng: HaulSim.Lcg = null) -> PackedStringArray:
+	var rand := func() -> float: return rng.next() if rng else randf()
+	var want := mini(pool.size(), 3 + (1 if rand.call() < 0.5 else 0))
+	var picked := {}
+	for w in always:
+		var i := pool.find(w)
+		if i >= 0:
+			picked[i] = true
+	var rest: Array[int] = []
+	for i in pool.size():
+		if not picked.has(i):
+			rest.append(i)
+	while picked.size() < want and not rest.is_empty():
+		picked[rest.pop_at(int(rand.call() * rest.size()))] = true
+	var order: Array = picked.keys()
+	order.sort()
+	var out := PackedStringArray()
+	for i in order:
+		out.append(pool[i])
+	return out
+
 func _init(words: PackedStringArray, p_rows: int, rng: HaulSim.Lcg = null) -> void:
 	rows = p_rows
 	_rng = rng
