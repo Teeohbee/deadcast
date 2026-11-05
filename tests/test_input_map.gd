@@ -72,3 +72,11 @@ func test_left_stick_and_dpad_navigate() -> void:
 func test_unused_dive_bindings_are_gone() -> void:
 	assert_false(InputMap.has_action("action_slack"))
 	assert_false(InputMap.has_action("action_dive"))
+
+func test_right_stick_and_page_keys_scroll() -> void:
+	var stick := false
+	for e in InputMap.action_get_events("scroll_down"):
+		stick = stick or (e is InputEventJoypadMotion and (e as InputEventJoypadMotion).axis == JOY_AXIS_RIGHT_Y)
+	assert_true(stick)
+	assert_true(_has_key("scroll_down", KEY_PAGEDOWN))
+	assert_true(_has_key("scroll_up", KEY_PAGEUP))

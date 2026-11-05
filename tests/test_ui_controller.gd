@@ -17,6 +17,20 @@ class FakeScreen:
 	func default_focus() -> Control:
 		return button
 
+class ScrollingScreen:
+	extends Control
+	var scroll: ScrollContainer
+	func _init() -> void:
+		scroll = ScrollContainer.new()
+		scroll.custom_minimum_size = Vector2(100, 100)
+		scroll.size = Vector2(100, 100)
+		var tall := Control.new()
+		tall.custom_minimum_size = Vector2(50, 2000)
+		scroll.add_child(tall)
+		add_child(scroll)
+	func scroll_target() -> Control:
+		return scroll
+
 func _action(action: String) -> InputEventAction:
 	var e := InputEventAction.new()
 	e.action = action
@@ -210,4 +224,45 @@ func test_focus_recovery_skips_a_hidden_default() -> void:
 	screen.button.visible = false
 	UIController._unhandled_input(_action("ui_down"))
 	assert_null(get_viewport().gui_get_focus_owner())
+
+# --- right-stick scrolling ---
+
+func _scrolling_screen() -> ScrollingScreen:
+	UIController._scene_factory = func(_id: String) -> Node:
+		return ScrollingScreen.new()
+	UIController.navigate_to("bunk")
+	await get_tree().process_frame
+	return UIController._current_node
+
+func test_stick_down_scrolls_the_screen_target() -> void:
+	var screen: ScrollingScreen = await _scrolling_screen()
+	UIController.apply_scroll(1.0, 0.1)
+	assert_gt(screen.scroll.scroll_vertical, 0)
+
+func test_stick_up_at_the_top_stays_put() -> void:
+	var screen: ScrollingScreen = await _scrolling_screen()
+	UIController.apply_scroll(-1.0, 0.1)
+	assert_eq(screen.scroll.scroll_vertical, 0)
+
+func test_scroll_speed_follows_stick_deflection() -> void:
+	var screen: ScrollingScreen = await _scrolling_screen()
+	UIController.apply_scroll(0.5, 0.1)
+	var half := screen.scroll.scroll_vertical
+	screen.scroll.scroll_vertical = 0
+	UIController.apply_scroll(1.0, 0.1)
+	assert_gt(screen.scroll.scroll_vertical, half)
+
+func test_screen_without_a_scroll_target_ignores_the_stick() -> void:
+	UIController.navigate_to("workshop")
+	UIController.apply_scroll(1.0, 0.1)
+	pass_test("no target, no error")
+
+func test_scroll_by_moves_a_rich_text_label() -> void:
+	var rtl := RichTextLabel.new()
+	rtl.size = Vector2(100, 40)
+	rtl.text = "\n".join(range(200).map(func(i: int) -> String: return str(i)))
+	add_child_autofree(rtl)
+	await get_tree().process_frame
+	UIController.scroll_by(rtl, 120.0)
+	assert_gt(rtl.get_v_scroll_bar().value, 0.0)
 
