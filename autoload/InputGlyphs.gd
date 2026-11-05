@@ -17,6 +17,7 @@ const _GLYPHS := {
 	"next":     {Mode.PAD: "[R1]",    Mode.KEY: "[E]"},
 	"navigate": {Mode.PAD: "[+]",     Mode.KEY: "[UP/DN]"},
 	"cycle_lure": {Mode.PAD: "[X]",   Mode.KEY: "[TAB]"},
+	"haul":     {Mode.PAD: "[A]",     Mode.KEY: "[SPACE]"},
 }
 
 var mode: int = Mode.KEY
