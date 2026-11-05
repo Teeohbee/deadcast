@@ -37,6 +37,9 @@ func on_screen_shown() -> void:
 	if target != null:
 		target.grab_focus()
 
+func scroll_target() -> Control:
+	return _thread
+
 # A pending reply to Marta first, otherwise the contact being read.
 func default_focus() -> Control:
 	for child in _reply_block.get_children():

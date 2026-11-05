@@ -65,3 +65,7 @@ func test_light_corruption_leaves_choice_labels_alone() -> void:
 	await wait_frames(1)
 	assert_eq((sl.live_block.get_child(0) as Button).text, "[1] reel_in")
 	(sl.live_block.get_child(0) as Button).pressed.emit()
+
+func test_log_is_the_scroll_target() -> void:
+	var sl := _make_log()
+	assert_eq(sl.scroll_target(), sl.scroll)

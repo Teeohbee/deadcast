@@ -26,6 +26,9 @@ func log_line(text: String, color: Color) -> void:
 	log_text.append_text("[color=#%s]%s[/color]\n" % [color.to_html(false), safe])
 	_scroll_to_bottom()
 
+func scroll_target() -> Control:
+	return scroll
+
 # The first live choice or continue button, if one is waiting.
 func default_focus() -> Control:
 	for child in live_block.get_children():

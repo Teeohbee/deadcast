@@ -112,3 +112,7 @@ func test_an_unknown_script_ends_the_call_at_once_rather_than_trapping_the_playe
 func test_durations_read_as_minutes_and_seconds() -> void:
 	assert_eq(CallScreen.format_duration(192), "3:12")
 	assert_eq(CallScreen.format_duration(5), "0:05")
+
+func test_feed_is_the_scroll_target() -> void:
+	var screen := _call_screen()
+	assert_eq(screen.scroll_target(), screen._feed)
