@@ -105,6 +105,31 @@ const CUES := {
 		"files": [RPG + "handleCoins.ogg", RPG + "handleCoins2.ogg"],
 		"bus": "Events", "volume_db": -4.0, "pitch": 1.0, "pitch_variation": 0.05,
 	},
+	# Override combo (hostiles)
+	"override_charge": {
+		"files": [SCI_FI + "forceField_000.ogg", SCI_FI + "forceField_001.ogg"],
+		"bus": "Events", "volume_db": -6.0, "pitch": 0.7, "pitch_variation": 0.03,
+	},
+	"override_input": {
+		"files": [INTERFACE + "tick_001.ogg", INTERFACE + "tick_002.ogg", INTERFACE + "tick_004.ogg"],
+		"bus": "Events", "volume_db": -8.0, "pitch": 1.3, "pitch_variation": 0.06,
+	},
+	"override_wrong": {
+		"files": [INTERFACE + "glitch_001.ogg", INTERFACE + "glitch_002.ogg"],
+		"bus": "Events", "volume_db": -6.0, "pitch": 0.8, "pitch_variation": 0.05,
+	},
+	"override_null": {
+		"files": [INTERFACE + "bong_001.ogg"],
+		"bus": "Events", "volume_db": -4.0, "pitch": 1.2, "pitch_variation": 0.0,
+	},
+	"override_break": {
+		"files": [IMPACT + "impactMetal_heavy_000.ogg", IMPACT + "impactMetal_heavy_001.ogg"],
+		"bus": "Events", "volume_db": -8.0, "pitch": 1.5, "pitch_variation": 0.05,
+	},
+	"override_requote": {
+		"files": [INTERFACE + "glitch_003.ogg", INTERFACE + "glitch_004.ogg"],
+		"bus": "Events", "volume_db": -8.0, "pitch": 1.5, "pitch_variation": 0.05,
+	},
 }
 
 # Looping beds under everything. Kenney's engine loops are 5s; pitched down
