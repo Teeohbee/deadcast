@@ -27,6 +27,9 @@ var _snapped: bool = false
 var _hints_shown: Dictionary = {}
 var _facts: RunFacts = null
 var _job_outcome: Dictionary = {}
+# Marta on the line, under the hydrophone on the rail.
+var relay_dive_panel: RelayDivePanel
+var _contacts_presented := 0
 
 func _ready() -> void:
 	line_system.snapped.connect(_on_line_snapped)
@@ -61,6 +64,13 @@ func _ready() -> void:
 	status_strip.setup(_initial_lure_label())
 	line_tension.setup(line_system.max_tension)
 	biosign.setup(line_system.max_tension)
+	# The hydrophone keeps its chatter; relay_7 takes the rest of the rail.
+	hydrophone.size_flags_vertical = Control.SIZE_FILL
+	hydrophone.custom_minimum_size.y = 150
+	relay_dive_panel = RelayDivePanel.new()
+	$Margin/MainRow/Rail.add_child(relay_dive_panel)
+	relay_dive_panel.setup(GameState.run_count == 0)
+
 	var bloom := RailBloom.new()
 	add_child(bloom)
 	bloom.track([line_tension, biosign, depth_column, hydrophone, $Margin/MainRow/LogPanel])
@@ -71,6 +81,7 @@ func _ready() -> void:
 	await get_tree().process_frame
 	session_log.log_line("> cast — %s" % _zone_data.display_name.to_lower(), DeckStyle.DIM)
 	EventBus.dive_cast.emit()
+	relay_dive_panel.on_moment(RelayDiveLines.MOMENT_CAST, {"zone_id": zone_id})
 	if GameState.current_rod and GameState.rod_damaged:
 		session_log.log_line(">>> rod damaged — tension cap reduced to %d" % line_system.max_tension,
 			DeckStyle.AMBER)
@@ -117,6 +128,8 @@ func _show_checkpoint() -> void:
 	var ghost_bait_armed := false
 	session_log.log_line("\n─── DEPTH CHECKPOINT ──────────────────────────", DeckStyle.SKY)
 	EventBus.checkpoint_reached.emit()
+	relay_dive_panel.on_moment(RelayDiveLines.MOMENT_CHECKPOINT,
+		{"tension_ratio": line_system.tension / maxf(1.0, float(line_system.max_tension))})
 	session_log.log_line("│  %s cleared  ·  haul: %dcr  ·  tension %d/%d  ·  SIG %d%%" % [
 		DiveColumn.LAYER_NAMES[_column.current_layer()], _run_credits,
 		int(line_system.tension), line_system.max_tension,
@@ -186,6 +199,10 @@ func _present_catch(catch_data: CatchData) -> void:
 			await _maybe_fake_signal_loss()
 			session_log.log_line(DiveFormat.contact_card(augmented, hauled), DeckStyle.TEXT)
 			EventBus.contact_presented.emit(catch_data)
+			_contacts_presented += 1
+			relay_dive_panel.on_moment(RelayDiveLines.MOMENT_CONTACT, {
+				"catch_type": catch_data.catch_type, "catch_name": catch_data.catch_name,
+				"first_contact": _contacts_presented == 1})
 			_log_hint(DiveHints.CONTACT)
 			need_card = false
 
@@ -325,9 +342,12 @@ func _resolve_haul(option: CatchOption, catch_data: CatchData, echo: String) -> 
 	run.setup(HaulTurn.dials(catch_data, option), HaulTurn.difficulty(GameState.run_count),
 		HaulFragments.draw(catch_data.fragments, catch_data.fragments_always),
 		HaulTurn.glyph(catch_data.catch_type), catch_data.catch_name.to_lower())
+	relay_dive_panel.hold()
 	add_child(run)
 	var result: Dictionary = await run.finished
 	run.queue_free()
+	relay_dive_panel.release()
+	relay_dive_panel.on_moment(RelayDiveLines.MOMENT_HAUL, {"outcome": result.outcome})
 
 	var pay := HaulTurn.payout(option, result)
 	line_system.add_corruption(catch_data.corruption_gain)
@@ -595,6 +615,7 @@ func _resolve_active_job(snapped: bool) -> Dictionary:
 
 func _end_run(snapped: bool) -> void:
 	_job_outcome = _resolve_active_job(snapped)
+	_file_relay_dive_lines(snapped)
 	GameState.add_credits(_run_credits - _bio_credits)  # non-bio credits go directly to wallet
 	if not snapped:
 		_run_record.banked = _run_credits
@@ -608,6 +629,17 @@ func _end_run(snapped: bool) -> void:
 	EventBus.run_ended.emit(GameState.last_run_result)
 	await _show_inline_debrief()
 	UIController.navigate_to("deck")
+
+# Her last word on the dive, then everything she said goes in the RELAY
+# thread, already read (the player heard it live).
+func _file_relay_dive_lines(snapped: bool) -> void:
+	relay_dive_panel.release()
+	var moment := RelayDiveLines.MOMENT_SNAPPED if snapped else RelayDiveLines.MOMENT_SURFACED
+	relay_dive_panel.on_moment(moment, {"credits": _run_credits})
+	if relay_dive_panel.transcript.is_empty():
+		return
+	GameState.relay_file_entry(RelayScripts.CONTACT_MARTA, GameState.RELAY_ENTRY_DIVE_LINE, "dive_lines",
+		relay_dive_panel.transcript, true)
 
 func _show_inline_debrief() -> void:
 	session_log.clear_live()
