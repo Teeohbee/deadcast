@@ -58,3 +58,16 @@ func test_a_dive_files_what_she_said_as_one_read_entry() -> void:
 	assert_eq(filed[0].kind, GameState.RELAY_ENTRY_DIVE_LINE)
 	assert_true(filed[0].read)
 	assert_eq(filed[0].lines.back().text, RelayDiveLines.DIVE_ONE.surfaced)
+
+# A full panel of long wrapped lines used to grow the rail past the screen,
+# pushing the header off the top and the options off the bottom.
+func test_a_full_panel_does_not_grow_the_dive_past_the_screen() -> void:
+	GameState.run_count = 3
+	var dive: Node = load("res://scenes/dive_run/DiveRun.tscn").instantiate()
+	add_child_autofree(dive)
+	await get_tree().process_frame
+	dive.relay_dive_panel.instant = true
+	for i in RelayDivePanel.MAX_LINES_SHOWN:
+		dive.relay_dive_panel._show("you got it. most of it. the rest is fish food, and the rest of the rest is someone else's problem now.")
+	await get_tree().process_frame
+	assert_lte(dive.get_node("Margin").get_combined_minimum_size().y, 800.0)
