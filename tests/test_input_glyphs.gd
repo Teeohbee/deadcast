@@ -55,3 +55,21 @@ func test_icon_for_unknown_action_is_null() -> void:
 func test_accept_and_haul_share_the_a_button() -> void:
 	InputGlyphs.mode = InputGlyphs.Mode.PAD
 	assert_same(InputGlyphs.icon("accept"), InputGlyphs.icon("haul"))
+
+func test_cursor_hidden_on_a_pad_and_shown_on_a_keyboard() -> void:
+	assert_eq(InputGlyphs.mouse_mode_for(InputGlyphs.Mode.PAD), Input.MOUSE_MODE_HIDDEN)
+	assert_eq(InputGlyphs.mouse_mode_for(InputGlyphs.Mode.KEY), Input.MOUSE_MODE_VISIBLE)
+
+func test_moving_the_mouse_switches_back_from_pad() -> void:
+	InputGlyphs.mode = InputGlyphs.Mode.PAD
+	var e := InputEventMouseMotion.new()
+	e.relative = Vector2(20, 0)
+	InputGlyphs.update_mode_from_event(e)
+	assert_eq(InputGlyphs.mode, InputGlyphs.Mode.KEY)
+
+func test_mouse_jitter_does_not_switch_from_pad() -> void:
+	InputGlyphs.mode = InputGlyphs.Mode.PAD
+	var e := InputEventMouseMotion.new()
+	e.relative = Vector2(1, 1)
+	InputGlyphs.update_mode_from_event(e)
+	assert_eq(InputGlyphs.mode, InputGlyphs.Mode.PAD)
