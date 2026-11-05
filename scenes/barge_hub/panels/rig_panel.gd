@@ -8,7 +8,7 @@ var _rod_meta: Label
 var _rod_damage: Label
 var _lure_button: Button
 var _effect_value: Label
-var _cycle_hint: Label
+var _cycle_hint: DeckPromptRow
 
 func _ready() -> void:
 	title = "active_rig_module"
@@ -44,11 +44,8 @@ func _build() -> void:
 	_lure_button.pressed.connect(cycle_lure)
 	root.add_child(_lure_button)
 
-	_cycle_hint = Label.new()
-	DeckStyle.apply_label(_cycle_hint, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
+	_cycle_hint = DeckPromptRow.new("cycle_lure", "CYCLE LURE", DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 	root.add_child(_cycle_hint)
-	InputGlyphs.device_changed.connect(_refresh_cycle_hint)
-	_refresh_cycle_hint()
 
 	var cells := HBoxContainer.new()
 	cells.add_theme_constant_override("separation", 6)
@@ -113,9 +110,6 @@ func cycle_lure() -> void:
 	GameState.equip_lure(load("res://resources/lures/%s.tres" % next_id))
 	EventBus.deck_log.emit("RIGS: Lure module swapped to %s." % next_id.to_upper().replace("_", " "))
 	refresh()
-
-func _refresh_cycle_hint(_mode: int = 0) -> void:
-	_cycle_hint.text = "%s CYCLE LURE" % InputGlyphs.glyph("cycle_lure")
 
 # Lure cycling is a global deck hotkey (X / Tab), not a focusable control. We
 # handle it in _input and consume the event so Tab does not also move UI focus.

@@ -10,7 +10,7 @@ const ZONE_IDS: Array[String] = ["district7", "exchange", "axiom"]
 var _cards: Dictionary = {}       # zone_id -> Button
 var _indicators: Dictionary = {}  # zone_id -> Label
 var _names: Dictionary = {}       # zone_id -> Label
-var _nav_hint: Label
+var _nav_hint: DeckPromptRow
 var _hosts_label: Label
 
 func _ready() -> void:
@@ -27,12 +27,12 @@ func _build() -> void:
 	add_child(root)
 
 	var header := HBoxContainer.new()
-	_nav_hint = Label.new()
-	_nav_hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	DeckStyle.apply_label(_nav_hint, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
+	_nav_hint = DeckPromptRow.new("navigate", "SELECT DESTINATION", DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 	header.add_child(_nav_hint)
-	InputGlyphs.device_changed.connect(_refresh_nav_hint)
-	_refresh_nav_hint()
+	# Keeps the host count pinned right when the hint hides for a single zone.
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(spacer)
 	_hosts_label = Label.new()
 	DeckStyle.apply_label(_hosts_label, DeckStyle.DIM, DeckStyle.SIZE_AMBIENT)
 	header.add_child(_hosts_label)
@@ -154,9 +154,6 @@ func _on_zone_changed(zone_id: String) -> void:
 		_indicators[id].modulate.a = 1.0 if selected else 0.0
 		(_names[id] as Label).add_theme_color_override(
 			"font_color", DeckStyle.GREEN if selected else DeckStyle.TEXT)
-
-func _refresh_nav_hint(_mode: int = 0) -> void:
-	_nav_hint.text = "%s SELECT DESTINATION" % InputGlyphs.glyph("navigate")
 
 func focus_selected() -> void:
 	var btn: Button = _cards.get(GameState.selected_zone)

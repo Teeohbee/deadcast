@@ -1,6 +1,8 @@
 # autoload/InputGlyphs.gd
-# Diegetic, device-aware input prompts. Glyphs are rendered as the terminal OS's
-# own bracket keycaps (e.g. [A], [L1]) so they read as part of the fiction.
+# Diegetic, device-aware input prompts. On a keyboard, glyphs are the terminal
+# OS's own bracket keycaps (e.g. [ENTER], [Q]). On a pad, icon() hands back a
+# Steam Deck button texture (Kenney, CC0) that callers tint to the deck palette;
+# glyph() still returns the bracket text as the fallback.
 #
 # navigate tokens use ASCII fallbacks ([+] and [UP/DN]) because IBM Plex Mono
 # Regular (the deck font) does not cover U+271A (✚), U+25B2 (▲), or U+25BC (▼).
@@ -18,6 +20,18 @@ const _GLYPHS := {
 	"navigate": {Mode.PAD: "[+]",     Mode.KEY: "[UP/DN]"},
 	"cycle_lure": {Mode.PAD: "[X]",   Mode.KEY: "[TAB]"},
 	"haul":     {Mode.PAD: "[A]",     Mode.KEY: "[SPACE]"},
+}
+
+# Pad icons, by the Steam Deck file name under _ICON_DIR.
+const _ICON_DIR := "res://resources/glyphs/steam/steamdeck_%s.svg"
+const _ICONS := {
+	"accept":     "button_a",
+	"cancel":     "button_b",
+	"prev":       "button_l1",
+	"next":       "button_r1",
+	"navigate":   "dpad_vertical",
+	"cycle_lure": "button_x",
+	"haul":       "button_a",
 }
 
 var mode: int = Mode.KEY
@@ -40,3 +54,12 @@ func update_mode_from_event(event: InputEvent) -> void:
 
 func glyph(action: String) -> String:
 	return _GLYPHS.get(action, {}).get(mode, "")
+
+# The pad button texture for an action, or null on a keyboard (use glyph()).
+func icon(action: String) -> Texture2D:
+	if mode != Mode.PAD or not _ICONS.has(action):
+		return null
+	return load(_ICON_DIR % _ICONS[action]) as Texture2D
+
+func actions() -> Array:
+	return _GLYPHS.keys()

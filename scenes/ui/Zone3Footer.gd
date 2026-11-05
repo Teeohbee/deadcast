@@ -16,14 +16,13 @@ const _TABS: Array[Dictionary] = [
 var _tab_buttons: Array[Button] = []
 # The divider before each tab (null for the first), hidden with its tab.
 var _dividers: Array[Label] = []
-var _prev_hint: Label
-var _next_hint: Label
+var _prev_hint: DeckPromptRow
+var _next_hint: DeckPromptRow
 
 func _ready() -> void:
 	DeckStyle.apply_label(sep_label, DeckStyle.BORDER)
 
-	_prev_hint = Label.new()
-	DeckStyle.apply_label(_prev_hint, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
+	_prev_hint = DeckPromptRow.new("prev", "<", DeckStyle.TEXT, DeckStyle.SIZE_BODY, true)
 	tab_row.add_child(_prev_hint)
 
 	for i in _TABS.size():
@@ -46,13 +45,10 @@ func _ready() -> void:
 		tab_row.add_child(btn)
 		_tab_buttons.append(btn)
 
-	_next_hint = Label.new()
-	DeckStyle.apply_label(_next_hint, DeckStyle.TEXT, DeckStyle.SIZE_BODY)
+	_next_hint = DeckPromptRow.new("next", ">", DeckStyle.TEXT, DeckStyle.SIZE_BODY)
 	tab_row.add_child(_next_hint)
 
 	UIController.screen_changed.connect(_on_screen_changed)
-	InputGlyphs.device_changed.connect(_refresh_hints)
-	_refresh_hints()
 	_refresh_unlocked_tabs()
 
 # Locked tabs (see Unlocks) are hidden along with the divider before them.
@@ -63,12 +59,6 @@ func _refresh_unlocked_tabs() -> void:
 		_tab_buttons[i].visible = open
 		if _dividers[i] != null:
 			_dividers[i].visible = open
-
-# Named method so Godot auto-disconnects when this node frees.
-# Accepts the optional mode arg the signal passes; defaulted for direct calls.
-func _refresh_hints(_mode: int = 0) -> void:
-	_prev_hint.text = "< %s " % InputGlyphs.glyph("prev")
-	_next_hint.text = " %s >" % InputGlyphs.glyph("next")
 
 func _on_screen_changed(id: String) -> void:
 	visible = _TABS.any(func(t: Dictionary) -> bool: return t["id"] == id)
