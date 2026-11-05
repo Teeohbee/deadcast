@@ -85,3 +85,10 @@ func test_menu_and_back_glyphs_per_mode() -> void:
 	assert_eq(InputGlyphs.glyph("cancel"), "[BKSP]")
 	InputGlyphs.mode = InputGlyphs.Mode.PAD
 	assert_not_null(InputGlyphs.icon("menu"))
+
+# Steam Input layouts can send the pad's A as Return; the haul must still take it.
+func test_enter_also_hauls() -> void:
+	var enter := InputEventKey.new()
+	enter.physical_keycode = KEY_ENTER
+	enter.pressed = true
+	assert_true(enter.is_action_pressed("action_reel"))

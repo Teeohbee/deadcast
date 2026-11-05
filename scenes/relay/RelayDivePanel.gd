@@ -24,11 +24,17 @@ func _ready() -> void:
 	title = "relay_7"
 	ambient = true
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
+	# The lines sit in a plain clipping Control so they never add to the rail's
+	# minimum height: newest at the bottom, the oldest clipped off the top.
+	var window := Control.new()
+	window.clip_contents = true
+	window.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	add_child(window)
 	_rows = VBoxContainer.new()
-	_rows.alignment = BoxContainer.ALIGNMENT_END
 	_rows.add_theme_constant_override("separation", 10)
-	_rows.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	add_child(_rows)
+	_rows.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	_rows.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	window.add_child(_rows)
 
 func setup(first_dive: bool, random_seed: int = -1) -> void:
 	_first_dive = first_dive
