@@ -18,6 +18,14 @@ const CONTACT_OKEKE := "okeke"
 const CONTACT_AXIOM_CREDIT := "axiom_credit"
 const CONTACTS: Array[String] = [CONTACT_MARTA, CONTACT_OKEKE, CONTACT_AXIOM_CREDIT]
 
+# How each contact appears on the relay: caller ID, route, and speaker colour
+# (a DeckStyle colour name, so this file stays free of UI code).
+const CONTACT_DISPLAY := {
+	CONTACT_MARTA: {"caller_id": "M. VOSS", "speaker": "marta", "route": "relay 7 → meridian", "color": "SKY"},
+	CONTACT_OKEKE: {"caller_id": "OKEKE", "speaker": "okeke", "route": "barge · east moorings", "color": "AMBER"},
+	CONTACT_AXIOM_CREDIT: {"caller_id": "AXIOM CREDIT", "speaker": "axiom", "route": "axiom finance · automated", "color": "RED"},
+}
+
 const CHANNEL_CALL := "call"
 const CHANNEL_TEXT := "text"
 const CHANNELS: Array[String] = [CHANNEL_CALL, CHANNEL_TEXT]
