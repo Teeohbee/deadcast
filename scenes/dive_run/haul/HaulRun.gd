@@ -80,7 +80,8 @@ func _ready() -> void:
 	add_child(_hum)
 	_hum.play()
 
-	_say("%s ── %s" % [_title, "hold %s to haul" % InputGlyphs.glyph("haul")], DeckStyle.DIM, 0.0)
+	view.title = "%s %s" % [_glyph, _title]
+	_say("hold %s to haul" % InputGlyphs.glyph("haul"), DeckStyle.GREEN, 0.0)
 	if sim.hints():
 		view.hint = "hold %s to haul the payload up" % InputGlyphs.glyph("haul")
 

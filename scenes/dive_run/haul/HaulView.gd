@@ -22,12 +22,15 @@ const ROW_H := 28.0
 const ROWS := int((SCAN_Y - (DOCK + BLOCK_GAP)) / ROW_H)
 const HEX_SIZE := 19
 const SCRAMBLE := "█▓▒░"
+## Text on the left stops short of the trace's widest wobble.
+const LEFT_COLUMN_W := 520.0
 
 var sim: HaulSim
 var fragments: HaulFragments
 var held := false
 var hit_t := 9.0 # seconds since the last hit taken
 var glyph := "[?]"
+var title := ""
 var status := ""
 var status_color := DeckStyle.TEXT
 var hint := ""
@@ -105,12 +108,13 @@ func _draw() -> void:
 	_draw_packet(py)
 	_draw_payload(py)
 
+	# left column, clear of the winch head and the trace
+	if title != "":
+		draw_multiline_string(_font, Vector2(40, 52), title, HORIZONTAL_ALIGNMENT_LEFT, LEFT_COLUMN_W, 16, -1, DeckStyle.DIM)
 	if status != "":
-		_text(status, Vector2(40, 52), status_color, 20)
+		draw_multiline_string(_font, Vector2(40, 150), status, HORIZONTAL_ALIGNMENT_LEFT, LEFT_COLUMN_W, 20, -1, status_color)
 	if hint != "":
-		_text(hint, Vector2(40, 82), DeckStyle.GREEN, 16)
-	if sim.phase == HaulSim.READY:
-		_text("hold %s to haul" % InputGlyphs.glyph("haul"), Vector2(X, DESIGN.y - 70), DeckStyle.GREEN, 22, HORIZONTAL_ALIGNMENT_CENTER)
+		draw_multiline_string(_font, Vector2(40, 190), hint, HORIZONTAL_ALIGNMENT_LEFT, LEFT_COLUMN_W, 16, -1, DeckStyle.GREEN)
 	draw_set_transform(Vector2.ZERO)
 
 func _draw_block(py: float) -> void:
@@ -165,7 +169,12 @@ func _draw_winch_head(live_held: bool) -> void:
 		var g1 := bw * minf(99.0, sim.line_load + sim.hit_size) / 100.0
 		draw_rect(Rect2(bx + g0, TOP - 58, g1 - g0, 36), Color(DeckStyle.RED, 0.35))
 		draw_dashed_line(Vector2(bx + g1, TOP - 60), Vector2(bx + g1, TOP - 20), DeckStyle.RED, 2.0, 5.0)
-	_text("WINCH  %d%%" % roundi(sim.line_load), Vector2(X, TOP - 32), DeckStyle.BG if sim.line_load > 45.0 else DeckStyle.TEXT, 22, HORIZONTAL_ALIGNMENT_CENTER)
+	# light text with a dark outline reads over both the filled and the empty bar
+	var label := "WINCH  %d%%" % roundi(sim.line_load)
+	var lw := _font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x
+	var lpos := Vector2(X - lw / 2.0, TOP - 32)
+	draw_string_outline(_font, lpos, label, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, 6, DeckStyle.BG)
+	draw_string(_font, lpos, label, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, DeckStyle.TEXT)
 	if sim.line_load >= HaulSim.RED_ZONE:
 		_text("LET GO", Vector2(X + 220, TOP - 32), DeckStyle.RED, 24)
 

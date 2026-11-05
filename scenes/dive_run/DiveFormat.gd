@@ -14,6 +14,26 @@ static func result_line(credits: int, tension_delta: int, corruption_gain: int) 
 		return ">>> no change"
 	return ">>> " + "  ·  ".join(parts)
 
+## The haul's fragments as plain log text: read words, scrambled ones, and blanks for unread.
+static func recovered_fragments(recovered: Array) -> String:
+	var parts: Array[String] = []
+	for f in recovered:
+		var word: String = f.word
+		match f.state:
+			HaulFragments.READ:
+				parts.append(word)
+			HaulFragments.LOST:
+				parts.append(_mask(word, "▓"))
+			_:
+				parts.append(_mask(word, "░"))
+	return "  ·  ".join(parts)
+
+static func _mask(word: String, ch: String) -> String:
+	var out := ""
+	for c in word:
+		out += " " if c == " " else ch
+	return out
+
 static func type_tag(catch_type: CatchData.CatchType) -> String:
 	match catch_type:
 		CatchData.CatchType.DATA:   return "[DATA_CONTAINER]"
@@ -30,14 +50,31 @@ static func security_tag(behavior: CatchData.BehaviorType) -> String:
 		CatchData.BehaviorType.AGGRESSIVE:  return "[HOSTILE]"
 	return "[UNKNOWN]"
 
-static func contact_card(catch_data: CatchData) -> String:
+static func contact_card(catch_data: CatchData, hauled: bool = false) -> String:
 	var sig := ("-%d%%" % catch_data.corruption_gain) if catch_data.corruption_gain > 0 else "none"
-	return "\n> contact: %s\n│  class: %s   security: %s\n│  %s\n│  SIG IMPACT: %s" % [
+	var card := "\n> contact: %s\n│  class: %s   security: %s\n│  %s\n│  SIG IMPACT: %s" % [
 		catch_data.catch_name,
 		type_tag(catch_data.catch_type),
 		security_tag(catch_data.behavior),
 		catch_data.flavor_text,
 		sig]
+	if hauled:
+		card += "\n│  hauls: %s" % HaulTurn.feel(catch_data)
+	return card
+
+## Options on a hauled contact: tells, not sums. The haul decides the odds, so the card
+## shows rough stakes - line strain and worth - and exact numbers go to the log.
+static func haul_option_label(num: int, option: CatchOption) -> String:
+	if option.cuts_line:
+		return option_label(num, option, CatchData.BehaviorType.PASSIVE)
+	var parts: Array[String] = ["[%d] %s" % [num, option.label.to_lower().replace(" ", "_")]]
+	var strain := HaulTurn.strain_word(option.tension_delta)
+	if strain != "":
+		parts.append("strain: " + strain)
+	var worth := HaulTurn.worth_word(option.credit_value)
+	if worth != "":
+		parts.append("worth: " + worth)
+	return "  ·  ".join(parts)
 
 static func option_label(num: int, option: CatchOption, behavior: CatchData.BehaviorType) -> String:
 	if option.cuts_line:

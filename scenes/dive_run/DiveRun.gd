@@ -181,9 +181,10 @@ func _present_catch(catch_data: CatchData) -> void:
 		if using_shock:
 			augmented = _inject_shock_option(current)
 
+		var hauled := _zone_data != null and _zone_data.haul_enabled and augmented.haul_enabled
 		if need_card:
 			await _maybe_fake_signal_loss()
-			session_log.log_line(DiveFormat.contact_card(augmented), DeckStyle.TEXT)
+			session_log.log_line(DiveFormat.contact_card(augmented, hauled), DeckStyle.TEXT)
 			EventBus.contact_presented.emit(catch_data)
 			_log_hint(DiveHints.CONTACT)
 			need_card = false
@@ -191,7 +192,10 @@ func _present_catch(catch_data: CatchData) -> void:
 		var labels: Array[String] = []
 		var echoes: Array[String] = []
 		for i in augmented.options.size():
-			labels.append(DiveFormat.option_label(i + 1, augmented.options[i], augmented.behavior))
+			if hauled:
+				labels.append(DiveFormat.haul_option_label(i + 1, augmented.options[i]))
+			else:
+				labels.append(DiveFormat.option_label(i + 1, augmented.options[i], augmented.behavior))
 			echoes.append(augmented.options[i].label.to_lower().replace(" ", "_"))
 
 		var lure_action := _contact_lure_action()
@@ -248,6 +252,10 @@ func _present_catch(catch_data: CatchData) -> void:
 				vented, line_system.max_tension], DeckStyle.AMBER)
 			await _beat()
 			_advance_slot()
+			return
+
+		if HaulTurn.hauls(_zone_data, augmented, option):
+			await _resolve_haul(option, augmented, echo)
 			return
 
 		match augmented.behavior:
@@ -311,6 +319,41 @@ func _fire_deep_pulse() -> void:
 	var summary := "deep_pulse: %d contacts ahead — %s" % [tags.size(), " ".join(tags)]
 	_run_record.entries.append({"kind": "lure", "text": summary})
 	session_log.log_line(">>> %s" % summary, DeckStyle.SKY)
+
+# Winch haul (District 7 spike): the player hauls the payload up by hand and the result
+# scales what the option pays and costs, in place of the resist/fail dice.
+func _resolve_haul(option: CatchOption, catch_data: CatchData, echo: String) -> void:
+	var run := HaulRun.new()
+	run.setup(HaulTurn.dials(catch_data, option), HaulTurn.difficulty(GameState.run_count),
+		catch_data.fragments, HaulTurn.glyph(catch_data.catch_type), catch_data.catch_name.to_lower())
+	add_child(run)
+	var result: Dictionary = await run.finished
+	run.queue_free()
+
+	var pay := HaulTurn.payout(option, result)
+	line_system.add_corruption(catch_data.corruption_gain)
+	_run_credits += pay.credits
+	if catch_data.catch_type == CatchData.CatchType.BIO:
+		_bio_credits += pay.credits
+	EventBus.haul_changed.emit(_run_credits)
+	var outcome: String = result.outcome
+	var label := "haul %s" % outcome
+	if outcome == "messy":
+		label += " (%d hit%s)" % [result.hits, "" if result.hits == 1 else "s"]
+	_record_slot(catch_data, echo, label, pay.credits, pay.tension, catch_data.corruption_gain,
+		option.sets_entity_flag)
+	var color: Color = {"perfect": DeckStyle.SKY, "clean": DeckStyle.GREEN, "messy": DeckStyle.AMBER}.get(outcome, DeckStyle.RED)
+	session_log.log_line(">>> %s" % label, color)
+	if int(result.get("total", 0)) > 0:
+		session_log.log_line("│  recovered: %s" % DiveFormat.recovered_fragments(result.fragments), DeckStyle.TEXT)
+	session_log.log_line(DiveFormat.result_line(pay.credits, pay.tension, catch_data.corruption_gain), DeckStyle.TEXT)
+	line_system.apply_tension(pay.tension)
+	if _snapped:
+		return
+	await _beat()
+	if _snapped:
+		return
+	_advance_slot()
 
 func _resolve_resistant(option: CatchOption, catch_data: CatchData, echo: String) -> void:
 	if option.resist_chance > 0.0 and randf() < option.resist_chance:
