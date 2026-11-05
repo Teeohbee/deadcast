@@ -37,11 +37,19 @@ static func script_ids_already_past(run_count: int) -> Array[String]:
 				if run_count > 0:
 					past.append(relay_script.id)
 			RelayScripts.TRIGGER_HUB_ARRIVAL:
-				if trigger.has("min_pressure"):
+				if trigger.has("min_pressure") or trigger.has("requires_victory"):
 					continue
 				if run_count > trigger.get("from_run", 0):
 					past.append(relay_script.id)
 	return past
+
+# Whether any logged run was in this zone (run logs name zones by display name).
+static func has_fished_zone(zone_id: String) -> bool:
+	var zone: ZoneData = load("res://resources/zones/%s.tres" % zone_id)
+	if zone == null:
+		return false
+	var zone_name := zone.display_name.to_lower()
+	return GameState.run_logs.any(func(record: Dictionary) -> bool: return record.get("zone", "") == zone_name)
 
 static func _due_scripts(moment: String, tab_id: String, channel: String) -> Array[Dictionary]:
 	var due: Array[Dictionary] = []
@@ -61,7 +69,9 @@ static func _trigger_matches(trigger: Dictionary, moment: String, tab_id: String
 		RelayScripts.TRIGGER_HUB_ARRIVAL:
 			return moment == RelayScripts.TRIGGER_HUB_ARRIVAL \
 				and GameState.run_count >= trigger.get("from_run", 0) \
-				and GameState.pressure_level >= trigger.get("min_pressure", 0)
+				and GameState.pressure_level >= trigger.get("min_pressure", 0) \
+				and (GameState.victory or not trigger.get("requires_victory", false)) \
+				and (not trigger.has("after_fishing_zone") or has_fished_zone(trigger.after_fishing_zone))
 		RelayScripts.TRIGGER_TAB_OPENED:
 			return moment == RelayScripts.TRIGGER_TAB_OPENED and tab_id == trigger.get("tab", "")
 	return false

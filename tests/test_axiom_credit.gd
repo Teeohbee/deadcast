@@ -77,7 +77,7 @@ func test_clearing_the_debt_closes_the_account_once() -> void:
 func test_marta_rings_once_a_recovery_agent_is_assigned() -> void:
 	GameState.relay_mark_played("marta_first_call")
 	GameState.relay_mark_played("marta_after_dive_one")
-	GameState.run_count = 20
+	GameState.run_count = 2
 	GameState.pressure_level = 3
 	assert_true(RelayDirector.due_call(RelayScripts.TRIGGER_HUB_ARRIVAL).is_empty())
 	GameState.pressure_level = 4
