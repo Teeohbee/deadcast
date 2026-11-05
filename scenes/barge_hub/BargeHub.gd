@@ -27,6 +27,7 @@ func _ready() -> void:
 	DeckStyle.apply_action_button(_dive_button)
 	_dive_button.focus_mode = Control.FOCUS_ALL
 	_dive_button.pressed.connect(_on_dive_pressed)
+	_zone_panel.zone_confirmed.connect(func(_id: String) -> void: _dive_button.grab_focus())
 	DeckPrompt.bind(_dive_button, "accept", "INITIATE DIVE")
 	InputGlyphs.device_changed.connect(_on_device_changed)
 
@@ -34,8 +35,8 @@ func _ready() -> void:
 	_on_zone_changed(GameState.selected_zone)
 
 	await get_tree().process_frame
-	_zone_panel.focus_selected()
 	_wire_focus_graph()
+	_focus_default()
 
 func on_screen_shown() -> void:
 	# FreezerPanel and RigPanel don't listen to EventBus, so refresh them on
@@ -48,7 +49,14 @@ func on_screen_shown() -> void:
 	_zone_panel.refresh_unlocked()
 	_wire_focus_graph()
 	_on_zone_changed(GameState.selected_zone)
-	_zone_panel.focus_selected()
+	_focus_default()
+
+# With one zone open there is nothing to pick, so land on the dive itself.
+func _focus_default() -> void:
+	if _zone_panel.open_zone_count() <= 1:
+		_dive_button.grab_focus()
+	else:
+		_zone_panel.focus_selected()
 
 func _announce_new_unlocks() -> void:
 	var open_now := Unlocks.open_features()

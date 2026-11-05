@@ -56,3 +56,26 @@ func test_get_theme_provides_mono_font() -> void:
 func test_get_theme_is_cached() -> void:
 	assert_same(DeckStyle.get_theme(), DeckStyle.get_theme())
 
+
+# Pad focus must never look like selection (green), or a focused, selected card
+# reads as unfocused. Every focusable deck button shares one bright ring.
+func _focus_of(btn: Button) -> StyleBoxFlat:
+	return btn.get_theme_stylebox("focus") as StyleBoxFlat
+
+func test_focus_ring_is_bright_and_thicker_on_every_button_style() -> void:
+	var card: Button = autofree(Button.new())
+	DeckStyle.apply_card(card, true)
+	var key: Button = autofree(Button.new())
+	DeckStyle.apply_function_key(key)
+	var action: Button = autofree(Button.new())
+	DeckStyle.apply_action_button(action)
+	for btn in [card, key, action]:
+		var focus := _focus_of(btn)
+		assert_eq(focus.border_color, DeckStyle.TEXT)
+		assert_eq(focus.border_width_top, 2)
+
+func test_selected_card_focus_differs_from_its_normal_style() -> void:
+	var card: Button = autofree(Button.new())
+	DeckStyle.apply_card(card, true)
+	var normal := card.get_theme_stylebox("normal") as StyleBoxFlat
+	assert_ne(_focus_of(card).border_color, normal.border_color)

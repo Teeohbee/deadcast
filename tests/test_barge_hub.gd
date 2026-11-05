@@ -164,3 +164,23 @@ func test_a_continued_save_announces_nothing() -> void:
 	watch_signals(EventBus)
 	hub.on_screen_shown()
 	assert_signal_not_emitted(EventBus, "deck_log")
+
+func test_confirming_a_zone_moves_focus_to_dive() -> void:
+	var hub := HUB.instantiate()
+	add_child_autofree(hub)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	(hub._zone_panel._cards["exchange"] as Button).pressed.emit()
+	assert_eq(GameState.selected_zone, "exchange")
+	assert_true(hub._dive_button.has_focus())
+
+func test_single_open_zone_opens_on_the_dive_button() -> void:
+	GameState.run_count = 0
+	var hub := HUB.instantiate()
+	add_child_autofree(hub)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	assert_true(hub._dive_button.has_focus())
+	hub._zone_panel._cards["district7"].grab_focus()
+	hub.on_screen_shown()
+	assert_true(hub._dive_button.has_focus())

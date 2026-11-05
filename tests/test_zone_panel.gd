@@ -90,3 +90,25 @@ func test_a_locked_selected_zone_falls_back_to_district_7() -> void:
 	GameState.selected_zone = "axiom"
 	_make_panel()
 	assert_eq(GameState.selected_zone, "district7")
+
+func test_pressing_card_emits_zone_confirmed() -> void:
+	var p := _make_panel()
+	watch_signals(p)
+	(p._cards["exchange"] as Button).pressed.emit()
+	assert_signal_emitted_with_parameters(p, "zone_confirmed", ["exchange"])
+
+func test_nav_hint_hidden_with_a_single_open_zone() -> void:
+	GameState.run_count = 0
+	var p := _make_panel()
+	assert_false(p._nav_hint.visible)
+
+func test_nav_hint_shown_with_several_open_zones() -> void:
+	var p := _make_panel()
+	assert_true(p._nav_hint.visible)
+
+func test_open_zone_count() -> void:
+	var p := _make_panel()
+	assert_eq(p.open_zone_count(), 3)
+	GameState.run_count = 0
+	p.refresh_unlocked()
+	assert_eq(p.open_zone_count(), 1)
