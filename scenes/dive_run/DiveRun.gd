@@ -412,7 +412,7 @@ func _run_overload(catch_data: CatchData) -> void:
 	session_log.log_line(DiveFormat.contact_card(catch_data), DeckStyle.RED)
 	EventBus.contact_presented.emit(catch_data)
 	_log_hint(DiveHints.CONTACT)
-	session_log.log_line("│  est. yield: ~%dcr" % reward.credit_value, DeckStyle.TEXT)
+	session_log.log_line("│  value: %s" % HaulTurn.value_word(reward.credit_value), DeckStyle.TEXT)
 
 	var last_echo := ""
 	while true:

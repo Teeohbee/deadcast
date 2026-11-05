@@ -30,8 +30,23 @@ func test_option_label_cuts_line() -> void:
 	assert_eq(DiveFormat.option_label(3, o, CatchData.BehaviorType.PASSIVE),
 		"[3] abort_connection  ·  vents half the strain  ·  costs signal  ·  no reward")
 
+func _cmd(id: String) -> Dictionary:
+	for c in OverloadFight.BASE_COMMANDS:
+		if c.id == id:
+			return c
+	return OverloadFight.ISOLATE_FEED if id == "ISOLATE_FEED" else OverloadFight.OVERLOAD_CORE
+
 func test_command_label_isolate_keeps_tension() -> void:
-	assert_string_contains(DiveFormat.command_label(4, {"id": "ISOLATE_FEED"}), "keep tension")
+	assert_string_contains(DiveFormat.command_label(4, _cmd("ISOLATE_FEED")), "keep the strain")
+
+func test_command_labels_are_words_not_odds() -> void:
+	assert_eq(DiveFormat.command_label(1, _cmd("DECRYPT_NODE")), "[1] DECRYPT_NODE  ·  strain: MODERATE  ·  breaks 1  ·  SURE")
+	assert_eq(DiveFormat.command_label(2, _cmd("BRUTE_FORCE_OVERRIDE")), "[2] BRUTE_FORCE_OVERRIDE  ·  strain: HEAVY  ·  breaks 2  ·  RISKY")
+	assert_eq(DiveFormat.command_label(3, _cmd("SYNGAS_FLOOD")), "[3] SYNGAS_FLOOD  ·  breaks 1  ·  COIN FLIP")
+	assert_eq(DiveFormat.command_label(4, _cmd("SIGNAL_DAMPEN")), "[4] SIGNAL_DAMPEN  ·  eases strain  ·  SURE")
+	assert_string_contains(DiveFormat.command_label(5, _cmd("OVERLOAD_CORE")), "shock lure")
+	for c in OverloadFight.BASE_COMMANDS:
+		assert_false(DiveFormat.command_label(1, c).contains("%"))
 
 func test_a_dice_option_says_uncertain_not_its_odds() -> void:
 	var o := _make_option("Brute Decrypt", 15, 550)
@@ -82,8 +97,8 @@ func test_overload_status_line() -> void:
 	assert_eq(line, "│  anchor ◆◆◇  2/3  ·  threat ×1.15  ·  turn 4")
 
 func test_command_label_known_command() -> void:
-	assert_string_contains(DiveFormat.command_label(1, {"id": "DECRYPT_NODE"}), "DECRYPT_NODE")
-	assert_string_contains(DiveFormat.command_label(4, {"id": "ISOLATE_FEED"}), "emergency disconnect")
+	assert_string_contains(DiveFormat.command_label(1, _cmd("DECRYPT_NODE")), "DECRYPT_NODE")
+	assert_string_contains(DiveFormat.command_label(4, _cmd("ISOLATE_FEED")), "emergency disconnect")
 
 func test_narrative_entry_indents_lines() -> void:
 	var entry := DiveFormat.narrative_entry("SOLACE-7", "line one\nline two")
