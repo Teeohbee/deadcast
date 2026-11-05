@@ -130,6 +130,37 @@ func test_a_cleared_account_reads_closed() -> void:
 	GameState.victory = true
 	var tab := _tab()
 	assert_string_contains(tab.account_text(), "ACCOUNT CLOSED")
+	assert_eq(tab.pay_buttons().size(), 0, "nothing to pay on a closed account")
+
+func test_the_account_offers_early_payments() -> void:
+	GameState.credits = 6000
+	var tab := _tab()
+	var labels: Array[String] = []
+	var enabled: Array[bool] = []
+	for button in tab.pay_buttons():
+		labels.append(button.text)
+		enabled.append(not button.disabled)
+	assert_eq(labels, ["pay 1,000cr", "pay 5,000cr", "pay 10,000cr"] as Array[String])
+	assert_eq(enabled, [true, true, false] as Array[bool], "only what the wallet covers")
+
+func test_paying_early_updates_the_account_and_the_thread() -> void:
+	GameState.credits = 20000
+	GameState.instalment_paid = 0
+	var tab := _tab()
+	tab.pay_buttons()[1].pressed.emit()
+	assert_string_contains(tab.account_text(), "75,000 cr")
+	assert_string_contains(tab.account_text(), "5,000 cr", "5,000 still due")
+	assert_eq(tab.selected_contact, "axiom_credit")
+	assert_string_contains(tab.render_thread("axiom_credit"), "RECEIVED EARLY")
+
+func test_the_pay_buttons_keep_pad_focus_after_paying() -> void:
+	GameState.credits = 20000
+	var tab := _tab()
+	var button := tab.pay_buttons()[0]
+	button.grab_focus()
+	button.pressed.emit()
+	await wait_process_frames(1)
+	assert_eq(get_viewport().gui_get_focus_owner(), tab.pay_buttons()[0])
 
 func _contact_button(tab: RelayTab, contact: String) -> Button:
 	var display: Dictionary = RelayScripts.CONTACT_DISPLAY.get(contact, {})

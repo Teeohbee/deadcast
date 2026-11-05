@@ -24,7 +24,7 @@ const SECTIONS: Array[Dictionary] = [
 	},
 	{
 		"title": "DEBT",
-		"body": "10,000cr payment due every 5 runs.\ndeducted automatically from wallet.\n\nmiss a payment and pressure increases.",
+		"body": "10,000cr payment due every 5 runs.\ndeducted automatically from wallet.\n\nmiss a payment and pressure increases.\npay early from the axiom credit account in RELAY:\ncovering an instalment resets the clock\nand lowers pressure by one.",
 	},
 ]
 

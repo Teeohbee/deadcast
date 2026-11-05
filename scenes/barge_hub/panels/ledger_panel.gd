@@ -88,7 +88,7 @@ func _due_caption() -> Label:
 
 # Mirrors GameState's payment rule: 10,000cr, or whatever is left if less.
 static func next_payment_amount() -> int:
-	return mini(10000, GameState.debt)
+	return GameState.instalment_remaining()
 
 static func pressure_fill_color(level: int) -> Color:
 	if level >= 4:
